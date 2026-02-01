@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -48,6 +49,7 @@ public class UserService {
     @Transactional
     public void createUser(UserCreateDto dto){
         User user = UserMapper.mapToUser(dto);
+        user.setRegisteredAt(LocalDate.now());
         user.setPassword(PasswordUtils.hash(user.getPassword()));
         repository.save(user);
     }
