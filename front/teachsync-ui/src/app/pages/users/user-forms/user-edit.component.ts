@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { UserService } from "../../../core/services/user.service";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { UserRole } from "../../../core/models/users/user.role.model";
+
 @Component({    
     selector: 'app-user-edit',
     templateUrl: './user-edit-form.html',

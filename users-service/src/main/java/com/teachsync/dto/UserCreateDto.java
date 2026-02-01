@@ -27,7 +27,6 @@ public class UserCreateDto {
     @Email
     private String email;
 
-    @NotNull
     private LocalDate registeredAt;
 
     @NotNull(message = "role cannot be null or empty")

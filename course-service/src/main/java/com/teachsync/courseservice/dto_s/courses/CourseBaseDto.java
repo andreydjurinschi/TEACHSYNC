@@ -1,12 +1,14 @@
 package com.teachsync.courseservice.dto_s.courses;
 
 public class CourseBaseDto {
+    private Long id;
     private String name;
     private String description;
     private String photoUrl;
     private Long teacher;
 
-    public CourseBaseDto(String name, String description, String photoUrl, Long teacher) {
+    public CourseBaseDto(Long id, String name, String description, String photoUrl, Long teacher) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.photoUrl = photoUrl;
@@ -43,5 +45,13 @@ public class CourseBaseDto {
 
     public void setTeacher(Long teacher) {
         this.teacher = teacher;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
