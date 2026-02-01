@@ -13,10 +13,9 @@ import java.util.stream.Collectors;
 
 public class CourseMapper {
 
-    //TODO: null till teacher verification logic is not created
     public static CourseBaseDto mapToBaseDto(Course course) {
         return new CourseBaseDto(
-                course.getName(), course.getDescription(), course.getPhotoUrl(), course.getTeacherId()
+                course.getId(), course.getName(), course.getDescription(), course.getPhotoUrl(), course.getTeacherId()
         );
     }
 

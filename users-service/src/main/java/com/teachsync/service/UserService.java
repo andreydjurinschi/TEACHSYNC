@@ -79,11 +79,11 @@ public class UserService {
         User user = getUser(userId);
         UserWithCoursesDto dto = new UserWithCoursesDto();
         List<CourseBaseInfoRequest> request = courseClient.requestForCourseInfo(userId);
-        Set<String> courseNames = request.stream().map(CourseBaseInfoRequest::getName).collect(Collectors.toSet());
+       // Set<String> courseNames = request.stream().map(CourseBaseInfoRequest::getName).collect(Collectors.toSet());
         dto.setName(user.getName());
         dto.setSurname(user.getSurname());
         dto.setEmail(user.getEmail());
-        dto.setCourseNames(courseNames);
+        dto.setCourseNames(request);
         return dto;
     }
 }

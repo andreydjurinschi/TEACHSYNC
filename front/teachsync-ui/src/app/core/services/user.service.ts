@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/internal/Observable';
 import { User } from '../models/users/user.model';
+import { UserWithCourses } from '../models/users/user.detailed.model';
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,10 @@ export class UserService{
     }
     create(user: Partial<User>){
       return this.http.post<User>(`${this.apiUrl}/create`, user);
+    }
+
+    getWithCourses(id:  number)  : Observable<UserWithCourses>{
+        return this.http.get<UserWithCourses>(`${this.apiUrl}/teacher/${id}/courses`);
     }
       
 }

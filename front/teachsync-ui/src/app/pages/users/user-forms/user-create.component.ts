@@ -14,7 +14,6 @@ import { CommonModule } from "@angular/common";
 export class UserCreate {
 
     loading = false;
-    submitted = false;
     form;
 
     constructor(
@@ -33,7 +32,6 @@ export class UserCreate {
     }
 
     submit(): void {
-    this.submitted = true;
     this.loading = true;
 
     this.userService.create(this.form.value).subscribe({

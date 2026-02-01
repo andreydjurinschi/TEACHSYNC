@@ -1,19 +1,11 @@
-<div class="p-6 max-w-2xl mx-auto">
+<div *ngIf="userWithCourses()">
+  <h2>{{ userWithCourses()?.name }} {{ userWithCourses()?.surname }}</h2>
+  <p>Email: {{ userWithCourses()?.email }}</p>
 
-  @if (loading()) {
-    <p class="text-gray-500">Loading user...</p>
-  }
-
-  @if (user()) {
-    <h2 class="text-2xl font-bold mb-4">
-      {{ user()!.fullName }}
-    </h2>
-
-    <div class="space-y-2">
-      <p><strong>Email:</strong> {{ user()!.email }}</p>
-      <p><strong>Role:</strong> {{ user()!.role }}</p>
-      <p><strong>Registered:</strong> {{ user()!.registeredAt }}</p>
-    </div>
-    <a [routerLink]="['/users/edit', user()!.id]" class="text-blue-500 hover:underline">Edit User</a>
-  }
+  <h3 *ngIf="userWithCourses()?.courseNames?.length">Courses:</h3>
+  <ul>
+    <li *ngFor="let course of userWithCourses()?.courseNames">
+      {{ course.name }}
+    </li>
+  </ul>
 </div>

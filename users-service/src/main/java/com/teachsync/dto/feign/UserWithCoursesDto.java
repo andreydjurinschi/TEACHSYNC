@@ -1,14 +1,16 @@
 package com.teachsync.dto.feign;
 
-import java.util.Set;
+import com.teachsync.interaction.requests.CourseBaseInfoRequest;
+
+import java.util.List;
 
 public class UserWithCoursesDto {
     private String name;
     private String surname;
     private String email;
-    private Set<String> courseNames;
+    private List<CourseBaseInfoRequest> courseNames;
 
-    public UserWithCoursesDto(String name, String surname, String email, Set<String> courseNames) {
+    public UserWithCoursesDto(String name, String surname, String email, List<CourseBaseInfoRequest> courseNames) {
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -42,11 +44,11 @@ public class UserWithCoursesDto {
         this.email = email;
     }
 
-    public Set<String> getCourseNames() {
+    public List<CourseBaseInfoRequest> getCourseNames() {
         return courseNames;
     }
 
-    public void setCourseNames(Set<String> courseNames) {
+    public void setCourseNames(List<CourseBaseInfoRequest> courseNames) {
         this.courseNames = courseNames;
     }
 }
