@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,16 +71,23 @@ public class UserService {
     }
 
     // feign
-
-    public UserWithCoursesDto getUserWithCourses(Long userId){
+    public UserWithCoursesDto getUserWithCourses(Long userId) {
         User user = getUser(userId);
         UserWithCoursesDto dto = new UserWithCoursesDto();
-        List<CourseBaseInfoRequest> request = courseClient.requestForCourseInfo(userId);
-       // Set<String> courseNames = request.stream().map(CourseBaseInfoRequest::getName).collect(Collectors.toSet());
         dto.setName(user.getName());
         dto.setSurname(user.getSurname());
         dto.setEmail(user.getEmail());
-        dto.setCourseNames(request);
-        return dto;
+        List<CourseBaseInfoRequest> courses;
+        try{
+            courses = courseClient.requestForCourseInfo(userId);
+            dto.setCourseNames(courses);
+            dto.setAvailable(true);
+            return dto;
+        }catch (Exception e){
+            dto.setCourseNames(Collections.emptyList());
+            dto.setAvailable(false);
+            return dto;
+        }
     }
+
 }

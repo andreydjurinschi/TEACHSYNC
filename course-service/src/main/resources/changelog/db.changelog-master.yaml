@@ -7,3 +7,5 @@ databaseChangeLog:
       file: changelog/changeset/003-insert-data-into-topics-table.sql
   - include:
       file: changelog/changeset/004-insert-data-into-intermediate-tables.sql
+  - include:
+      file: changelog/changeset/005-update-course-table-set-teachers.sql

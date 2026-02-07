@@ -7,4 +7,5 @@ export interface UserWithCourses{
     id: number;
     name: string;
   }[];
+  available: boolean
 }

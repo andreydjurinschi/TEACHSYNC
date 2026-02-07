@@ -9,12 +9,14 @@ public class UserWithCoursesDto {
     private String surname;
     private String email;
     private List<CourseBaseInfoRequest> courseNames;
+    private boolean available;
 
-    public UserWithCoursesDto(String name, String surname, String email, List<CourseBaseInfoRequest> courseNames) {
+    public UserWithCoursesDto(String name, String surname, String email, List<CourseBaseInfoRequest> courseNames, boolean available) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.courseNames = courseNames;
+        this.available = available;
     }
 
     public UserWithCoursesDto() {
@@ -50,5 +52,13 @@ public class UserWithCoursesDto {
 
     public void setCourseNames(List<CourseBaseInfoRequest> courseNames) {
         this.courseNames = courseNames;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 }
