@@ -1,11 +1,9 @@
 <div *ngIf="userWithCourses()" class="max-w-md mx-auto mt-6 p-6 bg-white shadow-lg rounded-lg">
 
-  <!-- Имя, фамилия, email -->
   <h2 class="text-2xl font-bold mb-2">{{ userWithCourses()?.name }} {{ userWithCourses()?.surname }}</h2>
   <p class="text-gray-700 mb-1">Email: {{ userWithCourses()?.email }}</p>
   <p class="text-gray-700 mb-4">Роль: {{ user()?.role }}</p>
 
-  <!-- Курсы для TEACHER если доступны -->
   <div *ngIf="user()?.role === 'TEACHER' && userWithCourses()?.available; else noCourses">
     <h3 class="text-xl font-semibold mb-2">Courses:</h3>
     <ul class="list-disc list-inside space-y-1">
@@ -15,7 +13,6 @@
     </ul>
   </div>
 
-  <!-- Сообщение если курсы недоступны или не TEACHER -->
   <ng-template #noCourses>
     <p *ngIf="user()?.role === 'TEACHER'" class="text-yellow-600 font-medium">
       Курсы временно недоступны. Показана базовая информация о пользователе.
@@ -24,7 +21,6 @@
 
 </div>
 
-<!-- Спиннер загрузки -->
 <div *ngIf="loading()" class="flex justify-center mt-6">
   <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
 </div>

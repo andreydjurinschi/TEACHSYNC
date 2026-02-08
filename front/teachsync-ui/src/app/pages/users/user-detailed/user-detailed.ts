@@ -36,13 +36,13 @@ export class UserDetailed implements OnInit {
         this.user.set(user);
 
         if (user.role === 'TEACHER') {
-          // Запрос курсов через сервис
+
           this.userService.getWithCourses(user.id).subscribe({
             next: userWithCourses => {
               this.userWithCourses.set(userWithCourses);
             },
             error: () => {
-              // fallback если сервис курсов недоступен
+
               this.userWithCourses.set({
                 name: user.fullName.split(' ')[0] || user.fullName,
                 surname: user.fullName.split(' ')[1] || '',
@@ -54,7 +54,7 @@ export class UserDetailed implements OnInit {
             complete: () => this.loading.set(false)
           });
         } else {
-          // Для ADMIN / MANAGER — только базовая инфа
+
           this.userWithCourses.set({
             name: user.fullName.split(' ')[0] || user.fullName,
             surname: user.fullName.split(' ')[1] || '',
