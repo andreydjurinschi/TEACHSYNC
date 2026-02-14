@@ -2,7 +2,7 @@ package org.cedacri.spring.scheduleservice.mappers.class_room;
 
 import org.cedacri.spring.scheduleservice.domain.ClassRoom;
 import org.cedacri.spring.scheduleservice.dto_s.domain.class_room.ClassRoomBaseDto;
-import org.cedacri.spring.scheduleservice.dto_s.domain.class_room.ClassRoomCreateDto;
+import org.cedacri.spring.scheduleservice.dto_s.domain.class_room.ClassRoomCreateUpdateDto;
 import org.cedacri.spring.scheduleservice.dto_s.domain.class_room.ClassRoomDetailedDto;
 import org.cedacri.spring.scheduleservice.dto_s.domain.schedule.ScheduleBaseDto;
 import org.cedacri.spring.scheduleservice.mappers.schedule.ScheduleMapper;
@@ -22,9 +22,9 @@ public class ClassRoomMapper {
         );
     }
 
-    public static ClassRoom mapToEntity(ClassRoomCreateDto classRoomCreateDto){
+    public static ClassRoom mapToEntity(ClassRoomCreateUpdateDto classRoomCreateUpdateDto){
         return new ClassRoom(
-                classRoomCreateDto.getName(), classRoomCreateDto.getCapacity(), classRoomCreateDto.getPhotoUrl()
+                classRoomCreateUpdateDto.getName(), classRoomCreateUpdateDto.getCapacity(), classRoomCreateUpdateDto.getPhotoUrl()
         );
     }
 }

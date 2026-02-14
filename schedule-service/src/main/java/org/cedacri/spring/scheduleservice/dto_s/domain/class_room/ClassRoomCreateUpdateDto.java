@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-public class ClassRoomCreateDto {
+public class ClassRoomCreateUpdateDto {
     @NotBlank
     @Size(min=2, max=50)
     private String name;
@@ -17,13 +17,13 @@ public class ClassRoomCreateDto {
     private Integer capacity;
     private String photoUrl;
 
-    public ClassRoomCreateDto(String name, Integer capacity, String photoUrl) {
+    public ClassRoomCreateUpdateDto(String name, Integer capacity, String photoUrl) {
         this.name = name;
         this.capacity = capacity;
         this.photoUrl = photoUrl;
     }
 
-    public ClassRoomCreateDto() {
+    public ClassRoomCreateUpdateDto() {
     }
 
     public String getName() {
