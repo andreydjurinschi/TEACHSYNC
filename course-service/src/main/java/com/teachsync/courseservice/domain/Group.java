@@ -20,8 +20,8 @@ public class Group {
     @Column(nullable = false, name = "group_open_date")
     private LocalDate date;
 
-    @Column
-    private int capacity;
+    @Column(nullable = false)
+    private Integer capacity;
 
     // relations
 
@@ -33,7 +33,7 @@ public class Group {
     )
     private Set<Course> courses = new HashSet<>();
 
-    public Group(String name, LocalDate date, int capacity) {
+    public Group(String name, LocalDate date, Integer capacity) {
         this.name = name;
         this.date = date;
         this.capacity = capacity;
@@ -59,11 +59,11 @@ public class Group {
         this.date = date;
     }
 
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
 

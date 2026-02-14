@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file:
+        changelog/changeset/001-insert-class-room.sql
+  - include:
+      file:
+        changelog/changeset/002-insert-into-schedules.sql
+  - include:
+     file:
+       changelog/changeset/003-insert-into-schedule_days_info.sql

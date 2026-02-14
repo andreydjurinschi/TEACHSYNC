@@ -1,13 +1,15 @@
 package com.teachsync.courseservice.services.domain;
 
 import com.teachsync.courseservice.domain.Course;
+import com.teachsync.courseservice.dto_s.courses.CourseDetailedDto;
+import com.teachsync.courseservice.interaction.feign.clients.UserClient;
 import com.teachsync.courseservice.mappers.CourseMapper;
 import com.teachsync.courseservice.repositories.CourseRepository;
-import com.teachsync.courseservice.requests.feign.TeacherCheckResponse;
-import com.teachsync.courseservice.services.feign.UserClient;
-import com.teachsync.dto_s.course.CourseUpdateDto;
-import com.teachsync.dto_s.course.CourseBaseDto;
-import com.teachsync.dto_s.course.CourseCreateDto;
+import com.teachsync.courseservice.interaction.feign.requests.TeacherCheckResponse;
+import com.teachsync.courseservice.dto_s.courses.CourseUpdateDto;
+import com.teachsync.courseservice.dto_s.courses.CourseBaseDto;
+import com.teachsync.courseservice.dto_s.courses.CourseCreateDto;
+import com.teachsync.courseservice.repositories.TopicRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,11 +23,13 @@ import java.util.stream.Collectors;
 public class CourseService {
 
     private final CourseRepository repository;
+    private final TopicRepository topicRepository;
     private final UserClient userClient;
 
     @Autowired
-    public CourseService(CourseRepository repository, UserClient userClient) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, UserClient userClient) {
         this.repository = repository;
+        this.topicRepository = topicRepository;
         this.userClient = userClient;
     }
 
@@ -65,29 +69,46 @@ public class CourseService {
         repository.delete(course);
     }
 
-    private Course getCourse(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+    @Transactional
+    public void assignTopicToCourse(Long courseId, Long topicId){
+        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        repository.assignTopicToCourse(courseId, topicId);
     }
 
+    public CourseDetailedDto getAllCourseData(Long id){
+        Course course = repository.getCourseWithFullData(id);
+        if(course==null){
+            throw new NoSuchElementException("this course does not exist");
+        }
+        return CourseMapper.mapToDetailedDto(course);
+    }
 
+    // interaction consumer
     @Transactional
     public void assignTeacherToCourse(Long courseId, Long userId) {
-        // убеждаемся, что курс существует
-        repository.findById(courseId)
+        Course course = repository.findById(courseId)
                 .orElseThrow(() -> new NoSuchElementException("course not found: " + courseId));
 
         TeacherCheckResponse response = userClient.isTeacher(userId);
         if (response == null || !response.isTeacher()) {
             throw new IllegalArgumentException("this user is not a teacher");
         }
-
-        int updated = repository.addTeacherForCourse(courseId, userId);
-        if (updated == 0) {
-            throw new IllegalStateException("no rows updated; check table/column names, schema, or constraints");
-        }
+        course.setTeacherId(userId);
     }
 
+    // interaction producer
+
+    public List<CourseBaseDto> getAllForUser(Long userId){
+        List<Course> courses = repository.getAllByTeacher(userId);
+        return courses
+                .stream().map(CourseMapper::mapToBaseDto).toList();
+    }
+
+    private Course getCourse(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+    }
 
 
 }

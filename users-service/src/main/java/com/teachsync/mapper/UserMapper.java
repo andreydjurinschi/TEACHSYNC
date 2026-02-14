@@ -1,13 +1,13 @@
 package com.teachsync.mapper;
 
 import com.teachsync.domain.User;
-import com.teachsync.responses.dto.UserBaseDto;
-import com.teachsync.responses.dto.UserCreateDto;
+import com.teachsync.dto.UserBaseDto;
+import com.teachsync.dto.UserCreateDto;
 
 public class UserMapper {
     public static UserBaseDto mapToBaseDto(User user){
         return new UserBaseDto(
-                user.getName() + " " + user.getSurname(), user.getEmail(), user.getRegisteredAt(), user.getRole()
+               user.getId(), user.getName() + " " + user.getSurname(), user.getEmail(), user.getRegisteredAt(), user.getRole()
         );
     }
 

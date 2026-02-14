@@ -1,0 +1,24 @@
+<div class="p-6 max-w-4xl mx-auto">
+  <h1 class="text-3xl font-bold mb-6">Users</h1>
+  <a [routerLink]="['/users/create']">create</a>
+  <table class="min-w-full bg-white rounded-lg overflow-hidden shadow">
+    <thead class="bg-slate-900 text-white">
+      <tr>
+        <th class="px-4 py-3 text-left">ID</th>
+        <th class="px-4 py-3 text-left">Full Name</th>
+        <th class="px-4 py-3 text-left">Email</th>
+        <th class="px-4 py-3 text-left">Role</th>
+        <th class="px-4 py-3 text-left">Registered At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users()" class="hover:bg-slate-100" [routerLink]="['/users', user.id]">
+        <td class="px-4 py-3">{{ user.id }}</td>
+        <td class="px-4 py-3">{{ user.fullName }}</td>
+        <td class="px-4 py-3">{{ user.email }}</td>
+        <td class="px-4 py-3">{{ user.role }}</td>
+        <td class="px-4 py-3">{{ user.registeredAt }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

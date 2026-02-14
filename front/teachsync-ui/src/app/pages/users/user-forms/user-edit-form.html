@@ -1,0 +1,26 @@
+<div class="p-6 max-w-xl mx-auto">
+    <h2>Edit {{ user()?.fullName }}</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-4">
+            <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+            <input id="fullName" formControlName="fullName" type="text"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+        </div>
+        <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input id="email" formControlName="email" type="email"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+        </div>
+        <div class="mb-4">
+            <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+            <select id="role" formControlName="role"
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                <option value="ADMIN">Admin</option>
+                <option value="TEACHER">Teacher</option>
+                <option value="MANAGER">Manager</option>
+            </select>
+        </div>
+        <button type="submit" [disabled]="form.invalid" class="bg-blue-500 text-white px-4 py-2 rounded-md">Save
+            Changes</button>
+    </form>
+</div>
