@@ -1,6 +1,5 @@
 package com.teachsync.controller.advice;
 
-import org.springframework.boot.webmvc.error.DefaultErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,12 +12,6 @@ import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class CustomExceptionHandler {
-
-    private final DefaultErrorAttributes errorAttributes;
-
-    public CustomExceptionHandler(DefaultErrorAttributes errorAttributes) {
-        this.errorAttributes = errorAttributes;
-    }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchEntityException(NoSuchElementException e){

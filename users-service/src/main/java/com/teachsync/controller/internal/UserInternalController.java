@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/internal/teachsync/users")
+@RequestMapping("/internal/users")
 public class UserInternalController {
 
     private final UserService userService;

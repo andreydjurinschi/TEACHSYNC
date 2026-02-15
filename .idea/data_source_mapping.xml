@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/89420e43-a276-498f-bb15-d278151a5623/console.sql" value="89420e43-a276-498f-bb15-d278151a5623" />
-    <file url="file://$PROJECT_DIR$/course-service/src/main/java/com/teachsync/courseservice/repositories/CourseRepository.java" value="88383760-e774-4b9f-9290-44cacc0c30c6" />
-    <file url="file://$PROJECT_DIR$/schedule-service/src/main/java/org/cedacri/spring/scheduleservice/repositories/ClassRoomRepository.java" value="2ab45a96-f416-4986-b861-8d612efcee99" />
-    <file url="file://$PROJECT_DIR$/schedule-service/src/main/java/org/cedacri/spring/scheduleservice/repositories/ScheduleRepository.java" value="2ab45a96-f416-4986-b861-8d612efcee99" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/bf21cb1e-fa22-4b5f-b4d1-7ef4969b7c9d/console.sql" value="bf21cb1e-fa22-4b5f-b4d1-7ef4969b7c9d" />
   </component>
 </project>

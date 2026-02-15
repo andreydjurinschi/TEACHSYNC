@@ -1,5 +1,5 @@
 package com.teachsync.domain;
 
 public enum Role {
-    TEACHER, MANAGER, ADMIN
+    TEACHER, MANAGER, ADMIN, NULL
 }

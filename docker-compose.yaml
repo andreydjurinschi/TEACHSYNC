@@ -1,0 +1,110 @@
+version: "3.9"
+
+services:
+  # ================= Databases =================
+  users-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - users_data:/var/lib/postgresql/data
+
+  course-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: courses
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - course_data:/var/lib/postgresql/data
+
+  schedule-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: schedules
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - schedule_data:/var/lib/postgresql/data
+
+  # ================= Consul =================
+#  consul:
+#    image: consul:1.15.4
+#    ports:
+#      - "8500:8500"
+#      - "8600:8600/udp"
+#    command: "agent -dev -client=0.0.0.0"
+#    networks:
+#      teachsync_net:
+
+  # ================= Services =================
+#  users-service:
+#    build: ./users-service
+#    container_name: users-service
+#    depends_on:
+#      - users-db
+#      - consul
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://users-db:5432/users
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgres
+#      SPRING_CLOUD_CONSUL_HOST: consul
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      teachsync_net:
+#
+#
+#  course-service:
+#    build: ./course-service
+#    container_name: course-service
+#    depends_on:
+#      - course-db
+#      - consul
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://course-db:5432/courses
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgres
+#      SPRING_CLOUD_CONSUL_HOST: consul
+#    ports:
+#      - "8081:8081"
+#    networks:
+#      teachsync_net:
+#
+#  schedule-service:
+#    build:
+#      context: ./schedule-service
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - schedule-db
+#      - users-service
+#      - course-service
+#      - consul
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://schedule-db:5433/schedules
+#      SPRING_DATASOURCE_USERNAME: postgres
+#      SPRING_DATASOURCE_PASSWORD: postgres
+#      SPRING_CLOUD_CONSUL_HOST: consul
+#    ports:
+#      - "8082:8082"
+#    networks:
+#      teachsync_net:
+
+
+volumes:
+  users_data:
+  course_data:
+  schedule_data:
+
+networks:
+  teachsync_net:
+    driver: bridge
+

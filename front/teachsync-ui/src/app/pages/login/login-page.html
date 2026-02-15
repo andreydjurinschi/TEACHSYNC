@@ -18,41 +18,44 @@
             </button>
         </div>
 
-        <form class="w-full max-w-md text-gray-200">
-            <h2 id="loginTitle" class="text-3xl font-semibold mb-4 text-slate-700 dark:text-white">
-                Sign in
-            </h2>
+<form class="w-full max-w-md text-gray-200" (ngSubmit)="onSubmit()" [formGroup]="form">
+    <h2 id="loginTitle" class="text-3xl font-semibold mb-4 text-slate-700 dark:text-white">
+        Sign in
+    </h2>
 
-            <p id="loginDesc" class="text-sm text-slate-700 dark:text-white mb-8">
-                Welcome back! Sign in to TeachSync using your email and password
-                or request access as a new member.
-            </p>
+    <p id="loginDesc" class="text-sm text-slate-700 dark:text-white mb-8">
+        Welcome back! Sign in to TeachSync using your email and password
+        or request access as a new member.
+    </p>
 
-            <div class="flex items-center w-full border border-slate-700
-                        h-12 rounded-full pl-6 gap-2 mb-4 dark:bg-slate-800 bg-slate-50">
-                <input type="email" placeholder="Email"
-                    class="bg-transparent outline-none text-sm w-full h-full
-                           placeholder:text-gray-400 text-gray-200"
-                    required>
-            </div>
-            <div class="flex items-center w-full border border-slate-700
-                        h-12 rounded-full pl-6 gap-2 dark:bg-slate-800 bg-slate-50">
-                <input type="password" placeholder="Password"
-                    class="bg-transparent outline-none text-sm w-full h-full
-                           placeholder:text-gray-400 text-gray-200"
-                    required>
-            </div>
-            <div class="flex justify-end mt-4">
-                <a href="#" class="text-sm text-indigo-400 hover:underline">
-                    Forgot password?
-                </a>
-            </div>
-            <button type="submit"
-                class="mt-8 w-full h-11 rounded-full
-                       bg-indigo-600 hover:bg-indigo-700
-                       transition text-white font-medium">
-                Login
-            </button>
-        </form>
+    <div class="flex items-center w-full border border-slate-700
+                h-12 rounded-full pl-6 gap-2 mb-4 dark:bg-slate-800 bg-slate-50">
+        <input type="email" placeholder="Email" formControlName="email"
+            class="bg-transparent outline-none text-sm w-full h-full
+                   placeholder:text-gray-400 text-gray-200"
+            required>
+    </div>
+    <div class="flex items-center w-full border border-slate-700
+                h-12 rounded-full pl-6 gap-2 dark:bg-slate-800 bg-slate-50">
+        <input type="password" placeholder="Password" formControlName="password"
+            class="bg-transparent outline-none text-sm w-full h-full
+                   placeholder:text-gray-400 text-gray-200"
+            required>
+    </div>
+
+    <div class="flex justify-end mt-4">
+        <a href="#" class="text-sm text-indigo-400 hover:underline">
+            Forgot password?
+        </a>
+    </div>
+
+    <button type="submit"
+        class="mt-8 w-full h-11 rounded-full
+               bg-indigo-600 hover:bg-indigo-700
+               transition text-white font-medium">
+        Login
+    </button>
+</form>
+
     </div>
 </div>
