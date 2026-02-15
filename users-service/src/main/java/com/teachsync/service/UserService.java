@@ -2,7 +2,7 @@ package com.teachsync.service;
 
 import com.teachsync.domain.User;
 import com.teachsync.interaction.clients.CourseClient;
-import com.teachsync.interaction.requests.CourseBaseInfoRequest;
+import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
 import com.teachsync.mapper.UserMapper;
 import com.teachsync.repository.UserRepository;
@@ -17,7 +17,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -77,17 +76,17 @@ public class UserService {
         dto.setName(user.getName());
         dto.setSurname(user.getSurname());
         dto.setEmail(user.getEmail());
-        List<CourseBaseInfoRequest> courses;
-        try{
+        List<CourseBaseDto> courses;
+        /*try{*/
             courses = courseClient.requestForCourseInfo(userId);
             dto.setCourseNames(courses);
             dto.setAvailable(true);
             return dto;
-        }catch (Exception e){
+        /*}catch (Exception e){
             dto.setCourseNames(Collections.emptyList());
             dto.setAvailable(false);
             return dto;
-        }
+        }*/
     }
 
 }

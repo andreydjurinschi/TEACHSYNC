@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-    @RequestMapping("/teachsync/users")
+@RequestMapping("/teachsync/users")
 public class UserController {
     private final UserService service;
 
