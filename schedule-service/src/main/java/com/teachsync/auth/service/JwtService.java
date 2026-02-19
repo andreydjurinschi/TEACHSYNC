@@ -14,24 +14,24 @@ import java.util.List;
 public class JwtService {
 
     @Value("${jwt.secret}")
-    private String jwtToken;
+    private String secret;
 
-    private Key getSignKey(){
-        return Keys.hmacShaKeyFor(jwtToken.getBytes());
+    private Key getKeySign(){
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     public String extractUsername(String token){
         return extractClaimsFromToken(token).getSubject();
     }
 
-    public List<SimpleGrantedAuthority> getAuthorities(String token){
+    public List<SimpleGrantedAuthority> extractAuthorities(String token){
         String role = extractClaimsFromToken(token).get("roles").toString();
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     private Claims extractClaimsFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSignKey())
+                .setSigningKey(getKeySign())
                 .build()
                 .parseClaimsJws(token).getBody();
     }
