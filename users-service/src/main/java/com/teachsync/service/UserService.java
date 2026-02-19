@@ -4,6 +4,7 @@ import com.teachsync.domain.User;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.mapper.UserMapper;
 import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
@@ -37,6 +38,16 @@ public class UserService {
         return dtos;
     }
 
+    public UserResponse getByUserEmail(String email){
+        User user = repository.findUserByEmail(email);
+        if(user == null){
+            return null;
+        }
+        return new UserResponse(
+          user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getPassword(), user.getRegisteredAt(), user.getRole()
+        );
+    }
+
     public UserBaseDto findById(Long id){
         User user = getUser(id);
         return UserMapper.mapToBaseDto(user);
@@ -58,10 +69,6 @@ public class UserService {
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
     }
 
-    private User getUser(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-    }
 
     @Transactional
     public void deleteUser(Long id){
@@ -87,6 +94,11 @@ public class UserService {
             dto.setAvailable(false);
             return dto;
         }*/
+    }
+
+    private User getUser(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
 }

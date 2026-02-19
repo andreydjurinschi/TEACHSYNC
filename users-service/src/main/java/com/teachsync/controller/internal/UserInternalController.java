@@ -4,10 +4,12 @@ import com.teachsync.domain.Role;
 import com.teachsync.interaction.responses.feign.TeacherBaseInfoForScheduleServiceResponse;
 import com.teachsync.interaction.responses.feign.TeacherCheckResponse;
 import com.teachsync.dto.UserBaseDto;
+import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,5 +36,10 @@ public class UserInternalController {
         return new TeacherBaseInfoForScheduleServiceResponse(
                 user.getId(), user.getFullName(), user.getEmail()
         );
+    }
+
+    @GetMapping("/by-email/{email}")
+    public UserResponse getByUserEmail(@PathVariable String email){
+        return userService.getByUserEmail(email);
     }
 }
