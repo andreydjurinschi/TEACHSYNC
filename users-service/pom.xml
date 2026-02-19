@@ -112,6 +112,11 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- fallbacks -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+        </dependency>
         <!-- Consul -->
 <!--
         <dependency>

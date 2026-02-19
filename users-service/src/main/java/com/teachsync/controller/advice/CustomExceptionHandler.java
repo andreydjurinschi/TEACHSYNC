@@ -1,5 +1,7 @@
 package com.teachsync.controller.advice;
 
+import com.teachsync.exceptions.ServiceUnavailableException;
+import com.teachsync.interaction.fallbacks.FallbackMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,5 +27,17 @@ public class CustomExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<FallbackMessage> handleCourseServiceUnavailableException(ServiceUnavailableException ex){
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new FallbackMessage(
+                        HttpStatus.SERVICE_UNAVAILABLE,
+                        ex.getMessage(),
+                        "circuit-breaker-open",
+                        "interaction-service",
+                        "course-service"
+                ));
     }
 }

@@ -4,6 +4,7 @@ import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
+import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.services.domain.CourseService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,11 @@ public class CourseController {
     public ResponseEntity<Void> isTeacher(@PathVariable("courseId") Long courseId, @PathVariable("teacherId") Long teacherId){
         courseService.assignTeacherToCourse(courseId, teacherId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/with-teacher/{id}")
+    public ResponseEntity<CourseWithTeacherRequest> getCourseWithTeacher(@PathVariable Long id){
+        return  ResponseEntity.ok(courseService.getCourseWithTeacher(id));
     }
     // kafka requests
 }

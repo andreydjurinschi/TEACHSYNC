@@ -4,6 +4,7 @@ import com.teachsync.domain.Role;
 import com.teachsync.interaction.responses.feign.TeacherBaseInfoForScheduleServiceResponse;
 import com.teachsync.interaction.responses.feign.TeacherCheckResponse;
 import com.teachsync.dto.UserBaseDto;
+import com.teachsync.interaction.responses.feign.TeacherResponseForCourseService;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,5 +42,10 @@ public class UserInternalController {
     @GetMapping("/by-email/{email}")
     public UserResponse getByUserEmail(@PathVariable String email){
         return userService.getByUserEmail(email);
+    }
+
+    @GetMapping("/course_service/{id}")
+    public TeacherResponseForCourseService teacherResponseForCourseService(@PathVariable Long id){
+        return userService.getTeacherForCourseService(id);
     }
 }
