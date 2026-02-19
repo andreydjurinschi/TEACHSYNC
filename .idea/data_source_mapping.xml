@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/bf21cb1e-fa22-4b5f-b4d1-7ef4969b7c9d/console.sql" value="bf21cb1e-fa22-4b5f-b4d1-7ef4969b7c9d" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ff3956fd-0538-4b0a-95fe-671a37646126/console.sql" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/ff3956fd-0538-4b0a-95fe-671a37646126/users-console.sql" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
+    <file url="file://$PROJECT_DIR$/users-service/src/main/java/com/teachsync/repository/UserRepository.java" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
+    <file url="file://$PROJECT_DIR$/users-service/src/main/resources/changelog/changeset/001-insert-10-users.sql" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
   </component>
 </project>
