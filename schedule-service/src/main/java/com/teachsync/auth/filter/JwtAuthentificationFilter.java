@@ -22,6 +22,7 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -42,7 +43,7 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     email,
                     "",
-                    jwtService.getAuthorities(token)
+                    jwtService.extractAuthorities(token)
             );
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
