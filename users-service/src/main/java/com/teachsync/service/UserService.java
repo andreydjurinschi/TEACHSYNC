@@ -4,6 +4,7 @@ import com.teachsync.domain.User;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.interaction.responses.feign.TeacherResponseForCourseService;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.mapper.UserMapper;
 import com.teachsync.repository.UserRepository;
@@ -77,6 +78,7 @@ public class UserService {
     }
 
     // feign
+
     public UserWithCoursesDto getUserWithCourses(Long userId) {
         User user = getUser(userId);
         UserWithCoursesDto dto = new UserWithCoursesDto();
@@ -94,6 +96,13 @@ public class UserService {
             dto.setAvailable(false);
             return dto;
         }*/
+    }
+
+    public TeacherResponseForCourseService getTeacherForCourseService(Long id){
+        User user = getUser(id);
+        return new TeacherResponseForCourseService(
+                user.getId(), user.getName(), user.getSurname(), user.getEmail()
+        );
     }
 
     private User getUser(Long id) {

@@ -98,8 +98,16 @@ services:
 #    networks:
 #      teachsync_net:
 
-
+  # ================= Redis Caching =================
+#  redis:
+#    image: redis:7.4-alpine
+#    restart: always
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - cache:/data
 volumes:
+  cache:
   users_data:
   course_data:
   schedule_data:

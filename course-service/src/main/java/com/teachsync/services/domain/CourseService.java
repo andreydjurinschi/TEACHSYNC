@@ -2,10 +2,12 @@ package com.teachsync.services.domain;
 
 import com.teachsync.domain.Course;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
+import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.interaction.feign.clients.UserClient;
+import com.teachsync.interaction.feign.requests.TeacherRequest;
 import com.teachsync.mappers.CourseMapper;
 import com.teachsync.repositories.CourseRepository;
-import com.teachsync.interaction.feign.requests.TeacherCheckResponse;
+import com.teachsync.interaction.feign.requests.TeacherCheckRequest;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
@@ -90,11 +92,25 @@ public class CourseService {
         Course course = repository.findById(courseId)
                 .orElseThrow(() -> new NoSuchElementException("course not found: " + courseId));
 
-        TeacherCheckResponse response = userClient.isTeacher(userId);
+        TeacherCheckRequest response = userClient.isTeacher(userId);
         if (response == null || !response.isTeacher()) {
             throw new IllegalArgumentException("this user is not a teacher");
         }
         course.setTeacherId(userId);
+    }
+
+    public CourseWithTeacherRequest getCourseWithTeacher(Long id){
+        Course course = getCourse(id);
+        Long teacherId = course.getTeacherId();
+        TeacherCheckRequest response = userClient.isTeacher(teacherId);
+        if (response == null || !response.isTeacher()) {
+            throw new IllegalArgumentException("this user is not a teacher");
+        }
+        TeacherRequest teacherRequest = userClient.getTeacher(teacherId);
+
+        return new CourseWithTeacherRequest(
+                course.getName(), course.getDescription(), teacherRequest
+        );
     }
 
     // interaction producer

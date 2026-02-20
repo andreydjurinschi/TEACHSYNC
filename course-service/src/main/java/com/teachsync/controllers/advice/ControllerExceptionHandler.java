@@ -1,6 +1,9 @@
 package com.teachsync.controllers.advice;
 
+import com.teachsync.exceptions.ServiceUnavailableException;
+import com.teachsync.interaction.feign.fallbacks.FallbackMessage;
 import feign.FeignException;
+import jakarta.persistence.ElementCollection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -39,6 +42,14 @@ public class ControllerExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(e.getLocalizedMessage());
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<FallbackMessage> handleServiceUnavailableException(ServiceUnavailableException e){
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new FallbackMessage(
+                        HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(), "circuit breaker fall case", "course-service", "user-service"
+                ));
     }
 
 }
