@@ -4,7 +4,9 @@ import com.teachsync.exceptions.ServiceUnavailableException;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherCheckRequest;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserClientFallback implements UserClient {
 
     @Override
