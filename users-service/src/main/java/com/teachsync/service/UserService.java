@@ -50,6 +50,9 @@ public class UserService {
     }
 
     public UserBaseDto findById(Long id){
+        if(id == null){
+            return null;
+        }
         User user = getUser(id);
         return UserMapper.mapToBaseDto(user);
     }

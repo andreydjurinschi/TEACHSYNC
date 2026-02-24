@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ================= Databases =================
   users-db:
@@ -17,10 +15,10 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: courses
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
     ports:
-      - "5433:5432"
+      - "5437:5432"
     volumes:
       - course_data:/var/lib/postgresql/data
 
@@ -34,6 +32,17 @@ services:
       - "5434:5432"
     volumes:
       - schedule_data:/var/lib/postgresql/data
+
+  replacement-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: replacements
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - replacement_data:/var/lib/postgresql/data
 
   # ================= Consul =================
 #  consul:
@@ -111,6 +120,7 @@ volumes:
   users_data:
   course_data:
   schedule_data:
+  replacement_data:
 
 networks:
   teachsync_net:

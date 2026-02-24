@@ -1,0 +1,84 @@
+package com.teachsync.interaction.requests;
+
+import com.teachsync.interaction.requests.nested.ClassRoomBaseDto;
+import com.teachsync.interaction.requests.nested.GroupCourseBaseInfoRequest;
+import com.teachsync.interaction.requests.nested.TeacherBaseInfoRequest;
+
+import java.time.LocalTime;
+import java.util.Set;
+
+public class ScheduleBaseDtoRequest {
+    private Long id;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Set<WeekDays> weekDays;
+    private GroupCourseBaseInfoRequest groupCourseDto;
+    private TeacherBaseInfoRequest teacherDto;
+    private ClassRoomBaseDto classRoomBaseDto;
+
+    public ScheduleBaseDtoRequest(Long id, LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, GroupCourseBaseInfoRequest groupCourseDto, TeacherBaseInfoRequest teacherDto, ClassRoomBaseDto classRoomBaseDto) {
+        this.id = id;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.weekDays = weekDays;
+        this.groupCourseDto = groupCourseDto;
+        this.teacherDto = teacherDto;
+        this.classRoomBaseDto = classRoomBaseDto;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Set<WeekDays> getWeekDays() {
+        return weekDays;
+    }
+
+    public void setWeekDays(Set<WeekDays> weekDays) {
+        this.weekDays = weekDays;
+    }
+
+    public GroupCourseBaseInfoRequest getGroupCourseDto() {
+        return groupCourseDto;
+    }
+
+    public void setGroupCourseDto(GroupCourseBaseInfoRequest groupCourseDto) {
+        this.groupCourseDto = groupCourseDto;
+    }
+
+    public TeacherBaseInfoRequest getTeacherDto() {
+        return teacherDto;
+    }
+
+    public void setTeacherDto(TeacherBaseInfoRequest teacherDto) {
+        this.teacherDto = teacherDto;
+    }
+
+    public ClassRoomBaseDto getClassRoomBaseDto() {
+        return classRoomBaseDto;
+    }
+
+    public void setClassRoomBaseDto(ClassRoomBaseDto classRoomBaseDto) {
+        this.classRoomBaseDto = classRoomBaseDto;
+    }
+}

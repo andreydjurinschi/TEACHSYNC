@@ -34,6 +34,7 @@ public class UserInternalController {
     @GetMapping("/{id}")
     public TeacherBaseInfoForScheduleServiceResponse baseInfoForScheduleServiceResponse(@PathVariable Long id){
         UserBaseDto user = userService.findById(id);
+
         return new TeacherBaseInfoForScheduleServiceResponse(
                 user.getId(), user.getFullName(), user.getEmail()
         );
