@@ -4,7 +4,7 @@ import com.teachsync.domain.User;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
-import com.teachsync.interaction.responses.feign.TeacherResponseForCourseService;
+import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.mapper.UserMapper;
 import com.teachsync.repository.UserRepository;
@@ -25,7 +25,6 @@ public class UserService {
     private final UserRepository repository;
     private final CourseClient courseClient;
 
-    @Autowired
     public UserService(UserRepository repository, CourseClient courseClient) {
         this.repository = repository;
         this.courseClient = courseClient;
@@ -101,9 +100,9 @@ public class UserService {
         }*/
     }
 
-    public TeacherResponseForCourseService getTeacherForCourseService(Long id){
+    public TeacherResponse getTeacherForCourseService(Long id){
         User user = getUser(id);
-        return new TeacherResponseForCourseService(
+        return new TeacherResponse(
                 user.getId(), user.getName(), user.getSurname(), user.getEmail()
         );
     }

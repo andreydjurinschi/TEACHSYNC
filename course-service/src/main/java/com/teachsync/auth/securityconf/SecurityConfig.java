@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/internal/**").permitAll()
+                                .requestMatchers("/internal/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                                 .requestMatchers("/teachsync/courses/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
                                 .requestMatchers("/teachsync/groups/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER")
                                 .anyRequest().authenticated()

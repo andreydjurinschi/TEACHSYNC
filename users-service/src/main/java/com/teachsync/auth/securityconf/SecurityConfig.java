@@ -29,6 +29,8 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(authorizeRequests -> {
                     authorizeRequests.requestMatchers("/internal/**").permitAll();
+                    authorizeRequests.requestMatchers("/swagger-ui/**").permitAll();
+                    authorizeRequests.requestMatchers("/v3/api-docs/**").permitAll();
                     authorizeRequests.requestMatchers("/teachsync/users/**").hasRole("ADMIN");
                     authorizeRequests.anyRequest().authenticated();
 

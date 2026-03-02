@@ -4,15 +4,17 @@ import com.teachsync.domain.Role;
 import com.teachsync.interaction.responses.feign.TeacherBaseInfoForScheduleServiceResponse;
 import com.teachsync.interaction.responses.feign.TeacherCheckResponse;
 import com.teachsync.dto.UserBaseDto;
-import com.teachsync.interaction.responses.feign.TeacherResponseForCourseService;
+import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * контроллер, отправляющий ответ другому сервису
+ */
 @RestController
 @RequestMapping("/internal/users")
 public class UserInternalController {
@@ -23,12 +25,18 @@ public class UserInternalController {
         this.userService = userService;
     }
 
+    // проверка если пользователь - учитель
     @GetMapping("/{id}/teacher")
     public TeacherCheckResponse isTeacher(@PathVariable Long id){
         UserBaseDto user = userService.findById(id);
         return new TeacherCheckResponse(
                 user.getRole() == Role.TEACHER
         );
+    }
+    // получение учителя
+    @GetMapping("/course_service/{id}")
+    public TeacherResponse teacherResponseForCourseService(@PathVariable Long id){
+        return userService.getTeacherForCourseService(id);
     }
 
     @GetMapping("/{id}")
@@ -45,8 +53,4 @@ public class UserInternalController {
         return userService.getByUserEmail(email);
     }
 
-    @GetMapping("/course_service/{id}")
-    public TeacherResponseForCourseService teacherResponseForCourseService(@PathVariable Long id){
-        return userService.getTeacherForCourseService(id);
-    }
 }
