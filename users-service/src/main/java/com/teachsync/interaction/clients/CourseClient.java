@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+
 // todo consul discovery
-@FeignClient(name = "course-service", /*path = "/internal/courses"*/ url = "http://localhost:8081/internal/courses",  fallback = CourseClientFallback.class)
+@FeignClient(name = "course-service",
+        url = "http://localhost:8081/internal/courses",
+        fallback = CourseClientFallback.class)
 public interface CourseClient {
 
     @GetMapping("/{id}")

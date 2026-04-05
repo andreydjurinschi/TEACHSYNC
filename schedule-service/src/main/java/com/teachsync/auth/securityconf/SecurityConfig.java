@@ -32,7 +32,7 @@ public class SecurityConfig {
                     authorizeRequests.requestMatchers("/internal/**").permitAll();
                     authorizeRequests.requestMatchers("/swagger-ui/**").permitAll();
                     authorizeRequests.requestMatchers("/v3/api-docs/**").permitAll();
-                    authorizeRequests.requestMatchers("/teachsync/schedules/**").hasAnyRole("ADMIN", "TEACHER", "MANAGER");
+                    authorizeRequests.requestMatchers("/teachsync/schedules/**").authenticated();
                     authorizeRequests.anyRequest().authenticated();
 
                 })

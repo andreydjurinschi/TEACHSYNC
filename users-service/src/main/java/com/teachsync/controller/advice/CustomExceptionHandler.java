@@ -35,8 +35,8 @@ public class CustomExceptionHandler {
                 .body(new FallbackMessage(
                         HttpStatus.SERVICE_UNAVAILABLE,
                         ex.getMessage(),
-                        "circuit-breaker-open",
-                        "interaction-service",
+                        "",
+                        "user-service",
                         "course-service"
                 ));
     }

@@ -7,10 +7,9 @@ import com.teachsync.dto.UserBaseDto;
 import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.service.UserService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * контроллер, отправляющий ответ другому сервису
@@ -46,6 +45,11 @@ public class UserInternalController {
         return new TeacherBaseInfoForScheduleServiceResponse(
                 user.getId(), user.getFullName(), user.getEmail()
         );
+    }
+
+    @GetMapping("/all/by-role")
+    public List<UserBaseDto> allUsers(@RequestParam Role role){
+        return userService.findAllByRole(role);
     }
 
     @GetMapping("/by-email/{email}")
