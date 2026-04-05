@@ -11,7 +11,7 @@ import { tap } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/teachsync/auth';
+  private apiUrl = 'http://localhost:8090/teachsync/auth';
   private tokenKey = 'jwt_token';
 
   private userRoleSubject = new BehaviorSubject<string | null>(null);

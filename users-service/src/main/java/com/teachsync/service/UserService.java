@@ -71,6 +71,7 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
+        if (dto.getRole() != null) user.setRole(dto.getRole());
     }
 
     public List<UserBaseDto> findAllByRole(Role role) {
@@ -96,6 +97,7 @@ public class UserService {
     public UserWithCoursesDto getUserWithCourses(Long userId) {
         User user = getUser(userId);
         UserWithCoursesDto dto = new UserWithCoursesDto();
+        dto.setId(user.getId());
         dto.setName(user.getName());
         dto.setSurname(user.getSurname());
         dto.setEmail(user.getEmail());

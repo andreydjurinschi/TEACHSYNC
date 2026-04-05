@@ -1,43 +1,27 @@
+import { isPlatformBrowser } from '@angular/common';
+import { HttpInterceptorFn } from '@angular/common/http';
 import {
-  HttpErrorResponse,
-  HttpEvent,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest,
-} from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-
-import {
-  Observable,
-  throwError,
-} from 'rxjs';
-import { catchError } from 'rxjs/operators';
+  inject,
+  PLATFORM_ID,
+} from '@angular/core';
 
 import { AuthService } from '../services/auth.service';
 
-@Injectable()
-export class JwtInterceptor implements HttpInterceptor {
-
-  constructor(private auth: AuthService, private router: Router) {}
-
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken();
-
-    if (token) {
-      req = req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
-      });
-    }
-
-    return next.handle(req).pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err.status === 401) {
-          this.auth.logout();
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => err);
-      })
-    );
+export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
+  const platformId = inject(PLATFORM_ID);
+  
+  if (!isPlatformBrowser(platformId)) {
+    return next(req); // на сервере — пропускаем без токена
   }
-}
+
+  const auth = inject(AuthService);
+  const token = auth.getToken();
+
+  if (token) {
+    req = req.clone({
+      setHeaders: { Authorization: `Bearer ${token}` }
+    });
+  }
+
+  return next(req);
+};

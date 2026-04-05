@@ -43,7 +43,7 @@ public class UserInternalController {
         UserBaseDto user = userService.findById(id);
 
         return new TeacherBaseInfoForScheduleServiceResponse(
-                user.getId(), user.getFullName(), user.getEmail()
+                user.getId(), user.getName() + " " + user.getSurname(), user.getEmail()
         );
     }
 

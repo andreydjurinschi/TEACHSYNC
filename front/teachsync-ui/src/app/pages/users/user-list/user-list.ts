@@ -1,8 +1,18 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  CommonModule,
+  isPlatformBrowser,
+} from '@angular/common';
+import {
+  Component,
+  inject,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
+
 import { User } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/user.service';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-user-list',
@@ -13,18 +23,22 @@ import { RouterLink } from '@angular/router';
 })
 export class UserList implements OnInit {
 
-  users = signal<User[]>([]);  
+  users = signal<User[]>([]);
+  private platformId = inject(PLATFORM_ID); // ← добавить
 
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
-    this.loadUsers();
+    if (isPlatformBrowser(this.platformId)) { // ← добавить проверку
+      this.loadUsers();
+    }
   }
 
   loadUsers(): void {
+      console.log('токен из localStorage:', localStorage.getItem('jwt_token')); // ← добавить
     this.userService.getAll().subscribe({
       next: data => {
-        this.users.set(data);   
+        this.users.set(data);
         console.log("users after set:", this.users().length);
       },
       error: err => console.error(err)

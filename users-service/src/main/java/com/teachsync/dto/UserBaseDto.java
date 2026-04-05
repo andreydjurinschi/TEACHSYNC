@@ -7,14 +7,16 @@ import java.time.LocalDate;
 public class UserBaseDto {
 
     private Long id;
-    private String fullName;
+    private String name;
+    private String surname;
     private String email;
     private LocalDate registeredAt;
     private Role role;
 
-    public UserBaseDto(Long id, String fullName, String email, LocalDate registeredAt, Role role) {
+    public UserBaseDto(Long id, String name, String surname, String email, LocalDate registeredAt, Role role) {
         this.id = id;
-        this.fullName = fullName;
+        this.name = name;
+        this.surname = surname;
         this.email = email;
         this.registeredAt = registeredAt;
         this.role = role;
@@ -23,12 +25,20 @@ public class UserBaseDto {
     public UserBaseDto() {
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getEmail() {

@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   FormBuilder,
@@ -13,27 +14,55 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-login',
   templateUrl: './login-page.html',
   standalone: true,
-  imports: [ReactiveFormsModule],  // <- сюда добавляем
+  imports: [CommonModule, ReactiveFormsModule],
 })
 export class LoginComponent {
   form: FormGroup;
-  error = '';
+  serverError = '';
+  loading = false;
+  showPassword = false;
+  theme: 'dark' | 'light' = 'dark';
 
-  constructor(private auth: AuthService, private router: Router, private fb: FormBuilder) {
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private fb: FormBuilder
+  ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  onSubmit() {
-    if (this.form.invalid) return;
+get emailInvalid() {
+  return this.form.controls['email'].invalid && this.form.controls['email'].touched;
+}
 
+get passwordInvalid() {
+  return this.form.controls['password'].invalid && this.form.controls['password'].touched;
+}
+
+  toggleTheme() {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+  }
+
+  onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    this.serverError = '';
     const { email, password } = this.form.value;
 
     this.auth.login(email, password).subscribe({
       next: () => this.router.navigate(['/users']),
-      error: () => this.error = 'Invalid email or password'
+      error: () => {
+        this.loading = false;
+        this.serverError = 'Неверный email или пароль. Попробуйте снова.';
+      },
+      complete: () => { this.loading = false; }
     });
   }
 }

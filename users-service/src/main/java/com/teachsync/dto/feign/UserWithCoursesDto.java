@@ -5,13 +5,15 @@ import com.teachsync.interaction.requests.CourseBaseDto;
 import java.util.List;
 
 public class UserWithCoursesDto {
+    private Long id;
     private String name;
     private String surname;
     private String email;
     private List<CourseBaseDto> courseNames;
     private boolean available;
 
-    public UserWithCoursesDto(String name, String surname, String email, List<CourseBaseDto> courseNames, boolean available) {
+    public UserWithCoursesDto(Long id, String name, String surname, String email, List<CourseBaseDto> courseNames, boolean available) {
+        this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -60,5 +62,13 @@ public class UserWithCoursesDto {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

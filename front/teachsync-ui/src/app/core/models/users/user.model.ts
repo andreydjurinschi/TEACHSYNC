@@ -2,7 +2,8 @@
 /* user model dto example for users list*/ 
 export interface User {
     id: number;
-    fullName: string;
+    name: string;
+    surname: string;
     email: string;
     registeredAt: string;
     role: 'ADMIN' | 'MANAGER' | 'TEACHER';

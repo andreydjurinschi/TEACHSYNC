@@ -1,34 +1,48 @@
-
+import {
+  HttpClient,
+  HttpHeaders,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+
 import { Observable } from 'rxjs/internal/Observable';
-import { User } from '../models/users/user.model';
+
 import { UserWithCourses } from '../models/users/user.detailed.model';
+import { User } from '../models/users/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class UserService{
-    private apiUrl = 'http://localhost:8080/teachsync/users';
+export class UserService {
+  private apiUrl = 'http://localhost:8080/teachsync/users';
 
-    constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {}
 
-    getAll(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/all`);
-    }
-    getById(id: number): Observable<User> {
-      return this.http.get<User>(`${this.apiUrl}/${id}`);
-    }
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt_token');
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
 
-    update(id: number, user: Partial<User>): Observable<User> {
-      return this.http.put<User>(`${this.apiUrl}/edit/${id}`, user);
-    }
-    create(user: Partial<User>){
-      return this.http.post<User>(`${this.apiUrl}/create`, user);
-    }
+  getAll(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/all`, { headers: this.getHeaders() });
+  }
 
-    getWithCourses(id:  number)  : Observable<UserWithCourses>{
-        return this.http.get<UserWithCourses>(`${this.apiUrl}/teacher/${id}/courses`);
-    }
-      
+  getById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  }
+
+  update(id: number, user: Partial<User>): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/edit/${id}`, user, { headers: this.getHeaders() });
+  }
+  
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`, { headers: this.getHeaders() });
+  }
+
+  create(user: Partial<User>): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/create`, user, { headers: this.getHeaders() });
+  }
+
+  getWithCourses(id: number): Observable<UserWithCourses> {
+    return this.http.get<UserWithCourses>(`${this.apiUrl}/teacher/${id}/courses`, { headers: this.getHeaders() });
+  }
 }
