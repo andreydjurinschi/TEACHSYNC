@@ -10,6 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { ThemeService } from '../../core/services/theme.service';
+
 import {
   Router,
   RouterLink,
@@ -31,6 +33,14 @@ import { AuthService } from '../../core/services/auth.service';
 export class LayoutComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   role: string | null = null;
+  private themeService = inject(ThemeService);
+
+
+  theme = this.themeService.theme;
+
+  toggleTheme() {
+    this.themeService.toggle();
+  }
 
   constructor(private auth: AuthService, private router: Router) {}
 
