@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/users-service/src/main/java/com/teachsync/repository/UserRepository.java" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
+    <file url="file://$PROJECT_DIR$/users-service/src/main/resources/changelog/changeset/001-insert-10-users.sql" value="ff3956fd-0538-4b0a-95fe-671a37646126" />
+  </component>
+</project>

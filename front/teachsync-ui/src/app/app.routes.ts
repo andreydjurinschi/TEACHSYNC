@@ -7,8 +7,6 @@ import { UserDetailed } from './pages/users/user-detailed/user-detailed';
 import { UserCreate } from './pages/users/user-forms/user-create.component';
 import { UserEdit } from './pages/users/user-forms/user-edit.component';
 import { UserList } from './pages/users/user-list/user-list';
-import { CourseList } from './pages/courses/course-list/course-list.component';
-
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,7 +19,6 @@ export const routes: Routes = [
       { path: 'users/create', component: UserCreate },
       { path: 'users/edit/:id', component: UserEdit },
       { path: 'users/:id', component: UserDetailed },
-      { path: 'courses', component: CourseList },
     ]
   },
   { path: '**', redirectTo: '/login' }
