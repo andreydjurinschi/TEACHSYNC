@@ -11,7 +11,8 @@ import { CourseList } from './pages/courses/course-list/course-list.component';
 import { CourseDetailed } from './pages/courses/course-detailed/course-detailed.component';
 import { CourseEdit } from './pages/courses/course-edit/course-edit.component';
 import { CourseTopics } from './pages/courses/course-topics/course-topics.component';
-
+import { GroupList } from './pages/groups/group-list/group-list.component';
+import { GroupDetailed } from './pages/groups/group-detailed/group-detailed.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -28,6 +29,10 @@ export const routes: Routes = [
       { path: 'courses/:id', component: CourseDetailed },
       { path: 'courses/edit/:id', component: CourseEdit },
       { path: 'courses/:id/topics', component: CourseTopics },
+      { path: 'groups', component: GroupList },
+      //{ path: 'groups/create', component: GroupCreate },
+      //{ path: 'groups/edit/:id', component: GroupEdit },
+      { path: 'groups/:id', component: GroupDetailed },
     ]
   },
   { path: '**', redirectTo: '/login' }

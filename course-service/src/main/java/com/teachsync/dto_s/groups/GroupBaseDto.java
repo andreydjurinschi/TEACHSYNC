@@ -3,11 +3,13 @@ package com.teachsync.dto_s.groups;
 import java.time.LocalDate;
 
 public class GroupBaseDto {
+    private Long id;
     private String name;
     private LocalDate date;
     private int capacity;
 
-    public GroupBaseDto(String name, LocalDate date, int capacity) {
+    public GroupBaseDto(Long id, String name, LocalDate date, int capacity) {
+        this.id = id;
         this.name = name;
         this.date = date;
         this.capacity = capacity;
@@ -38,5 +40,13 @@ public class GroupBaseDto {
 
     public void setCapacity(int capacity) {
         this.capacity = capacity;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

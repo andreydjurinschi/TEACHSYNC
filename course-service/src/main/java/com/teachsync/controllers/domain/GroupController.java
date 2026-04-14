@@ -57,4 +57,15 @@ public class GroupController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<GroupBaseDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(groupService.getById(id));
+    }
+
+    @DeleteMapping("/unassign-from-course/{groupId}/{courseId}")
+    public ResponseEntity<Void> unassignFromCourse(@PathVariable Long groupId, @PathVariable Long courseId) {
+        groupService.unassignGroupFromCourse(groupId, courseId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

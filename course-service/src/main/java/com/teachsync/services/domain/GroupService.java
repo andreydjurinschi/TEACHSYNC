@@ -69,19 +69,6 @@ public class GroupService {
         repository.delete(group);
     }
 
-    // relations
-/*    public GroupWithCoursesDto getDetailedDto(Long id){
-        Group group = getGroup(id);
-        Set<Course> groupCourses = group.getCourses();
-        Set<CourseShortDto> shortDtosSet = new HashSet<>();
-        if(!groupCourses.isEmpty()){
-            shortDtosSet = groupCourses.stream().map(CourseMapper::mapToShortDto).collect(Collectors.toSet());
-        }
-        GroupWithCoursesDto groupWithCoursesDto = GroupMapper.mapToDetailedDto(group);
-        groupWithCoursesDto.setCourses(shortDtosSet);
-        return groupWithCoursesDto;
-    }*/
-
     public GroupWithCoursesDto getDetailedDto(Long id){
         Group group = repository.findWithCourses(id);
         if(group == null){
@@ -96,6 +83,19 @@ public class GroupService {
         GroupWithCoursesDto dto = GroupMapper.mapToDetailedDto(group);
         dto.setCourses(shortDtosSet);
         return dto;
+    }
+
+    public GroupBaseDto getGroupById(Long id){
+        Group group = getGroup(id);
+        return GroupMapper.mapToBaseDto(group);
+    }
+
+    @Transactional
+    public void unassignGroupFromCourse(Long groupId, Long courseId) {
+        Group group = getGroup(groupId);
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+
+        repository.unassignGroupToCourse(groupId, courseId);
     }
 
 
