@@ -26,4 +26,8 @@ public class TopicService {
         return TopicMapper.mapToDto(topic);
     }
 
+    public void assignTopicToCourse(Long courseId, Long topicId){{
+
+    }}
+
 }

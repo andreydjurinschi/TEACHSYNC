@@ -6,6 +6,6 @@ import com.teachsync.dto_s.topics.TopicBaseDto;
 public class TopicMapper {
 
     public static TopicBaseDto mapToDto(Topic topic){
-        return new TopicBaseDto(topic.getName());
+        return new TopicBaseDto(topic.getId(), topic.getName());
     }
 }

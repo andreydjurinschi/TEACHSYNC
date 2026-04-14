@@ -27,7 +27,7 @@ public class CourseMapper {
     }
 
     public static CourseDetailedDto mapToDetailedDto(Course course){
-        Set<TopicBaseDto> topicBaseDtoSet = course.getTopics().stream().map(topic -> new TopicBaseDto(topic.getName())).collect(Collectors.toSet());
+        Set<TopicBaseDto> topicBaseDtoSet = course.getTopics().stream().map(topic -> new TopicBaseDto(topic.getId(),topic.getName())).collect(Collectors.toSet());
         Set<GroupShortDto> groupShortDtoSet = course.getGroups().stream().map(group -> new GroupShortDto(group.getName())).collect(Collectors.toSet());
         return new CourseDetailedDto(
                 course.getName(), course.getDescription(), topicBaseDtoSet, groupShortDtoSet

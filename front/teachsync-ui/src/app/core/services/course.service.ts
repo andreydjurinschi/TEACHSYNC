@@ -43,4 +43,19 @@ export class CourseService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/delete/${id}`, { headers: this.getHeaders() });
   }
+
+    assignTopic(courseId: number, topicId: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/assign-topic/${courseId}/${topicId}`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  unassignTopic(courseId: number, topicId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/unassign-topic/${courseId}/${topicId}`,
+      { headers: this.getHeaders() }
+    );
+  }
 }

@@ -9,6 +9,8 @@ import { UserEdit } from './pages/users/user-forms/user-edit.component';
 import { UserList } from './pages/users/user-list/user-list';
 import { CourseList } from './pages/courses/course-list/course-list.component';
 import { CourseDetailed } from './pages/courses/course-detailed/course-detailed.component';
+import { CourseEdit } from './pages/courses/course-edit/course-edit.component';
+import { CourseTopics } from './pages/courses/course-topics/course-topics.component';
 
 
 export const routes: Routes = [
@@ -24,6 +26,8 @@ export const routes: Routes = [
       { path: 'users/:id', component: UserDetailed },
       { path: 'courses', component: CourseList },
       { path: 'courses/:id', component: CourseDetailed },
+      { path: 'courses/edit/:id', component: CourseEdit },
+      { path: 'courses/:id/topics', component: CourseTopics },
     ]
   },
   { path: '**', redirectTo: '/login' }

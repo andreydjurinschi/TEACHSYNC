@@ -6,6 +6,7 @@ import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.services.domain.CourseService;
+import feign.Response;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -73,6 +74,12 @@ public class CourseController {
                 .status(HttpStatus.CREATED).body(null);
     }
 
+    @DeleteMapping("/unassign-topic/{courseId}/{topicId}")
+    public ResponseEntity<Void> unassignTopicFromCourse(@PathVariable("courseId") Long courseId, @PathVariable("topicId") Long topicId){
+        courseService.unassignTopicToCourse(courseId, topicId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT).body(null);
+    }
     // feign
     @PutMapping("/assign/{courseId}/{teacherId}")
     public ResponseEntity<Void> isTeacher(@PathVariable("courseId") Long courseId, @PathVariable("teacherId") Long teacherId) {

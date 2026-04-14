@@ -12,9 +12,9 @@ import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.repositories.TopicRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -76,6 +76,13 @@ public class CourseService {
         repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
         topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
         repository.assignTopicToCourse(courseId, topicId);
+    }
+
+    @Transactional
+    public void unassignTopicToCourse(Long courseId, Long topicId){
+        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        repository.unassignTopicToCourse(courseId, topicId);
     }
 
     public CourseDetailedDto getAllCourseData(Long id){
