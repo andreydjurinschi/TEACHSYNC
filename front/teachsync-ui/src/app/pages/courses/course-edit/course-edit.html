@@ -1,0 +1,87 @@
+<div class="relative min-h-screen flex items-center justify-center p-8 bg-slate-100 dark:bg-slate-900">
+
+  <div class="absolute top-8 left-8 flex items-center gap-3">
+    <a [routerLink]="['/courses', course()?.id]" class="text-slate-400 hover:text-white transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      Редактировать — {{ course()?.name }}
+    </h2>
+  </div>
+
+  <div class="w-full max-w-4xl">
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Название</label>
+            <input type="text" formControlName="name"
+                   class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
+                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
+                          dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"/>
+            @if (form.controls['name'].touched && form.controls['name'].errors) {
+              <p class="text-red-400 text-xs mt-1">
+                {{ form.controls['name'].errors['required'] && 'Обязательное поле'
+                  || form.controls['name'].errors['minlength'] && 'Минимум 5 символов'
+                  || form.controls['name'].errors['maxlength'] && 'Максимум 50 символов' }}
+              </p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Описание</label>
+          <textarea formControlName="description" rows="4"
+                    class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
+                           rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
+                           dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition resize-none">
+          </textarea>
+          @if (form.controls['description'].touched && form.controls['description'].errors) {
+            <p class="text-red-400 text-xs mt-1">
+              {{ form.controls['description'].errors['required'] && 'Обязательное поле'
+                || form.controls['description'].errors['minlength'] && 'Минимум 15 символов'
+                || form.controls['description'].errors['maxlength'] && 'Максимум 200 символов' }}
+            </p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+            Фото URL
+            <span class="ml-1 text-xs text-slate-400 dark:text-slate-500 normal-case font-normal">(загрузка будет добавлена позже)</span>
+          </label>
+          <input type="text" formControlName="photoUrl"
+                 placeholder="https://..."
+                 class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
+                        rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
+                        dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" [disabled]="form.invalid || loading()"
+                  class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50
+                         disabled:cursor-not-allowed text-white font-medium rounded-lg transition
+                         flex items-center justify-center gap-2">
+            @if (loading()) {
+              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            }
+            {{ loading() ? 'Сохранение...' : 'Сохранить' }}
+          </button>
+          <a [routerLink]="['/courses', course()?.id]"
+             class="flex-1 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600
+                    text-slate-700 dark:text-slate-300 font-medium rounded-lg transition text-center">
+            Отмена
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
