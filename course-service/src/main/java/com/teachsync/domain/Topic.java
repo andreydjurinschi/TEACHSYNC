@@ -14,6 +14,10 @@ public class Topic {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tag")
+    private TopicTag tag;
+
     public Topic(String name) {
         this.name = name;
     }
@@ -26,6 +30,22 @@ public class Topic {
 
     @ManyToMany(mappedBy = "topics")
     private Set<Course> courses;
+
+    public Set<Course> getCourses() {
+        return courses;
+    }
+
+    public void setCourses(Set<Course> courses) {
+        this.courses = courses;
+    }
+
+    public TopicTag getTag() {
+        return tag;
+    }
+
+    public void setTag(TopicTag tag) {
+        this.tag = tag;
+    }
 
     public String getName() {
         return name;

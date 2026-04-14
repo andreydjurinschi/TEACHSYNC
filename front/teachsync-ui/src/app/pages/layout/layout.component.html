@@ -9,29 +9,23 @@
         <span class="text-white font-bold text-sm">TS</span>
       </div>
       <span class="text-white font-semibold text-lg">TeachSync</span>
-      <button type="button" (click)="toggleTheme()"
-              aria-label="Переключить тему"
-              class="ml-auto w-9 h-9 rounded-full flex items-center justify-center
-               transition-colors duration-200 border"
-              [class.bg-slate-800]="theme() === 'dark'"
-              [class.border-slate-700]="theme() === 'dark'"
-              [class.text-slate-400]="theme() === 'dark'"
-              [class.hover:bg-slate-700]="theme() === 'dark'"
-              [class.bg-white]="theme() === 'light'"
-              [class.border-slate-200]="theme() === 'light'"
-              [class.text-slate-600]="theme() === 'light'"
-              [class.hover:bg-slate-100]="theme() === 'light'">
+      <button type="button" (click)="toggleTheme()" aria-label="Переключить тему" class="ml-auto w-9 h-9 rounded-full flex items-center justify-center
+               transition-colors duration-200 border" [class.bg-slate-800]="theme() === 'dark'"
+        [class.border-slate-700]="theme() === 'dark'" [class.text-slate-400]="theme() === 'dark'"
+        [class.hover:bg-slate-700]="theme() === 'dark'" [class.bg-white]="theme() === 'light'"
+        [class.border-slate-200]="theme() === 'light'" [class.text-slate-600]="theme() === 'light'"
+        [class.hover:bg-slate-100]="theme() === 'light'">
 
         @if (theme() === 'dark') {
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="5"/>
-            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42
-                 M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-          </svg>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42
+                 M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
         } @else {
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-          </svg>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
         }
 
       </button>
@@ -46,65 +40,99 @@
     <nav class="flex-1 px-3 py-2 space-y-1">
 
       @if (role === 'ADMIN') {
-        <a routerLink="/users"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+      <a routerLink="/users" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
             hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          <span class="text-sm font-medium">Пользователи</span>
-        </a>
-        <a routerLink="/courses"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        <span class="text-sm font-medium">Пользователи</span>
+      </a>
+      <a routerLink="/courses" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
             hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
            C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
            C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13
-           C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-          </svg>
-          <span class="text-sm font-medium">Курсы</span>
-        </a>
-        <a routerLink="/notifications"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+           C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <span class="text-sm font-medium">Курсы</span>
+      </a>
+      <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
             hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
            a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341
            C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5
-           m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-          </svg>
-          <span class="text-sm font-medium">Уведомления</span>
-        </a>
-        <a routerLink="/statistics"
-           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+           m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span class="text-sm font-medium">Уведомления</span>
+      </a>
+      <a routerLink="/statistics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
             hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z
            M15 19V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z
-           M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z"/>
-          </svg>
-          <span class="text-sm font-medium">Статистика</span>
-        </a>
+           M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+        </svg>
+        <span class="text-sm font-medium">Статистика</span>
+      </a>
 
+      }
+
+      @if (role === 'MANAGER') {
+      <a routerLink="/courses" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+            hover:bg-white/10 hover:text-white transition-all group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
+           C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
+           C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13
+           C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <span class="text-sm font-medium">Курсы</span>
+      </a>
+      <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+            hover:bg-white/10 hover:text-white transition-all group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11
+           a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341
+           C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5
+           m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span class="text-sm font-medium">Уведомления</span>
+      </a>
+      <a routerLink="/statistics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+            hover:bg-white/10 hover:text-white transition-all group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z
+           M15 19V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z
+           M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+        </svg>
+        <span class="text-sm font-medium">Статистика</span>
+      </a>
+      <a routerLink="/groups" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+         hover:bg-white/10 hover:text-white transition-all group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1
+         M9 20H4v-2a4 4 0 014-4h1
+         M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+
+        <span class="text-sm font-medium">Группы</span>
+      </a>
       }
 
     </nav>
 
     <div class="px-3 py-4 border-t border-slate-700">
-      <button (click)="logout()"
-              class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg
+      <button (click)="logout()" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg
                text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
         <span class="text-sm font-medium">Logout</span>
       </button>

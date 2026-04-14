@@ -9,7 +9,7 @@ public class GroupMapper {
 
     public static GroupBaseDto mapToBaseDto(Group group){
         return new GroupBaseDto(
-                group.getName(), group.getDate(), group.getCapacity()
+                group.getId(), group.getName(), group.getDate(), group.getCapacity()
         );
     }
 
