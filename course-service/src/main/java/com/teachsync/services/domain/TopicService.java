@@ -1,6 +1,7 @@
 package com.teachsync.services.domain;
 
 import com.teachsync.domain.Topic;
+import com.teachsync.domain.TopicTag;
 import com.teachsync.dto_s.topics.TopicBaseDto;
 import com.teachsync.mappers.TopicMapper;
 import com.teachsync.repositories.TopicRepository;
@@ -26,8 +27,16 @@ public class TopicService {
         return TopicMapper.mapToDto(topic);
     }
 
-    public void assignTopicToCourse(Long courseId, Long topicId){{
+    public void setTagToTopic(TopicTag tag, Long topicId){
+        Topic topic = topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        if(tag != null){
+            topic.setTag(tag);
+        }
+        topicRepository.save(topic);
+    }
 
-    }}
+    public List<TopicBaseDto> getTopicsByTags(TopicTag topicTag){
+        return topicRepository.getTopicByTag(topicTag).stream().map(TopicMapper::mapToDto).toList();
+    }
 
 }

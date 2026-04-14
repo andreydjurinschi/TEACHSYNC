@@ -1,27 +1,21 @@
 <div class="min-h-screen p-8 bg-slate-100 dark:bg-slate-900">
 
-  <!-- Header -->
   <div class="flex items-center gap-3 mb-10">
     <a [routerLink]="['/courses', courseId]"
-       class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+      class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
       </svg>
     </a>
 
     <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
-      Управление темами курса: {{ courseName()?.name }}
+       {{ courseName()?.name }} - темы курса
     </h2>
   </div>
 
-  <!-- Content -->
   <div class="flex justify-center">
     <div class="w-full max-w-3xl space-y-6">
 
-      <!-- Назначенные темы -->
       <div class="bg-white dark:bg-slate-800 rounded-xl
                   border border-slate-200 dark:border-slate-700 p-6">
 
@@ -31,38 +25,34 @@
         </h3>
 
         @if (assignedTopics().length === 0) {
-          <p class="text-slate-400 text-sm">
-            Темы ещё не назначены
-          </p>
+        <p class="text-slate-400 text-sm">
+          Темы ещё не назначены
+        </p>
         } @else {
-          <div class="space-y-2">
-            @for (topic of assignedTopics(); track topic.name) {
-              <div class="flex items-center justify-between px-4 py-2.5
+        <div class="space-y-2">
+          @for (topic of assignedTopics(); track topic.name) {
+          <div class="flex items-center justify-between px-4 py-2.5
                           bg-slate-100 dark:bg-slate-700 rounded-lg">
 
-                <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                  <span class="text-sm text-slate-800 dark:text-white">
-                    {{ topic.name }}
-                  </span>
-                </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+              <span class="text-sm text-slate-800 dark:text-white">
+                {{ topic.name }}
+              </span>
+            </div>
 
-                <button
-                  (click)="unassign(topic)"
-                  [disabled]="loading()"
-                  class="text-xs px-3 py-1 rounded-lg
+            <button (click)="unassign(topic)" [disabled]="loading()" class="text-xs px-3 py-1 rounded-lg
                          bg-red-500/10 text-red-400
                          hover:bg-red-500/20 transition
                          disabled:opacity-50">
-                  Удалить
-                </button>
-              </div>
-            }
+              Удалить
+            </button>
           </div>
+          }
+        </div>
         }
       </div>
 
-      <!-- Доступные темы -->
       <div class="bg-white dark:bg-slate-800 rounded-xl
                   border border-slate-200 dark:border-slate-700 p-6">
 
@@ -70,42 +60,39 @@
                    uppercase tracking-widest mb-4">
           Доступные темы
         </h3>
+        <div class="flex flex-wrap gap-2 mb-4">
+          @for (tag of tags; track tag) {
+          <button (click)="selectTag(tag)"
+            [class]="selectedTag() === tag
+              ? 'px-3 py-1 rounded-full text-xs font-semibold bg-indigo-600 text-white transition'
+              : 'px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition'">
+            {{ tag }}
+          </button>
+          }
+        </div>
 
-        @if (allTopics().length === 0) {
-          <p class="text-slate-400 text-sm">
-            Нет доступных тем
-          </p>
-        } @else {
-          <div class="space-y-2">
-            @for (topic of allTopics(); track topic.id) {
-              @if (!isAssigned(topic)) {
-                <div class="flex items-center justify-between px-4 py-2.5
-                            bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-
-                  <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full
-                                 bg-slate-300 dark:bg-slate-500"></span>
-                    <span class="text-sm text-slate-600 dark:text-slate-300">
-                      {{ topic.name }}
-                    </span>
-                  </div>
-
-                  <button
-                    (click)="assign(topic)"
-                    [disabled]="loading()"
-                    class="text-xs px-3 py-1 rounded-lg
-                           bg-indigo-500/10 text-indigo-400
-                           hover:bg-indigo-500/20 transition
-                           disabled:opacity-50">
-                    Добавить
-                  </button>
-                </div>
-              }
+        @for (topic of filteredTopics(); track topic.id) {
+        @if (!isAssigned(topic)) {
+        <div class="flex items-center justify-between px-4 py-2.5
+                bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500"></span>
+            <span class="text-sm text-slate-600 dark:text-slate-300">{{ topic.name }}</span>
+            @if (topic.topicTag) {
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ getTagColor(topic.topicTag) }}">
+              {{ topic.topicTag }}
+            </span>
             }
           </div>
+          <button (click)="assign(topic)" [disabled]="loading()" class="text-xs px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-400
+                     hover:bg-indigo-500/20 transition disabled:opacity-50">
+            Добавить
+          </button>
+        </div>
+        }
         }
       </div>
-
     </div>
+    
   </div>
 </div>
