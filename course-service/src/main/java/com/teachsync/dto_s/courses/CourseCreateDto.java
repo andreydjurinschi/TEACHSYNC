@@ -13,11 +13,14 @@ public class CourseCreateDto {
     @Size(min = 15, max = 200, message = "description length needs to be between 15-200 characters")
     private String description;
 
+    private Long categoryId;
+
     private String photoUrl;
 
-    public CourseCreateDto(String name, String description, String photoUrl) {
+    public CourseCreateDto(String name, String description, Long categoryId, String photoUrl) {
         this.name = name;
         this.description = description;
+        this.categoryId = categoryId;
         this.photoUrl = photoUrl;
     }
 
@@ -44,4 +47,7 @@ public class CourseCreateDto {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 }

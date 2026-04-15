@@ -13,12 +13,17 @@ import { GroupService } from '../../../core/services/group.service';
 })
 export class GroupDetailed implements OnInit {
   group = signal<GroupBase | null>(null);
-  withCourses = signal<GroupWithCourses | null>(null);
+  withCourses = signal<GroupWithCourses | null>(null); 
+  selectedCourseId = signal<number | null>(null); 
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private groupService = inject(GroupService);
+
+  toggleCourse(id: number){
+      this.selectedCourseId.set(this.selectedCourseId() === id ? null : id)
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {

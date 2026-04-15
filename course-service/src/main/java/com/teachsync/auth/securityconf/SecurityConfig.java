@@ -39,6 +39,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/internal/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/teachsync/courses/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
                     auth.requestMatchers("/teachsync/groups/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
+                    auth.requestMatchers("/teachsync/categories/**").hasAnyRole("ADMIN", "MANAGER");
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthentificationFilter, UsernamePasswordAuthenticationFilter.class)

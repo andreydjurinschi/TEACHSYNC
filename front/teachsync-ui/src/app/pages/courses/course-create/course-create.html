@@ -1,17 +1,14 @@
 <div class="min-h-screen bg-slate-100 dark:bg-slate-900 p-8">
 
   <div class="flex items-center gap-3 mb-8">
-    <a [routerLink]="['/courses', route.snapshot.paramMap.get('id')]"
+    <a routerLink="/courses"
        class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
     </a>
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
-      Редактировать — {{ course()?.name }}
-    </h1>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Создать курс</h1>
   </div>
-  ...
 
   <div class="max-w-lg mx-auto">
     <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
@@ -73,14 +70,14 @@
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="white" stroke-width="3" stroke-linecap="round"/>
               </svg>
             }
-            {{ loading() ? 'Сохранение...' : 'Сохранить' }}
+            {{ loading() ? 'Создание...' : 'Создать' }}
           </button>
-<a [routerLink]="['/courses', route.snapshot.paramMap.get('id')]"
-   class="flex-1 py-2.5 text-center bg-slate-200 dark:bg-slate-700
-          hover:bg-slate-300 dark:hover:bg-slate-600
-          text-slate-700 dark:text-slate-300 font-medium rounded-lg transition">
-  Отмена
-</a>
+          <a routerLink="/courses"
+             class="flex-1 py-2.5 text-center bg-slate-200 dark:bg-slate-700
+                    hover:bg-slate-300 dark:hover:bg-slate-600
+                    text-slate-700 dark:text-slate-300 font-medium rounded-lg transition">
+            Отмена
+          </a>
         </div>
 
       </form>

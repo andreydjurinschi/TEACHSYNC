@@ -1,11 +1,13 @@
 package com.teachsync.services.domain;
 
+import com.teachsync.domain.Category;
 import com.teachsync.domain.Course;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
 import com.teachsync.mappers.CourseMapper;
+import com.teachsync.repositories.CategoryRepository;
 import com.teachsync.repositories.CourseRepository;
 import com.teachsync.interaction.feign.requests.TeacherCheckRequest;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
@@ -26,12 +28,14 @@ public class CourseService {
 
     private final CourseRepository repository;
     private final TopicRepository topicRepository;
+    private final CategoryRepository categoryRepository;
     private final UserClient userClient;
 
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, UserClient userClient) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, UserClient userClient) {
         this.repository = repository;
         this.topicRepository = topicRepository;
+        this.categoryRepository = categoryRepository;
         this.userClient = userClient;
     }
 
@@ -48,6 +52,11 @@ public class CourseService {
     @Transactional
     public void createCourse(CourseCreateDto dto){
         Course course = CourseMapper.mapToEntity(dto);
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            course.setCategory(category);
+        }
         repository.save(course);
     }
 
@@ -62,6 +71,11 @@ public class CourseService {
         }
         if(StringUtils.hasText(dto.getPhotoUrl())){
             course.setPhotoUrl(dto.getPhotoUrl());
+        }
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new NoSuchElementException("Category not found"));
+            course.setCategory(category);
         }
     }
 

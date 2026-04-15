@@ -3,7 +3,10 @@ import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
+import { CategoryService } from '../../../core/services/category.service';
+import { CategoryBase } from '../../../core/models/category/category.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-course-edit',
@@ -14,47 +17,53 @@ import { CourseBase } from '../../../core/models/courses/course.model';
 export class CourseEdit implements OnInit {
   form!: FormGroup;
   course = signal<CourseBase | null>(null);
+  categories = signal<CategoryBase[]>([]);
   loading = signal(false);
 
   private platformId = inject(PLATFORM_ID);
-  private route = inject(ActivatedRoute);
+  route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
+  private categoryService = inject(CategoryService);
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
-      description: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(200)]],
-      photoUrl: [''],
+      name:        ['', [Validators.required, Validators.minLength(3)]],
+      description: ['', Validators.required],
+      categoryId:  [null],
     });
 
-    if (isPlatformBrowser(this.platformId)) {
-      const id = Number(this.route.snapshot.paramMap.get('id'));
-      this.courseService.getById(id).subscribe({
-        next: data => {
-          this.course.set(data);
-          this.form.patchValue({
-            name: data.name,
-            description: data.description,
-            photoUrl: data.photoUrl,
-          });
-        },
-        error: err => console.error(err),
-      });
-    }
-  }
+    if (!isPlatformBrowser(this.platformId)) return;
 
-  submit(): void {
-    if (this.form.invalid) return;
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.loading.set(true);
-    this.courseService.update(id, this.form.value).subscribe({
-      next: () => this.router.navigate(['/courses', id]),
-      error: err => {
-        console.error(err);
-        this.loading.set(false);
+
+    forkJoin({
+      course:     this.courseService.getById(id),
+      categories: this.categoryService.getAll(),
+    }).subscribe({
+      next: ({ course, categories }) => {
+        this.course.set(course);
+        this.categories.set(categories);
+        this.form.patchValue({
+          name:        course.name,
+          description: course.description,
+          categoryId:  course.categoryId ?? null,
+        });
+        
       },
+      error: err => console.error(err),
     });
   }
+
+submit(): void {
+  if (this.form.invalid) return;
+  const id = this.course()?.id;
+  if (!id) return;
+  this.loading.set(true);
+  this.courseService.update(id, this.form.value).subscribe({
+    next: () => this.router.navigate(['/courses', id]),
+    error: () => this.loading.set(false),
+  });
+}
 }
