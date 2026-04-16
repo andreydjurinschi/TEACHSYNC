@@ -1,6 +1,7 @@
 package com.teachsync.controller.internal;
 
 import com.teachsync.domain.Role;
+import com.teachsync.interaction.responses.feign.AccountInfoResponse;
 import com.teachsync.interaction.responses.feign.TeacherBaseInfoForScheduleServiceResponse;
 import com.teachsync.interaction.responses.feign.TeacherCheckResponse;
 import com.teachsync.dto.UserBaseDto;
@@ -57,4 +58,21 @@ public class UserInternalController {
         return userService.getByUserEmail(email);
     }
 
+    @GetMapping("/account/info")
+    public AccountInfoResponse getUserInfo(@RequestParam String email){
+        UserResponse response =  userService.getByUserEmail(email);
+
+        return populateAccountInfoResponse(response);
+    }
+
+    private static AccountInfoResponse populateAccountInfoResponse(UserResponse response) {
+        AccountInfoResponse accountInfoResponse = new AccountInfoResponse();
+        accountInfoResponse.setEmail(response.getEmail());
+        accountInfoResponse.setFirstName(response.getName());
+        accountInfoResponse.setLastName(response.getSurname());
+        accountInfoResponse.setRole(response.getRole());
+        accountInfoResponse.setProfilePicture(response.getProfilePicture());
+        accountInfoResponse.setRegisteredAt(response.getRegisteredAt());
+        return accountInfoResponse;
+    }
 }

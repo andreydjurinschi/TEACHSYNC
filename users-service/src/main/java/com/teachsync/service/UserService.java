@@ -45,7 +45,7 @@ public class UserService {
             return null;
         }
         return new UserResponse(
-                user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getPassword(), user.getRegisteredAt(), user.getRole()
+                user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getPassword(), user.getRegisteredAt(), user.getProfilePicture() ,user.getRole()
         );
     }
 

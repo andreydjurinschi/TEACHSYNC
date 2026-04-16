@@ -11,7 +11,7 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
   
   if (!isPlatformBrowser(platformId)) {
-    return next(req); // на сервере — пропускаем без токена
+    return next(req);
   }
 
   const auth = inject(AuthService);

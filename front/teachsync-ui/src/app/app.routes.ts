@@ -17,6 +17,7 @@ import { GroupEdit } from './pages/groups/group-forms/group-edit.component';
 import { GroupCreate } from './pages/groups/group-forms/group-create.component';
 import { GroupCourse } from './pages/groups/group-courses/group-course.component';
 import { CourseCreate } from './pages/courses/course-create/course-create.component';
+import { AccountInfo } from './pages/account/account.info.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,6 +42,7 @@ export const routes: Routes = [
       { path: 'groups/:id', component: GroupDetailed },
       { path: 'groups/edit/:id', component: GroupEdit },
       { path: 'groups/:id/courses', component: GroupCourse },
+      { path: 'profile', component: AccountInfo },
     ]
   },
   { path: '**', redirectTo: '/login' }

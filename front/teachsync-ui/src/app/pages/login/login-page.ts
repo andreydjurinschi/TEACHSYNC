@@ -57,7 +57,7 @@ get passwordInvalid() {
     const { email, password } = this.form.value;
 
     this.auth.login(email, password).subscribe({
-      next: () => this.router.navigate(['/users']),
+      next: () => this.router.navigate(['/profile']),
       error: () => {
         this.loading = false;
         this.serverError = 'Неверный email или пароль. Попробуйте снова.';

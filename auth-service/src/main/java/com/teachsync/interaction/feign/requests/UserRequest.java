@@ -9,15 +9,17 @@ public class UserRequest {
     private String email;
     private String password;
     private LocalDate registeredAt;
+    private String profilePicture;
     private Role role;
 
-    public UserRequest(Long id, String name, String surname, String email, String password, LocalDate registeredAt, Role role) {
+    public UserRequest(Long id, String name, String surname, String email, String password, LocalDate registeredAt, String profilePicture, Role role) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
         this.registeredAt = registeredAt;
+        this.profilePicture = profilePicture;
         this.role = role;
     }
 
@@ -79,5 +81,10 @@ public class UserRequest {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+    public void setProfilePicture(String profilePicture) {}
 }
 
