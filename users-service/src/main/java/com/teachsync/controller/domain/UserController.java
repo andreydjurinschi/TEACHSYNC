@@ -1,5 +1,6 @@
 package com.teachsync.controller.domain;
 
+import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
@@ -36,6 +37,12 @@ public class UserController {
     @PutMapping("/edit/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto){
         service.updateUser(id, dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
+
+    @PutMapping("/edit/account/{id}")
+    public ResponseEntity<Void> editAccount(@PathVariable Long id, @Valid @RequestBody AccountUpdateDto dto){
+        service.editUserAccount(id, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
