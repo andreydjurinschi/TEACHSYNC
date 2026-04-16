@@ -5,17 +5,19 @@ import com.teachsync.interaction.feign.requests.Role;
 import java.time.LocalDate;
 
 public class AccountInfoResponse {
+    private Long id;
     private String email;
-    private String firstName;
-    private String lastName;
+    private String name;
+    private String surname;
     private LocalDate registeredAt;
     private Role role;
     private String profilePicture;
 
-    public AccountInfoResponse(String email, String firstName, String lastName, LocalDate registeredAt, Role role, String profilePicture) {
+    public AccountInfoResponse(Long id, String email, String name, String surname, LocalDate registeredAt, Role role, String profilePicture) {
+        this.id = id;
         this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.name = name;
+        this.surname = surname;
         this.registeredAt = registeredAt;
         this.role = role;
         this.profilePicture = profilePicture;
@@ -32,20 +34,20 @@ public class AccountInfoResponse {
         this.email = email;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getSurname() {
+        return surname;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public LocalDate getRegisteredAt() {
@@ -70,5 +72,13 @@ public class AccountInfoResponse {
 
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

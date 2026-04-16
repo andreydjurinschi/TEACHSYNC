@@ -2,6 +2,7 @@ package com.teachsync.service;
 
 import com.teachsync.domain.Role;
 import com.teachsync.domain.User;
+import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
@@ -72,6 +73,19 @@ public class UserService {
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
         if (dto.getRole() != null) user.setRole(dto.getRole());
+    }
+
+    @Transactional
+    public void editUserAccount(Long id, AccountUpdateDto dto){
+        User user = getUser(id);
+        if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
+        if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
+        if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
+        if (StringUtils.hasText(dto.getProfilePicture())) user.setProfilePicture(dto.getProfilePicture());
+        if (StringUtils.hasText(dto.getPassword())) {
+            String hashedPassword = PasswordUtils.hash(dto.getPassword());
+            user.setPassword(hashedPassword);
+        };
     }
 
     public List<UserBaseDto> findAllByRole(Role role) {

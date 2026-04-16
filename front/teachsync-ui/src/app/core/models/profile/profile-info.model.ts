@@ -1,7 +1,8 @@
 export interface ProfileInfo{
+    id: number
     email: string
-    firstName: string
-    lastName: string
+    name: string
+    surname: string
     profilePicture: string
     registeredAt: string
     role: 'ADMIN' | 'MANAGER' | 'TEACHER';

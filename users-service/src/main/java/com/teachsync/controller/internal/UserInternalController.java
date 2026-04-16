@@ -32,6 +32,7 @@ public class UserInternalController {
                 user.getRole() == Role.TEACHER
         );
     }
+
     @GetMapping("/course_service/{id}")
     public TeacherResponse teacherResponseForCourseService(@PathVariable Long id){
         return userService.getTeacherForCourseService(id);
@@ -65,9 +66,10 @@ public class UserInternalController {
 
     private static AccountInfoResponse populateAccountInfoResponse(UserResponse response) {
         AccountInfoResponse accountInfoResponse = new AccountInfoResponse();
+        accountInfoResponse.setId(response.getId());
         accountInfoResponse.setEmail(response.getEmail());
-        accountInfoResponse.setFirstName(response.getName());
-        accountInfoResponse.setLastName(response.getSurname());
+        accountInfoResponse.setName(response.getName());
+        accountInfoResponse.setSurname(response.getSurname());
         accountInfoResponse.setRole(response.getRole());
         accountInfoResponse.setProfilePicture(response.getProfilePicture());
         accountInfoResponse.setRegisteredAt(response.getRegisteredAt());
