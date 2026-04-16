@@ -17,6 +17,9 @@ public class CourseBaseDto {
         this.teacher = teacher;
     }
 
+    public CourseBaseDto() {
+    }
+
     public String getPhotoUrl() {
         return photoUrl;
     }

@@ -25,7 +25,6 @@ public class UserInternalController {
         this.userService = userService;
     }
 
-    // проверка если пользователь - учитель
     @GetMapping("/{id}/teacher")
     public TeacherCheckResponse isTeacher(@PathVariable Long id){
         UserBaseDto user = userService.findById(id);
@@ -33,7 +32,6 @@ public class UserInternalController {
                 user.getRole() == Role.TEACHER
         );
     }
-    // получение учителя
     @GetMapping("/course_service/{id}")
     public TeacherResponse teacherResponseForCourseService(@PathVariable Long id){
         return userService.getTeacherForCourseService(id);

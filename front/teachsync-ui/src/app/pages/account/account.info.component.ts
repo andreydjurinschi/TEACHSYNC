@@ -7,7 +7,7 @@ import { CommonModule } from "@angular/common";
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './account-info.html'
 })
 export class AccountInfo implements OnInit {
@@ -18,7 +18,6 @@ export class AccountInfo implements OnInit {
   private profileService = inject(ProfileService);
 
   ngOnInit(): void {
-    // сначала смотрим queryParam (чужой профиль), потом свой из токена
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email');
     const email = emailFromQuery ?? this.getEmailFromToken();
     if (email) this.loadProfile(email);
@@ -29,7 +28,7 @@ export class AccountInfo implements OnInit {
       const token = localStorage.getItem('jwt_token');
       if (!token) return null;
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub ?? payload.email ?? null; // sub — стандартное поле в JWT
+      return payload.sub ?? payload.email ?? null;
     } catch {
       return null;
     }

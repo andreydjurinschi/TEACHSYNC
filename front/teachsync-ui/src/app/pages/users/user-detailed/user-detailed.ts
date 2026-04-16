@@ -28,6 +28,7 @@ export class UserDetailed implements OnInit {
   user = signal<User | null>(null);
   userWithCourses = signal<UserWithCourses | null>(null);
   loading = signal<boolean>(false);
+  selectedCourseId = signal<number | null>(null);
 
   constructor(
     private route: ActivatedRoute,
@@ -98,5 +99,13 @@ export class UserDetailed implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  trackByCourseId(_: number, course: any) {
+  return course.id;
+}
+
+  toggleCourse(id: number){
+      this.selectedCourseId.set(this.selectedCourseId() === id ? null : id)
   }
 }
