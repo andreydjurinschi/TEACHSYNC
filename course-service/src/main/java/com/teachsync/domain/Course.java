@@ -38,11 +38,23 @@ public class Course {
     )
     private Set<Topic> topics = new HashSet<>();
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     public Course(String name, String description, String photoUrl, Long teacherId) {
         this.name = name;
         this.description = description;
         this.photoUrl = photoUrl;
         this.teacherId = teacherId;
+    }
+
+    public Course(String name, String description, String photoUrl, Long teacherId, Category category) {
+        this.name = name;
+        this.description = description;
+        this.photoUrl = photoUrl;
+        this.teacherId = teacherId;
+        this.category = category;
     }
 
     public Course() {
@@ -103,5 +115,13 @@ public class Course {
 
     public void setTopics(Set<Topic> topics) {
         this.topics = topics;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

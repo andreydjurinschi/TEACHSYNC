@@ -29,15 +29,18 @@ public class UserCreateDto {
 
     private LocalDate registeredAt;
 
+    private String profilePicture;
+
     @NotNull(message = "role cannot be null or empty")
     private Role role;
 
-    public UserCreateDto(String name, String surname, String password, String email, LocalDate registeredAt, Role role) {
+    public UserCreateDto(String name, String surname, String password, String email, LocalDate registeredAt, String profilePicture, Role role) {
         this.name = name;
         this.surname = surname;
         this.password = password;
         this.email = email;
         this.registeredAt = registeredAt;
+        this.profilePicture = profilePicture;
         this.role = role;
     }
 
@@ -90,5 +93,13 @@ public class UserCreateDto {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

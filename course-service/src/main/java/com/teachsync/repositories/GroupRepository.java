@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface GroupRepository extends JpaRepository<Group, Long> {
 
-    @Query(value = "select * from GROUPS g " +
+    @Query(value = "select g.* from GROUPS g " +
             "left join PUBLIC.GROUP_COURSES GC on g.ID = GC.GROUP_ID " +
             "where g.ID = :group_id", nativeQuery = true)
     Group findWithCourses(@Param("group_id") Long group_id);

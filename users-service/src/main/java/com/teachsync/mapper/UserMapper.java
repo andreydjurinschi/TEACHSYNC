@@ -18,6 +18,7 @@ public class UserMapper {
                 dto.getEmail(),
                 null,
                 dto.getRegisteredAt(),
+                dto.getProfilePicture(),
                 dto.getRole()
         );
     }

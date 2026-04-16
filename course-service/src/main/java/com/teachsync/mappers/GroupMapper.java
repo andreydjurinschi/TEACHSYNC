@@ -16,7 +16,7 @@ public class GroupMapper {
     // null on course set field is replaced in group service
     public static GroupWithCoursesDto mapToDetailedDto(Group group) {
         return new GroupWithCoursesDto(
-                group.getName(), group.getDate(), group.getCapacity(), null
+                group.getId(),group.getName(), group.getDate(), group.getCapacity(), null
         );
     }
 

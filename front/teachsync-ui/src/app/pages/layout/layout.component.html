@@ -39,6 +39,15 @@
 
     <nav class="flex-1 px-3 py-2 space-y-1">
 
+      <a routerLink="/profile" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+            hover:bg-white/10 hover:text-white transition-all group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4" stroke-linecap="round" />
+            <path d="M6 20C6 16 10 14 12 14C14 14 18 16 18 20" stroke-linecap="round" />
+        </svg>
+        <span class="text-sm font-medium">Мой профиль</span>
+      </a>
+      <hr>
       @if (role === 'ADMIN') {
       <a routerLink="/users" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
             hover:bg-white/10 hover:text-white transition-all group">

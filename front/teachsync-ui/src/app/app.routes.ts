@@ -13,6 +13,11 @@ import { CourseEdit } from './pages/courses/course-edit/course-edit.component';
 import { CourseTopics } from './pages/courses/course-topics/course-topics.component';
 import { GroupList } from './pages/groups/group-list/group-list.component';
 import { GroupDetailed } from './pages/groups/group-detailed/group-detailed.component';
+import { GroupEdit } from './pages/groups/group-forms/group-edit.component';
+import { GroupCreate } from './pages/groups/group-forms/group-create.component';
+import { GroupCourse } from './pages/groups/group-courses/group-course.component';
+import { CourseCreate } from './pages/courses/course-create/course-create.component';
+import { AccountInfo } from './pages/account/account.info.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -25,14 +30,19 @@ export const routes: Routes = [
       { path: 'users/create', component: UserCreate },
       { path: 'users/edit/:id', component: UserEdit },
       { path: 'users/:id', component: UserDetailed },
+
       { path: 'courses', component: CourseList },
-      { path: 'courses/:id', component: CourseDetailed },
+      { path: 'courses/create', component: CourseCreate },
       { path: 'courses/edit/:id', component: CourseEdit },
+      { path: 'courses/:id', component: CourseDetailed },
       { path: 'courses/:id/topics', component: CourseTopics },
+
       { path: 'groups', component: GroupList },
-      //{ path: 'groups/create', component: GroupCreate },
-      //{ path: 'groups/edit/:id', component: GroupEdit },
+      { path: 'groups/create', component: GroupCreate },
       { path: 'groups/:id', component: GroupDetailed },
+      { path: 'groups/edit/:id', component: GroupEdit },
+      { path: 'groups/:id/courses', component: GroupCourse },
+      { path: 'profile', component: AccountInfo },
     ]
   },
   { path: '**', redirectTo: '/login' }

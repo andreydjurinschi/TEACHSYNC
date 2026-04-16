@@ -35,6 +35,10 @@ public class GroupService {
         return repository.findAll().stream().map(GroupMapper::mapToBaseDto).collect(Collectors.toList());
     }
 
+    public GroupBaseDto getById(Long id){
+        return repository.findById(id).map(GroupMapper::mapToBaseDto).orElseThrow(() -> new NoSuchElementException("Group with id " + id + " does not exist"));
+    }
+
     @Transactional
     public void update(Long id, GroupUpdateDto dto){
         Group group = getGroup(id);
@@ -85,15 +89,10 @@ public class GroupService {
         return dto;
     }
 
-    public GroupBaseDto getGroupById(Long id){
-        Group group = getGroup(id);
-        return GroupMapper.mapToBaseDto(group);
-    }
-
     @Transactional
     public void unassignGroupFromCourse(Long groupId, Long courseId) {
-        Group group = getGroup(groupId);
-        Course course = courseRepository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        getGroup(groupId);
+        courseRepository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
 
         repository.unassignGroupToCourse(groupId, courseId);
     }

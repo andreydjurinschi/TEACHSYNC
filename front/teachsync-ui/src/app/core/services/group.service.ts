@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { GroupBase } from '../models/groups/group.model';
 import { GroupWithCourses } from '../models/groups/group-course.model';
+import { GroupCreate } from '../../pages/groups/group-forms/group-create.component';
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
@@ -27,7 +28,7 @@ export class GroupService {
     return this.http.get<GroupWithCourses>(`${this.apiUrl}/${id}/courses`, { headers: this.getHeaders() });
   }
 
-  create(dto: Partial<GroupBase>): Observable<void> {
+  create(dto: Partial<GroupCreate>): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/create`, dto, { headers: this.getHeaders() });
   }
 

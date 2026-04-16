@@ -1,5 +1,6 @@
 package com.teachsync.mappers;
 
+import com.teachsync.domain.Category;
 import com.teachsync.domain.Course;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
@@ -14,8 +15,13 @@ import java.util.stream.Collectors;
 public class CourseMapper {
 
     public static CourseBaseDto mapToBaseDto(Course course) {
+        Category category = course.getCategory();
+        String categoryName = null;
+        if(category != null){
+            categoryName =  category.getName();
+        }
         return new CourseBaseDto(
-                course.getId(), course.getName(), course.getDescription(), course.getPhotoUrl(), course.getTeacherId()
+                course.getId(), course.getName(), course.getDescription(), course.getPhotoUrl(), categoryName,course.getTeacherId()
         );
     }
 
@@ -35,6 +41,11 @@ public class CourseMapper {
     }
 
     public static CourseShortDto mapToShortDto(Course course){
-        return new CourseShortDto(course.getId(), course.getName());
+        Category category = course.getCategory();
+        String categoryName = null;
+        if(category != null){
+            categoryName =  category.getName();
+        }
+        return new CourseShortDto(course.getId(), course.getName(), course.getDescription(), categoryName);
     }
 }

@@ -21,4 +21,5 @@ public class AuthController {
         String token = authService.login(request.getEmail(), request.getPassword());
         return Map.of("token", token);
     }
+
 }

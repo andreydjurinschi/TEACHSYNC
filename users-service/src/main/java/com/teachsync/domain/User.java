@@ -27,6 +27,8 @@ public class User {
     @Column(nullable = false)
     private LocalDate registeredAt;
 
+    private String profilePicture;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -34,12 +36,13 @@ public class User {
     public User() {}
 
     public User(String name, String surname, String email,
-                String passwordHash, LocalDate registeredAt, Role role) {
+                String passwordHash, LocalDate registeredAt, String profilePicture, Role role) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = passwordHash;
         this.registeredAt = registeredAt;
+        this.profilePicture = profilePicture;
         this.role = role;
     }
 
@@ -97,6 +100,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }
 

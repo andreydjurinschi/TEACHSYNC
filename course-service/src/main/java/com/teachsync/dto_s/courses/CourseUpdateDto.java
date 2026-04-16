@@ -12,10 +12,13 @@ public class CourseUpdateDto {
 
     private String photoUrl;
 
-    public CourseUpdateDto(String name, String description, String photoUrl) {
+    private Long categoryId;
+
+    public CourseUpdateDto(String name, String description, String photoUrl, Long categoryId) {
         this.name = name;
         this.description = description;
         this.photoUrl = photoUrl;
+        this.categoryId = categoryId;
     }
 
     public String getName() {
@@ -41,4 +44,7 @@ public class CourseUpdateDto {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 }
