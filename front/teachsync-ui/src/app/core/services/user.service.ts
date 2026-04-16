@@ -8,6 +8,7 @@ import { Observable } from 'rxjs/internal/Observable';
 
 import { UserWithCourses } from '../models/users/user.detailed.model';
 import { User } from '../models/users/user.model';
+import { EditAccount } from '../models/profile/pofile-editor.model';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,10 @@ export class UserService {
 
   update(id: number, user: Partial<User>): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/edit/${id}`, user, { headers: this.getHeaders() });
+  }
+  
+  editAccount(id:number, editedData: Partial<EditAccount>): Observable<void>{
+    return this.http.put<void>(`${this.apiUrl}/edit/account/${id}`, editedData, { headers: this.getHeaders() });
   }
   
   delete(id: number): Observable<void> {
