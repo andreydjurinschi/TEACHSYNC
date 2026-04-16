@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-// todo consul discovery
 @FeignClient(name = "course-service",
         url = "http://localhost:8081/internal/courses",
         fallback = CourseClientFallback.class)

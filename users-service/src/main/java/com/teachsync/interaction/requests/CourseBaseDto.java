@@ -1,18 +1,19 @@
 package com.teachsync.interaction.requests;
 
 public class CourseBaseDto {
-
     private Long id;
     private String name;
     private String description;
     private String photoUrl;
+    private String categoryName;
     private Long teacher;
 
-    public CourseBaseDto(Long id, String name, String description, String photoUrl, Long teacher) {
+    public CourseBaseDto(Long id, String name, String description, String photoUrl,String categoryName, Long teacher) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.photoUrl = photoUrl;
+        this.categoryName = categoryName;
         this.teacher = teacher;
     }
 
@@ -57,5 +58,13 @@ public class CourseBaseDto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

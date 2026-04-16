@@ -19,27 +19,24 @@ import { UserService } from '../../../core/services/user.service';
   imports: [CommonModule, RouterLink],
   standalone: true,
   templateUrl: './user-list.html',
-  styleUrl: './user-list.css',
 })
 export class UserList implements OnInit {
 
   users = signal<User[]>([]);
-  private platformId = inject(PLATFORM_ID); // ← добавить
+  private platformId = inject(PLATFORM_ID);
 
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) { // ← добавить проверку
+    if (isPlatformBrowser(this.platformId)) {
       this.loadUsers();
     }
   }
 
   loadUsers(): void {
-      console.log('токен из localStorage:', localStorage.getItem('jwt_token')); // ← добавить
     this.userService.getAll().subscribe({
       next: data => {
         this.users.set(data);
-        console.log("users after set:", this.users().length);
       },
       error: err => console.error(err)
     });
