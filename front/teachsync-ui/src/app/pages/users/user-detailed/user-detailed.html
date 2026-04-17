@@ -42,8 +42,6 @@
 <div *ngIf="userWithCourses()?.available; else noCourses" class="space-y-2">
 
   <div *ngFor="let course of userWithCourses()?.courseNames; trackBy: trackByCourseId">
-
-    <!-- строка курса -->
     <div
       (click)="toggleCourse(course.id)"
       class="flex items-center justify-between px-4 py-2.5
@@ -65,8 +63,6 @@
               d="M9 5l7 7-7 7"/>
       </svg>
     </div>
-
-    <!-- раскрытое описание -->
     <div *ngIf="selectedCourseId() === course.id"
          class="px-4 py-3 mt-1
                 bg-indigo-50 dark:bg-slate-700/30
@@ -104,14 +100,23 @@
       </div>
 
       <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex gap-3">
-        <a [routerLink]="['/users/edit', userWithCourses()?.id]"
-           class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition">
-          Изменить
-        </a>
-        <button (click)="confirmDelete()"
-                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition">
-          Удалить
-        </button>
+        @if(!isSelf()){
+          <a [routerLink]="['/users/edit', userWithCourses()?.id]"
+             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition">
+            Изменить
+          </a>
+        }@else{
+          <a [routerLink]="['/profile']"
+             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition">
+            Изменить
+          </a>
+        }
+        @if(!isSelf()){
+          <button (click)="confirmDelete()"
+                  class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition">
+            Удалить
+          </button>
+        }
         <a routerLink="/users"
            class="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600
                   text-slate-700 dark:text-slate-300 text-sm rounded-lg transition">

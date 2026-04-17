@@ -1,6 +1,7 @@
 import {
   CommonModule,
   isPlatformBrowser,
+  NgStyle,
 } from '@angular/common';
 import {
   Component,
@@ -9,7 +10,7 @@ import {
   PLATFORM_ID,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import {  RouterLink } from '@angular/router';
 
 import { User } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/user.service';
@@ -23,9 +24,11 @@ import { UserService } from '../../../core/services/user.service';
 export class UserList implements OnInit {
 
   users = signal<User[]>([]);
+
   private platformId = inject(PLATFORM_ID);
 
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService,
+  ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {

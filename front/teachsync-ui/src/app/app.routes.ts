@@ -26,6 +26,7 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [AuthGuard],
     children: [
+      { path: '', redirectTo: '/login', pathMatch: 'full' },
       { path: 'users', component: UserList },
       { path: 'users/create', component: UserCreate },
       { path: 'users/edit/:id', component: UserEdit },
