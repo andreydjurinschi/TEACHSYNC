@@ -6,9 +6,12 @@ import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseShortDto;
+import com.teachsync.dto_s.courses.CourseWithGroupDto;
+import com.teachsync.dto_s.groups.GroupBaseDto;
 import com.teachsync.dto_s.groups.GroupShortDto;
 import com.teachsync.dto_s.topics.TopicBaseDto;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,6 +40,24 @@ public class CourseMapper {
         Set<GroupShortDto> groupShortDtoSet = course.getGroups().stream().map(group -> new GroupShortDto(group.getName())).collect(Collectors.toSet());
         return new CourseDetailedDto(
                 course.getName(), course.getDescription(), topicBaseDtoSet, groupShortDtoSet
+        );
+    }
+
+    public  static CourseWithGroupDto mapToCourseWithGroupDto(Course course){
+        List<GroupBaseDto> groupBaseDtos = course.getGroups().stream().map(
+                GroupMapper::mapToBaseDto
+        ).toList();
+        Category category = course.getCategory();
+
+        return new CourseWithGroupDto(
+                course.getId(),
+                course.getName(),
+                course.getDescription(),
+                course.getPhotoUrl(),
+                course.getTeacherId(),
+                category.getId() != null ? category.getId() : null,
+                category.getName() != null ? category.getName() : null,
+                groupBaseDtos
         );
     }
 

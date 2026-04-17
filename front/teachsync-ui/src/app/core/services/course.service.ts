@@ -1,9 +1,10 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, ObservableLike } from 'rxjs';
 import { CourseBase } from '../models/courses/course.model';
 import { CourseDetailed } from '../models/courses/course-detailed.model';
 import { CourseWithTeacher } from '../models/courses/course-with-teacher.model';
+import { CourseWithGroups } from '../models/courses/course-group.model';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
@@ -57,5 +58,24 @@ export class CourseService {
       `${this.apiUrl}/unassign-topic/${courseId}/${topicId}`,
       { headers: this.getHeaders() }
     );
+  }
+
+  assignGroup(courseId: number, groupId: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/assign-group/${courseId}/${groupId}`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  unassignGroup(courseId: number, groupId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/unassign-group/${courseId}/${groupId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getWithGroups(courseId: number): Observable<CourseWithGroups>{
+      return this.http.get<CourseWithGroups>(`${this.apiUrl}/course-with-groups/${courseId}`, { headers: this.getHeaders() });
   }
 }

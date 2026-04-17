@@ -4,6 +4,7 @@ import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
+import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.services.domain.CourseService;
 import feign.Response;
@@ -43,6 +44,11 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.findById(id));
     }
 
+    @GetMapping("/course-with-groups/{id}")
+    public ResponseEntity<CourseWithGroupDto> findCourseWithGroup(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseWithGroup(id));
+    }
+
     @PutMapping("/edit/{id}")
     public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody CourseUpdateDto dto) {
         courseService.updateCourse(id, dto);
@@ -55,9 +61,21 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
+    @PostMapping("/assign-group/{course_id}/{group_id}")
+    public ResponseEntity<Void> assignGroupToCourse(@PathVariable Long course_id, @PathVariable Long group_id) {
+        courseService.assignGroupToCourse(course_id, group_id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         courseService.deleteCourse(id);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+    }
+
+    @DeleteMapping("/unassign-group/{course_id}/{group_id}")
+    public ResponseEntity<Void> unassignGroupToCourse(@PathVariable Long course_id, @PathVariable Long group_id) {
+        courseService.unassignGroupToCourse(course_id, group_id);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 

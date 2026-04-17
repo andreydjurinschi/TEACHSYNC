@@ -52,7 +52,7 @@ public class GroupController {
 
 
     @PostMapping("/assign-to-course/{groupId}/{courseId}")
-    public ResponseEntity<Void> assignToCourse(@PathVariable("groupId") Long groupId, @PathVariable("courseId") Long courseId) {
+    public ResponseEntity<Void> assignToCourse(@PathVariable Long groupId, @PathVariable Long courseId) {
         groupService.assignGroupToCourse(groupId, courseId);
         return ResponseEntity.ok().build();
     }
