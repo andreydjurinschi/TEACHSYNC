@@ -3,6 +3,7 @@ package com.teachsync.services.domain;
 import com.teachsync.domain.Category;
 import com.teachsync.domain.Course;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
+import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
@@ -13,6 +14,7 @@ import com.teachsync.interaction.feign.requests.TeacherCheckRequest;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
+import com.teachsync.repositories.GroupRepository;
 import com.teachsync.repositories.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,13 +31,16 @@ public class CourseService {
     private final CourseRepository repository;
     private final TopicRepository topicRepository;
     private final CategoryRepository categoryRepository;
+    private final GroupRepository groupRepository;
     private final UserClient userClient;
 
+
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, UserClient userClient) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient) {
         this.repository = repository;
         this.topicRepository = topicRepository;
         this.categoryRepository = categoryRepository;
+        this.groupRepository = groupRepository;
         this.userClient = userClient;
     }
 
@@ -93,10 +98,24 @@ public class CourseService {
     }
 
     @Transactional
+    public void assignGroupToCourse(Long courseId, Long groupId){
+        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
+        repository.assignGroupToCourse(courseId, groupId);
+    }
+
+    @Transactional
     public void unassignTopicToCourse(Long courseId, Long topicId){
         repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
         topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
         repository.unassignTopicToCourse(courseId, topicId);
+    }
+
+    @Transactional
+    public void unassignGroupToCourse(Long courseId, Long groupId){
+        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
+        repository.unassignGroupToCourse(courseId, groupId);
     }
 
     public CourseDetailedDto getAllCourseData(Long id){
@@ -105,6 +124,11 @@ public class CourseService {
             throw new NoSuchElementException("this course does not exist");
         }
         return CourseMapper.mapToDetailedDto(course);
+    }
+
+    public CourseWithGroupDto getCourseWithGroup(Long id){
+        Course course = repository.getCourseWithGroups(id);
+        return CourseMapper.mapToCourseWithGroupDto(course);
     }
 
     // interaction consumer
@@ -135,7 +159,6 @@ public class CourseService {
     }
 
     // interaction producer
-
     public List<CourseBaseDto> getAllForUser(Long userId){
         List<Course> courses = repository.getAllByTeacher(userId);
         return courses

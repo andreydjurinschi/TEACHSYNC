@@ -1,0 +1,76 @@
+<div class="min-h-screen p-8 bg-slate-100 dark:bg-slate-900">
+  <div class="flex items-center gap-3 mb-10">
+    <a [routerLink]="['/courses', courseId]"
+       class="text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
+
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      {{ courseData()?.name }} - записанные на курс группы
+    </h2>
+  </div>
+
+  <div class="flex justify-center">
+    <div class="w-full max-w-3xl space-y-6">
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
+          Назначенные группы
+        </h3>
+
+        @if (assignedGroups().length === 0) {
+          <p class="text-slate-400 text-sm">
+            Группы ещё не назначены
+          </p>
+        } @else {
+          <div class="space-y-2">
+            @for (group of assignedGroups(); track group.id) {
+              <div class="flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <span class="text-sm text-slate-800 dark:text-white">
+                    {{ group.name }}
+                  </span>
+                </div>
+
+                <button
+                  (click)="unassign(group)"
+                  [disabled]="loading()"
+                  class="text-xs px-3 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition disabled:opacity-50">
+                  Удалить
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
+          Доступные группы
+        </h3>
+
+        @for (group of availableGroups; track group.id) {
+          <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500"></span>
+              <span class="text-sm text-slate-600 dark:text-slate-300">
+                {{ group.name }}
+              </span>
+            </div>
+
+            <button
+              (click)="assign(group)"
+              [disabled]="loading()"
+              class="text-xs px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition disabled:opacity-50">
+              Добавить
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -18,6 +18,7 @@ import { GroupCreate } from './pages/groups/group-forms/group-create.component';
 import { GroupCourse } from './pages/groups/group-courses/group-course.component';
 import { CourseCreate } from './pages/courses/course-create/course-create.component';
 import { AccountInfo } from './pages/account/account.info.component';
+import { CourseGroups } from './pages/courses/course-groups/course-group.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -35,6 +36,7 @@ export const routes: Routes = [
       { path: 'courses', component: CourseList },
       { path: 'courses/create', component: CourseCreate },
       { path: 'courses/edit/:id', component: CourseEdit },
+      { path: 'courses/:id/groups', component: CourseGroups },
       { path: 'courses/:id', component: CourseDetailed },
       { path: 'courses/:id/topics', component: CourseTopics },
 
