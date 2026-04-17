@@ -31,7 +31,8 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem(this.tokenKey);
+    //localStorage.removeItem(this.tokenKey);
+    localStorage.clear();
     this.userRoleSubject.next(null);
   }
 

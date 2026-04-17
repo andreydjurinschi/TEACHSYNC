@@ -26,21 +26,21 @@
       <tr *ngFor="let user of users()"
           class="hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
           [routerLink]="['/users', user.id]">
-        <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.name }}</td>
-        <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.surname }}</td>
-        <td class="px-6 py-4 text-slate-900 dark:text-white text-sm">{{ user.email }}</td>
-        <td class="px-6 py-4">
-            <span class="px-2 py-1 rounded-full text-xs font-semibold"
-                  [ngClass]="{
-                'bg-indigo-500/20 text-indigo-300': user.role === 'ADMIN',
-                'bg-emerald-500/20 text-emerald-300': user.role === 'TEACHER',
-                'bg-amber-500/20 text-amber-300': user.role === 'MANAGER'
-              }">
-              {{ user.role }}
-            </span>
-        </td>
-        <td class="px-6 py-4 text-slate-900 dark:text-white text-sm">{{ user.registeredAt }}</td>
-      </tr>
+          <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.name }}</td>
+          <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.surname }}</td>
+          <td class="px-6 py-4 text-slate-900 dark:text-white text-sm">{{ user.email }}</td>
+            <td class="px-6 py-4">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold"
+                      [ngClass]="{
+                    'bg-indigo-500/20 text-indigo-300': user.role === 'ADMIN',
+                    'bg-emerald-500/20 text-emerald-300': user.role === 'TEACHER',
+                    'bg-amber-500/20 text-amber-300': user.role === 'MANAGER'
+                  }">
+                  {{ user.role }}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-slate-900 dark:text-white text-sm">{{ user.registeredAt }}</td>
+          </tr>
       </tbody>
     </table>
   </div>

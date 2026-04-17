@@ -3,6 +3,7 @@ import {
   Component,
   OnInit,
   signal,
+  computed
 } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -16,6 +17,7 @@ import {
 } from '../../../core/models/users/user.detailed.model';
 import { User } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/user.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-user-detailed',
@@ -30,10 +32,23 @@ export class UserDetailed implements OnInit {
   loading = signal<boolean>(false);
   selectedCourseId = signal<number | null>(null);
 
+  currentEmail = computed(() => {
+  const token = this.authService.getToken();
+  if (!token) return null;
+
+  const payload = JSON.parse(atob(token.split('.')[1]));
+  return payload?.sub ?? null;
+});
+
+isSelf = computed(() =>
+  this.currentEmail() === this.userWithCourses()?.email
+);
+
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
     private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
