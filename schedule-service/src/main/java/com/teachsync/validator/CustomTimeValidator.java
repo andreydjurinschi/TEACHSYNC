@@ -26,8 +26,8 @@ public class CustomTimeValidator {
 
     private void checkScheduleCourseDuration(LocalTime start, LocalTime end) throws InvalidTimeRangeException {
         Duration duration = Duration.between(start, end);
-        if(duration.equals(SHORTENED_LESSON) || duration.equals(STANDARD_LESSON)){
-            throw new InvalidTimeRangeException("invalid lesson duration");
+        if(!duration.equals(SHORTENED_LESSON) && !duration.equals(STANDARD_LESSON)){
+            throw new InvalidTimeRangeException("invalid lesson duration: must be 45 or 90 minutes");
         }
     }
 }

@@ -9,16 +9,12 @@ import com.teachsync.mappers.class_room.ClassRoomMapper;
 
 public class ScheduleMapper {
 
-    // TODO: group course feign finder
-    // null on teacher field is replaced in schedule service
-
     public static ScheduleBaseDto mapToBaseDto(Schedule schedule) {
         ClassRoomBaseDto classRoomBaseDto = ClassRoomMapper.mapToBaseDto(schedule.getClassRoom());
         return new ScheduleBaseDto(
                 schedule.getId(), schedule.getStartTime(), schedule.getEndTime(), schedule.getWeekDays(), null, null, classRoomBaseDto
         );
     }
-
 
     // TODO: groupCourseId, teacherId (from feign request), classRoomId
     public static Schedule mapScheduleUpdateDtoToEntity(ScheduleUpdateDto dto){
@@ -30,7 +26,7 @@ public class ScheduleMapper {
     // TODO: groupCourseId, teacherId (from feign request), classRoomId
     public static Schedule mapScheduleCreateDtoToEntity(ScheduleCreateDto dto) {
         return new Schedule(
-                dto.getStartTime(), dto.getEndTime(), dto.getWeekDays(), null, null, null
+                dto.getStartTime(), dto.getEndTime(), dto.getWeekDays(), dto.getGroupCourseId(), dto.getTeacherId(), null
         );
     }
 }

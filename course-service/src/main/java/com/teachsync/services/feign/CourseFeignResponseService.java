@@ -9,16 +9,29 @@ import com.teachsync.repositories.GroupCourseRepository;
 import com.teachsync.repositories.GroupRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CourseFeignResponseService {
 
     private final GroupRepository groupRepository;
     private final CourseRepository courseRepository;
     private final GroupCourseRepository groupCourseRepository;
+
     public CourseFeignResponseService(GroupRepository groupRepository, CourseRepository courseRepository, GroupCourseRepository groupCourseRepository) {
         this.groupRepository = groupRepository;
         this.courseRepository = courseRepository;
         this.groupCourseRepository = groupCourseRepository;
+    }
+
+    public List<GroupCourseResponseForScheduleService> getAll() {
+        return groupCourseRepository.findAll()
+                .stream()
+                .map(gc -> new GroupCourseResponseForScheduleService(
+                        gc.getId(), gc.getGroup().getId(), gc.getCourse().getId(),
+                        gc.getGroup().getName(), gc.getCourse().getName()
+                ))
+                .toList();
     }
 
     public GroupCourseResponseForScheduleService getGroupCourse(Long groupCourseId){
@@ -28,7 +41,20 @@ public class CourseFeignResponseService {
         Group group = groupCourse.getGroup();
 
         return new GroupCourseResponseForScheduleService(
-                group.getId(), course.getId(), group.getName(), course.getName()
+                groupCourse.getId(),group.getId(), course.getId(), group.getName(), course.getName()
         );
     }
+
+    public List<GroupCourseResponseForScheduleService> findAllByIds(List<Long> ids) {
+        return groupCourseRepository.findAllById(ids)
+                .stream()
+                .map(gc -> new GroupCourseResponseForScheduleService(
+                        gc.getId(),gc.getGroup().getId(),gc.getCourse().getId(),
+                        gc.getGroup().getName(),
+                        gc.getCourse().getName()
+                ))
+                .toList();
+    }
+
+
 }

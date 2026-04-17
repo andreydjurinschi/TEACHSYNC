@@ -20,6 +20,10 @@ public class ScheduleCreateDto {
     @NotNull
     private Long classRoomId;
 
+
+    public ScheduleCreateDto() {
+    }
+
     public ScheduleCreateDto(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, Long groupCourseId, Long teacherId, Long classRoomId) {
         this.startTime = startTime;
         this.endTime = endTime;

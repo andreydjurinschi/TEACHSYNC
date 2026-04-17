@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,9 +32,19 @@ public class CourseInternalController {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.getAllForUser(id));
     }
 
+    @GetMapping("/all")
+    public List<GroupCourseResponseForScheduleService> getAll() {
+        return responseService.getAll(); // добавь метод в сервис
+    }
+
     @GetMapping("/group/{groupCourseId}")
     public ResponseEntity<GroupCourseResponseForScheduleService>
            getGroupWithCourseForScheduleService(@PathVariable("groupCourseId")Long groupCourseId){
         return ResponseEntity.ok(responseService.getGroupCourse(groupCourseId));
+    }
+
+    @PostMapping("/batch")
+    public List<GroupCourseResponseForScheduleService> getByIds(@RequestBody List<Long> ids) {
+        return responseService.findAllByIds(ids);
     }
 }

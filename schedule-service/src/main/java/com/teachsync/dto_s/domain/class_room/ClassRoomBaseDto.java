@@ -1,6 +1,5 @@
 package com.teachsync.dto_s.domain.class_room;
 
-// TODO class room base dto fields
 public class ClassRoomBaseDto {
     private Long id;
     private String name;

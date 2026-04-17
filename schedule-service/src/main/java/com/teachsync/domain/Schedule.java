@@ -1,6 +1,8 @@
 package com.teachsync.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -25,6 +27,7 @@ public class Schedule {
             name = "schedule_days_info",
             joinColumns = @JoinColumn(name = "schedule_id")
     )
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @Column(name = "weekday", nullable = false)
     private Set<WeekDays> weekDays = new HashSet<>();
 
