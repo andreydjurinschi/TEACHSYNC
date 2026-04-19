@@ -1,12 +1,14 @@
 package com.teachsync.interation.feign.requests;
 
 public class GroupCourseBaseInfoRequest {
+    private Long id;
     private Long groupId;
     private Long courseId;
     private String groupName;
     private String courseName;
 
-    public GroupCourseBaseInfoRequest(Long groupId, Long courseId, String groupName, String courseName) {
+    public GroupCourseBaseInfoRequest(Long id, Long groupId, Long courseId, String groupName, String courseName) {
+        this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
         this.groupName = groupName;
@@ -14,6 +16,14 @@ public class GroupCourseBaseInfoRequest {
     }
 
     public GroupCourseBaseInfoRequest() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getGroupId() {

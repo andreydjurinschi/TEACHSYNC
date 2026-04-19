@@ -135,4 +135,8 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
+    public List<UserBaseDto> findAllByIds(List<Long> ids) {
+        return repository.findAllById(ids)
+                .stream().map(UserMapper::mapToBaseDto).toList();
+    }
 }

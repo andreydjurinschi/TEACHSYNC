@@ -6,17 +6,27 @@ import java.time.LocalDate;
 
 public class TeacherBaseInfoRequest {
     private Long id;
-    private String fullName;
+    private String name;
+    private String surname;
     private String email;
     private LocalDate registeredAt;
     private Role role;
 
-    public TeacherBaseInfoRequest(Long id, String fullName, String email, LocalDate registeredAt, Role role) {
+    public TeacherBaseInfoRequest(Long id, String name, String surname, String email, LocalDate registeredAt, Role role) {
         this.id = id;
-        this.fullName = fullName;
+        this.name = name;
+        this.surname = surname;
         this.email = email;
         this.registeredAt = registeredAt;
         this.role = role;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public Role getRole() {
@@ -46,12 +56,12 @@ public class TeacherBaseInfoRequest {
         this.id = id;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getName() {
+        return name;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {

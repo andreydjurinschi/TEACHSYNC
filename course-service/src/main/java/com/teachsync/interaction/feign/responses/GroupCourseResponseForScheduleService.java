@@ -1,12 +1,14 @@
 package com.teachsync.interaction.feign.responses;
 
 public class GroupCourseResponseForScheduleService {
+    private Long id;
     private Long groupId;
     private Long courseId;
     private String groupName;
     private String courseName;
 
-    public GroupCourseResponseForScheduleService(Long groupId, Long courseId, String groupName, String courseName) {
+    public GroupCourseResponseForScheduleService(Long id, Long groupId, Long courseId, String groupName, String courseName) {
+        this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
         this.groupName = groupName;
@@ -43,5 +45,13 @@ public class GroupCourseResponseForScheduleService {
 
     public void setCourseName(String courseName) {
         this.courseName = courseName;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

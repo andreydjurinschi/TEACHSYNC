@@ -41,10 +41,12 @@ public class UserInternalController {
     @GetMapping("/{id}")
     public TeacherBaseInfoForScheduleServiceResponse baseInfoForScheduleServiceResponse(@PathVariable Long id){
         UserBaseDto user = userService.findById(id);
-
-        return new TeacherBaseInfoForScheduleServiceResponse(
-                user.getId(), user.getName() + " " + user.getSurname(), user.getEmail()
-        );
+        TeacherBaseInfoForScheduleServiceResponse response = new TeacherBaseInfoForScheduleServiceResponse();
+        response.setId(user.getId());
+        response.setName(user.getName());
+        response.setSurname(user.getSurname());
+        response.setEmail(user.getEmail());
+        return response;
     }
 
     @GetMapping("/all/by-role")
@@ -62,6 +64,11 @@ public class UserInternalController {
         UserResponse response =  userService.getByUserEmail(email);
 
         return populateAccountInfoResponse(response);
+    }
+
+    @PostMapping("/batch")
+    public List<UserBaseDto> getByIds(@RequestBody List<Long> ids) {
+        return userService.findAllByIds(ids);
     }
 
     private static AccountInfoResponse populateAccountInfoResponse(UserResponse response) {

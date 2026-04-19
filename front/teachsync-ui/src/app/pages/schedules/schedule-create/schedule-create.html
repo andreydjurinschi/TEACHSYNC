@@ -1,0 +1,197 @@
+<div class="min-h-screen bg-slate-100 dark:bg-slate-900 p-8">
+
+  <div class="flex items-center gap-3 mb-8">
+    <button routerLink="/schedules"
+            class="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+      <svg class="w-5 h-5 text-slate-600 dark:text-slate-300" fill="none"
+           stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+    </button>
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Новое расписание</h1>
+  </div>
+
+  <div class="max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+                dark:border-slate-700 p-6">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+<!-- Время -->
+<div class="grid grid-cols-2 gap-4">
+  <div class="flex flex-col gap-1">
+    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                  uppercase tracking-wide">Начало</label>
+    <div class="flex gap-2">
+      <select formControlName="startHour"
+              class="flex-1 px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                     border border-slate-200 dark:border-slate-600
+                     text-slate-800 dark:text-slate-100
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors">
+        <option value="" disabled selected>ЧЧ</option>
+        @for (h of hours; track h) {
+          <option [value]="h">{{ h | number:'2.0' }}</option>
+        }
+      </select>
+      <span class="self-center text-slate-400 font-bold">:</span>
+      <select formControlName="startMinute"
+              class="flex-1 px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                     border border-slate-200 dark:border-slate-600
+                     text-slate-800 dark:text-slate-100
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors">
+        <option value="" disabled selected>ММ</option>
+        @for (m of minutes; track m) {
+          <option [value]="m">{{ m | number:'2.0' }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                  uppercase tracking-wide">Конец</label>
+    <div class="flex gap-2">
+      <select formControlName="endHour"
+              class="flex-1 px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                     border border-slate-200 dark:border-slate-600
+                     text-slate-800 dark:text-slate-100
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors">
+        <option value="" disabled selected>ЧЧ</option>
+        @for (h of hours; track h) {
+          <option [value]="h">{{ h | number:'2.0' }}</option>
+        }
+      </select>
+      <span class="self-center text-slate-400 font-bold">:</span>
+      <select formControlName="endMinute"
+              class="flex-1 px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                     border border-slate-200 dark:border-slate-600
+                     text-slate-800 dark:text-slate-100
+                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors">
+        <option value="" disabled selected>ММ</option>
+        @for (m of minutes; track m) {
+          <option [value]="m">{{ m | number:'2.0' }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</div>
+
+        <!-- Дни недели -->
+        <div class="flex flex-col gap-2">
+          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                        uppercase tracking-wide">Дни недели</label>
+          <div class="flex gap-2 flex-wrap">
+            @for (day of ALL_DAYS; track day.key) {
+              <button type="button" (click)="toggleDay(day.key)"
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors"
+                      [class]="isDaySelected(day.key)
+                        ? 'bg-indigo-600 border-indigo-600 text-white'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-indigo-400'">
+                {{ day.label }}
+              </button>
+            }
+          </div>
+          @if (form.get('weekDays')?.value?.length === 0 && form.get('weekDays')?.touched) {
+            <span class="text-xs text-red-500">Выберите хотя бы один день</span>
+          }
+        </div>
+
+        <!-- Группа / Курс -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                        uppercase tracking-wide">Группа / Курс</label>
+          <select formControlName="groupCourseId"
+                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                         border border-slate-200 dark:border-slate-600
+                         text-slate-800 dark:text-slate-100
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+                         focus:border-indigo-400 transition-colors">
+            <option [value]="null" disabled selected>Выберите группу и курс</option>
+            @for (gc of groupCourses(); track gc.id) {
+              <option [value]="gc.id">{{ gc.groupName }} — {{ gc.courseName }}</option>
+            }
+          </select>
+          @if (form.get('groupCourseId')?.invalid && form.get('groupCourseId')?.touched) {
+            <span class="text-xs text-red-500">Обязательное поле</span>
+          }
+        </div>
+
+        <!-- Преподаватель -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                        uppercase tracking-wide">Преподаватель</label>
+          <select formControlName="teacherId"
+                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                         border border-slate-200 dark:border-slate-600
+                         text-slate-800 dark:text-slate-100
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+                         focus:border-indigo-400 transition-colors">
+            <option [value]="null" disabled selected>Выберите преподавателя</option>
+            @for (t of teachers(); track t.id) {
+              <option [value]="t.id">{{ t.name }} {{ t.surname }}</option>
+            }
+          </select>
+          @if (form.get('teacherId')?.invalid && form.get('teacherId')?.touched) {
+            <span class="text-xs text-red-500">Обязательное поле</span>
+          }
+        </div>
+
+        <!-- Аудитория -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                        uppercase tracking-wide">Аудитория</label>
+          <select formControlName="classRoomId"
+                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
+                         border border-slate-200 dark:border-slate-600
+                         text-slate-800 dark:text-slate-100
+                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+                         focus:border-indigo-400 transition-colors">
+            <option [value]="null" disabled selected>Выберите аудиторию</option>
+            @for (cr of classRooms(); track cr.id) {
+              <option [value]="cr.id">{{ cr.name }} ({{ cr.capacity }} мест)</option>
+            }
+          </select>
+          @if (form.get('classRoomId')?.invalid && form.get('classRoomId')?.touched) {
+            <span class="text-xs text-red-500">Обязательное поле</span>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20
+                      border border-red-200 dark:border-red-800
+                      text-sm text-red-600 dark:text-red-400">
+            {{ error() }}
+          </div>
+        }
+
+        <!-- Кнопки -->
+        <div class="flex items-center justify-end gap-3 pt-2
+                    border-t border-slate-100 dark:border-slate-700">
+          <button type="button" routerLink="/schedules"
+                  class="px-4 py-2 text-sm font-medium rounded-lg
+                         text-slate-600 dark:text-slate-300
+                         bg-slate-100 dark:bg-slate-700
+                         hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+            Отменить
+          </button>
+          <button type="submit" [disabled]="form.invalid || saving()"
+                  class="px-4 py-2 text-sm font-medium rounded-lg text-white
+                         bg-indigo-600 hover:bg-indigo-700
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-colors flex items-center gap-2">
+            @if (saving()) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor"
+                        stroke-width="4" class="opacity-25"/>
+                <path fill="currentColor" class="opacity-75"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            }
+            {{ saving() ? 'Сохраняем...' : 'Создать' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
