@@ -34,7 +34,7 @@ public class CourseInternalController {
 
     @GetMapping("/all")
     public List<GroupCourseResponseForScheduleService> getAll() {
-        return responseService.getAll(); // добавь метод в сервис
+        return responseService.getAll();
     }
 
     @GetMapping("/group/{groupCourseId}")

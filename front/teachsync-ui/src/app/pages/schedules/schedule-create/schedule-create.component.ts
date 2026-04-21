@@ -1,9 +1,24 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
+
+import {
+  ClassRoomInfo,
+  GroupCourseInfo,
+  WeekDay,
+} from '../../../core/models/schedules/schedule-base.model';
 import { ScheduleService } from '../../../core/services/schedule.service';
-import { ClassRoomInfo, GroupCourseInfo, TeacherInfo, WeekDay } from '../../../core/models/schedules/schedule-base.model';
 
 @Component({
   selector: 'app-schedule-create',
@@ -16,13 +31,14 @@ export class ScheduleCreate implements OnInit {
   saving = signal(false);
   error = signal<string | null>(null);
 
-  teachers = signal<TeacherInfo[]>([]);
   groupCourses = signal<GroupCourseInfo[]>([]);
   classRooms = signal<ClassRoomInfo[]>([]);
 
   private fb = inject(FormBuilder);
   private scheduleService = inject(ScheduleService);
   private router = inject(Router);
+
+  selectedTeacherName = signal<string | null>(null);
 
   readonly ALL_DAYS: { key: WeekDay; label: string }[] = [
     { key: 'MON', label: 'Пн' },
@@ -45,13 +61,15 @@ this.form = this.fb.group({
   endMinute:    [null, Validators.required],
   weekDays:     [[], Validators.required],
   groupCourseId:[null, Validators.required],
-  teacherId:    [null, Validators.required],
   classRoomId:  [null, Validators.required],
 });
 
-    this.scheduleService.getAllTeachers().subscribe(d => this.teachers.set(d));
     this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
     this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
+    this.form.get('groupCourseId')!.valueChanges.subscribe(id => {
+    const gc = this.groupCourses().find(g => g.id === +id);
+    this.selectedTeacherName.set(gc?.teacherName ?? null);
+  });
   }
 
   toggleDay(day: WeekDay): void {
@@ -70,14 +88,14 @@ submit(): void {
   if (this.form.invalid) return;
   const v = this.form.value;
 
-  const payload = {
-    startTime: `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`,
-    endTime:   `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`,
-    weekDays:      v.weekDays,
-    groupCourseId: v.groupCourseId,
-    teacherId:     v.teacherId,
-    classRoomId:   v.classRoomId,
-  };
+const payload = {
+  startTime: `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`,
+  endTime:   `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`,
+  weekDays:  v.weekDays.map((d: WeekDay) => ({ weekday: d })),
+  groupCourseId: v.groupCourseId,
+  classRoomId:   v.classRoomId,
+};
+
 
   this.saving.set(true);
   this.scheduleService.create(payload).subscribe({

@@ -71,7 +71,7 @@ public class UserInternalController {
         return userService.findAllByIds(ids);
     }
 
-    private static AccountInfoResponse populateAccountInfoResponse(UserResponse response) {
+    private AccountInfoResponse populateAccountInfoResponse(UserResponse response) {
         AccountInfoResponse accountInfoResponse = new AccountInfoResponse();
         accountInfoResponse.setId(response.getId());
         accountInfoResponse.setEmail(response.getEmail());

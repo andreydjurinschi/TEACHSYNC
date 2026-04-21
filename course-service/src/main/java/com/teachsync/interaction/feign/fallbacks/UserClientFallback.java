@@ -6,6 +6,8 @@ import com.teachsync.interaction.feign.requests.TeacherCheckRequest;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class UserClientFallback implements UserClient {
 
@@ -17,5 +19,11 @@ public class UserClientFallback implements UserClient {
     @Override
     public TeacherRequest getTeacher(Long id) {
         throw new ServiceUnavailableException("user service is not available rn.\n Method: get teacher");
+    }
+
+    @Override
+    public List<TeacherRequest> getTeachersByIds(List<Long> ids) {
+        System.out.println(">>> FALLBACK вызван для getTeachersByIds!");
+        return List.of();
     }
 }

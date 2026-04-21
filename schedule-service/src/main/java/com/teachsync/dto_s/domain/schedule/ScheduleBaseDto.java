@@ -1,8 +1,8 @@
 package com.teachsync.dto_s.domain.schedule;
 
 
+import com.teachsync.domain.ScheduleDay;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
-import com.teachsync.domain.WeekDays;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import com.teachsync.interation.feign.requests.TeacherBaseInfoRequest;
 
@@ -13,12 +13,12 @@ public class ScheduleBaseDto {
     private Long id;
     private LocalTime startTime;
     private LocalTime endTime;
-    private Set<WeekDays> weekDays;
+    private Set<String> weekDays;
     private GroupCourseBaseInfoRequest groupCourseDto;
     private TeacherBaseInfoRequest teacherDto;
     private ClassRoomBaseDto classRoomBaseDto;
 
-    public ScheduleBaseDto(Long id, LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, GroupCourseBaseInfoRequest groupCourseDto, TeacherBaseInfoRequest teacherDto, ClassRoomBaseDto classRoomBaseDto) {
+    public ScheduleBaseDto(Long id, LocalTime startTime, LocalTime endTime, Set<String> weekDays, GroupCourseBaseInfoRequest groupCourseDto, TeacherBaseInfoRequest teacherDto, ClassRoomBaseDto classRoomBaseDto) {
         this.id = id;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -52,11 +52,11 @@ public class ScheduleBaseDto {
         this.endTime = endTime;
     }
 
-    public Set<WeekDays> getWeekDays() {
+    public Set<String> getWeekDays() {
         return weekDays;
     }
 
-    public void setWeekDays(Set<WeekDays> weekDays) {
+    public void setWeekDays(Set<String> weekDays) {
         this.weekDays = weekDays;
     }
 

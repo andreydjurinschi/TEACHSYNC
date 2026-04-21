@@ -96,44 +96,35 @@
         </div>
 
         <!-- Группа / Курс -->
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
-                        uppercase tracking-wide">Группа / Курс</label>
-          <select formControlName="groupCourseId"
-                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
-                         border border-slate-200 dark:border-slate-600
-                         text-slate-800 dark:text-slate-100
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
-                         focus:border-indigo-400 transition-colors">
-            <option [value]="null" disabled selected>Выберите группу и курс</option>
-            @for (gc of groupCourses(); track gc.id) {
-              <option [value]="gc.id">{{ gc.groupName }} — {{ gc.courseName }}</option>
-            }
-          </select>
-          @if (form.get('groupCourseId')?.invalid && form.get('groupCourseId')?.touched) {
-            <span class="text-xs text-red-500">Обязательное поле</span>
-          }
-        </div>
+<div class="flex flex-col gap-1">
+  <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                uppercase tracking-wide">Группа / Курс</label>
+  <select formControlName="groupCourseId" ...>
+    <option [value]="null" disabled selected>Выберите группу и курс</option>
+    @for (gc of groupCourses(); track gc.id) {
+      <option [value]="gc.id">{{ gc.groupName }} — {{ gc.courseName }}</option>
+    }
+  </select>
+</div>
 
-        <!-- Преподаватель -->
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
-                        uppercase tracking-wide">Преподаватель</label>
-          <select formControlName="teacherId"
-                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
-                         border border-slate-200 dark:border-slate-600
-                         text-slate-800 dark:text-slate-100
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
-                         focus:border-indigo-400 transition-colors">
-            <option [value]="null" disabled selected>Выберите преподавателя</option>
-            @for (t of teachers(); track t.id) {
-              <option [value]="t.id">{{ t.name }} {{ t.surname }}</option>
-            }
-          </select>
-          @if (form.get('teacherId')?.invalid && form.get('teacherId')?.touched) {
-            <span class="text-xs text-red-500">Обязательное поле</span>
-          }
-        </div>
+<!-- Преподаватель — появляется после выбора -->
+@if (selectedTeacherName()) {
+  <div class="flex items-center gap-2 px-3 py-2 rounded-lg
+              bg-indigo-50 dark:bg-indigo-900/20
+              border border-indigo-200 dark:border-indigo-800">
+    <svg class="w-4 h-4 text-indigo-500 shrink-0" fill="none"
+         stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+    </svg>
+    <div>
+      <p class="text-xs text-indigo-400 dark:text-indigo-500">Преподаватель</p>
+      <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+        {{ selectedTeacherName() }}
+      </p>
+    </div>
+  </div>
+}
 
         <!-- Аудитория -->
         <div class="flex flex-col gap-1">

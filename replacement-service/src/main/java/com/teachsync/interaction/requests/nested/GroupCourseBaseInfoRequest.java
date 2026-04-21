@@ -1,16 +1,29 @@
 package com.teachsync.interaction.requests.nested;
 
 public class GroupCourseBaseInfoRequest {
+    private Long id;
     private Long groupId;
     private Long courseId;
     private String groupName;
     private String courseName;
 
-    public GroupCourseBaseInfoRequest(Long groupId, Long courseId, String courseName, String groupName) {
+    public GroupCourseBaseInfoRequest(Long id, Long groupId, Long courseId, String groupName, String courseName) {
+        this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
-        this.courseName = courseName;
         this.groupName = groupName;
+        this.courseName = courseName;
+    }
+
+    public GroupCourseBaseInfoRequest() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getGroupId() {
@@ -29,20 +42,20 @@ public class GroupCourseBaseInfoRequest {
         this.courseId = courseId;
     }
 
-    public String getCourseName() {
-        return courseName;
-    }
-
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
-    }
-
     public String getGroupName() {
         return groupName;
     }
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
     }
 }
 

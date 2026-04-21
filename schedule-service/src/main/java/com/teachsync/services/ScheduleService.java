@@ -2,6 +2,7 @@ package com.teachsync.services;
 
 import com.teachsync.domain.ClassRoom;
 import com.teachsync.domain.Schedule;
+import com.teachsync.domain.ScheduleDay;
 import com.teachsync.domain.WeekDays;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
@@ -15,16 +16,14 @@ import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import com.teachsync.interation.feign.requests.TeacherBaseInfoRequest;
 import com.teachsync.mappers.schedule.ScheduleMapper;
 import com.teachsync.repositories.ClassRoomRepository;
+import com.teachsync.repositories.ScheduleDayRepository;
 import com.teachsync.repositories.ScheduleRepository;
 import com.teachsync.validator.CustomTimeValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,13 +34,15 @@ public class ScheduleService {
     private final CustomTimeValidator timeValidator;
     private final TeacherClient teacherClient;
     private final GroupCourseClient groupCourseClient;
+    private final ScheduleDayRepository scheduleDayRepository;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient) {
+    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient, ScheduleDayRepository scheduleDayRepository) {
         this.scheduleRepository = scheduleRepository;
         this.classRoomRepository = classRoomRepository;
         this.timeValidator = timeValidator;
         this.teacherClient = teacherClient;
         this.groupCourseClient = groupCourseClient;
+        this.scheduleDayRepository = scheduleDayRepository;
     }
 
     public List<ScheduleBaseDto> getAll() {
@@ -115,24 +116,30 @@ public class ScheduleService {
 
     }
 
-    @Transactional
-    public void create(ScheduleCreateDto dto) throws InvalidTimeRangeException {
-        timeValidator.checkTime(dto.getStartTime(), dto.getEndTime());
-        ClassRoom classRoom = classRoomRepository.findById(dto.getClassRoomId()).orElseThrow(() -> new NoSuchElementException("this classroom does not exist"));
-        TeacherBaseInfoRequest teacherBaseInfoRequest = teacherClient.requestForUserFromUserService(dto.getTeacherId());
-        if(teacherBaseInfoRequest == null){
-            throw new IllegalArgumentException("unknown teacher");
-        }
-        GroupCourseBaseInfoRequest groupCourseBaseInfoRequest = groupCourseClient.groupCourseBaseInfoRequest(dto.getGroupCourseId());
-        if(groupCourseBaseInfoRequest == null){
-            throw new IllegalArgumentException("unknown group course relation");
-        }
+    public ScheduleBaseDto create(ScheduleCreateDto dto) {
+        ClassRoom classRoom = classRoomRepository.findById(dto.getClassRoomId())
+                .orElseThrow();
 
-        Schedule schedule = ScheduleMapper.mapScheduleCreateDtoToEntity(
-                dto
+        GroupCourseBaseInfoRequest groupCourse = groupCourseClient
+                .groupCourseBaseInfoRequest(dto.getGroupCourseId());
+
+        Schedule schedule = new Schedule(
+                dto.getStartTime(), dto.getEndTime(),
+                new HashSet<>(),
+                dto.getGroupCourseId(),
+                groupCourse.getTeacherId(),
+                classRoom
         );
-        schedule.setClassRoom(classRoom);
-        scheduleRepository.save(schedule);
+
+        Schedule saved = scheduleRepository.save(schedule);
+
+        Set<ScheduleDay> days = dto.getWeekDays().stream()
+                .map(day -> new ScheduleDay(day.getWeekday(), saved))
+                .collect(Collectors.toSet());
+
+        scheduleDayRepository.saveAll(days);
+
+        return ScheduleMapper.mapToBaseDto(saved);
     }
 
     //TODO: schedule delete logic

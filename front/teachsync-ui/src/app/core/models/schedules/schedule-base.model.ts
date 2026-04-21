@@ -1,21 +1,13 @@
 export interface ScheduleBase {
   id: number;
   startTime: number[];
-  endTime: number[];    
+  endTime: number[];
   weekDays: WeekDay[];
-  teacherDto: TeacherInfo;
   groupCourseDto: GroupCourseInfo;
   classRoomBaseDto: ClassRoomInfo;
 }
 
 export type WeekDay = 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT' | 'SUN';
-
-export interface TeacherInfo {
-  id: number;
-  name: string;     
-  surname: string;  
-  email: string;
-}
 
 export interface GroupCourseInfo {
   id: number;
@@ -23,10 +15,18 @@ export interface GroupCourseInfo {
   courseId: number;
   groupName: string;
   courseName: string;
+  teacherId: number;   
+  teacherName: string; 
 }
 
 export interface ClassRoomInfo {
   id: number;
   name: string;
   capacity: number;
+}
+export interface TeacherInfo {
+  id: number;
+  name: string;     
+  surname: string;  
+  email: string;
 }

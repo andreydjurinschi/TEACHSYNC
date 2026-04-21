@@ -6,13 +6,20 @@ public class GroupCourseResponseForScheduleService {
     private Long courseId;
     private String groupName;
     private String courseName;
+    private Long teacherId;
+    private String teacherName;
 
-    public GroupCourseResponseForScheduleService(Long id, Long groupId, Long courseId, String groupName, String courseName) {
+    public GroupCourseResponseForScheduleService(Long id, Long groupId, Long courseId, String groupName, String courseName, Long teacherId, String teacherName) {
         this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
         this.groupName = groupName;
         this.courseName = courseName;
+        this.teacherId = teacherId;
+        this.teacherName = teacherName;
+    }
+
+    public GroupCourseResponseForScheduleService() {
     }
 
     public Long getGroupId() {
@@ -53,5 +60,21 @@ public class GroupCourseResponseForScheduleService {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(Long teacherId) {
+        this.teacherId = teacherId;
+    }
+
+    public String getTeacherName() {
+        return teacherName;
+    }
+
+    public void setTeacherName(String teacherName) {
+        this.teacherName = teacherName;
     }
 }

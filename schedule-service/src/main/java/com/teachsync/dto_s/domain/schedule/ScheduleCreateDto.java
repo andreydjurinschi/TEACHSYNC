@@ -1,5 +1,6 @@
 package com.teachsync.dto_s.domain.schedule;
 
+import com.teachsync.domain.ScheduleDay;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import com.teachsync.domain.WeekDays;
@@ -13,7 +14,7 @@ public class ScheduleCreateDto {
     @NotNull(message = "end time for schedule is required")
     private LocalTime endTime;
     @NotEmpty(message = "at least one week day is required")
-    private Set<WeekDays> weekDays;
+    private Set<ScheduleDay> weekDays;
     @NotNull
     private Long groupCourseId;
     private Long teacherId;
@@ -24,7 +25,7 @@ public class ScheduleCreateDto {
     public ScheduleCreateDto() {
     }
 
-    public ScheduleCreateDto(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, Long groupCourseId, Long teacherId, Long classRoomId) {
+    public ScheduleCreateDto(LocalTime startTime, LocalTime endTime, Set<ScheduleDay> weekDays, Long groupCourseId, Long teacherId, Long classRoomId) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.weekDays = weekDays;
@@ -49,11 +50,11 @@ public class ScheduleCreateDto {
         this.endTime = endTime;
     }
 
-    public Set<WeekDays> getWeekDays() {
+    public Set<ScheduleDay> getWeekDays() {
         return weekDays;
     }
 
-    public void setWeekDays(Set<WeekDays> weekDays) {
+    public void setWeekDays(Set<ScheduleDay> weekDays) {
         this.weekDays = weekDays;
     }
 

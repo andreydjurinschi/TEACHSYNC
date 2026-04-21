@@ -1,8 +1,6 @@
 package com.teachsync.domain;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -21,15 +19,8 @@ public class Schedule {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
-    @CollectionTable(
-            name = "schedule_days_info",
-            joinColumns = @JoinColumn(name = "schedule_id")
-    )
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @Column(name = "weekday", nullable = false)
-    private Set<WeekDays> weekDays = new HashSet<>();
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ScheduleDay> weekDays = new HashSet<>();
 
     // relations
     @Column(name = "group_course_id", nullable = false)
@@ -40,7 +31,7 @@ public class Schedule {
     @JoinColumn(name = "class_room_id")
     private ClassRoom classRoom;
 
-    public Schedule(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, Long groupCourseId, Long teacherId, ClassRoom classRoom) {
+    public Schedule(LocalTime startTime, LocalTime endTime, Set<ScheduleDay> weekDays, Long groupCourseId, Long teacherId, ClassRoom classRoom) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.weekDays = weekDays;
@@ -48,6 +39,7 @@ public class Schedule {
         this.teacherId = teacherId;
         this.classRoom = classRoom;
     }
+
 
     public Schedule() {
 
@@ -77,12 +69,12 @@ public class Schedule {
         this.endTime = endTime;
     }
 
-    public Set<WeekDays> getWeekDays() {
+    public Set<ScheduleDay> getWeekDays() {
         return weekDays;
     }
 
-    public void setWeekDays(Set<WeekDays> weekDay) {
-        this.weekDays = weekDay;
+    public void setWeekDays(Set<ScheduleDay> weekDays) {
+        this.weekDays = weekDays;
     }
 
     public ClassRoom getClassRoom() {
