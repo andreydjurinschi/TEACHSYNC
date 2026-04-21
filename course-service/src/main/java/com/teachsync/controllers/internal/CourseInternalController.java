@@ -4,6 +4,7 @@ import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.interaction.feign.responses.GroupCourseResponseForScheduleService;
 import com.teachsync.services.domain.CourseService;
 import com.teachsync.services.feign.CourseFeignResponseService;
+import com.teachsync.services.feign.groupcourse.GroupCourseSizeDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,11 @@ public class CourseInternalController {
     public ResponseEntity<GroupCourseResponseForScheduleService>
            getGroupWithCourseForScheduleService(@PathVariable("groupCourseId")Long groupCourseId){
         return ResponseEntity.ok(responseService.getGroupCourse(groupCourseId));
+    }
+
+    @GetMapping("/group/{id}/size")
+    public ResponseEntity<GroupCourseSizeDto> getGroupSizeInformation(@PathVariable Long id){
+        return ResponseEntity.ok(responseService.getGroupDtoWithSize(id));
     }
 
     @PostMapping("/batch")

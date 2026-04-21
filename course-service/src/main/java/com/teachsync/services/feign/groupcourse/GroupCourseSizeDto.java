@@ -1,20 +1,19 @@
-package com.teachsync.dto_s.feign;
+package com.teachsync.services.feign.groupcourse;
 
-public class GroupCourseDto {
-
+public class GroupCourseSizeDto {
     private Long id;
     private Long groupId;
     private Long courseId;
     private int capacity;
 
-    public GroupCourseDto(Long id, Long groupId, Long courseId, int capacity) {
+    public GroupCourseSizeDto(Long id, Long groupId, Long courseId, int capacity) {
         this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
         this.capacity = capacity;
     }
 
-    public GroupCourseDto() {
+    public GroupCourseSizeDto() {
     }
 
     public Long getId() {

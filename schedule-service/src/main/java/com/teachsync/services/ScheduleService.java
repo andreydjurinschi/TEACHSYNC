@@ -8,7 +8,7 @@ import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
-import com.teachsync.exceptions.InvalidTimeRangeException;
+import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.clients.TeacherClient;
@@ -20,7 +20,6 @@ import com.teachsync.repositories.ScheduleDayRepository;
 import com.teachsync.repositories.ScheduleRepository;
 import com.teachsync.validator.CustomTimeValidator;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.*;
@@ -123,6 +122,15 @@ public class ScheduleService {
         GroupCourseBaseInfoRequest groupCourse = groupCourseClient
                 .groupCourseBaseInfoRequest(dto.getGroupCourseId());
 
+        GroupCourseDto groupSize = groupCourseClient
+                .getGroupSizeInformation(dto.getGroupCourseId());
+        if (classRoom.getCapacity() < groupSize.getCapacity()) {
+            throw new IllegalArgumentException(
+                    "Аудитория вмещает " + classRoom.getCapacity() +
+                            " студентов, а в группе " + groupSize.getCapacity()
+            );
+        }
+
         Schedule schedule = new Schedule(
                 dto.getStartTime(), dto.getEndTime(),
                 new HashSet<>(),
@@ -134,7 +142,7 @@ public class ScheduleService {
         Schedule saved = scheduleRepository.save(schedule);
 
         Set<ScheduleDay> days = dto.getWeekDays().stream()
-                .map(day -> new ScheduleDay(day.getWeekday(), saved))
+                .map(day -> new ScheduleDay(day, saved))
                 .collect(Collectors.toSet());
 
         scheduleDayRepository.saveAll(days);
@@ -146,4 +154,5 @@ public class ScheduleService {
     public void delete(Long id){
 
     }
+
 }

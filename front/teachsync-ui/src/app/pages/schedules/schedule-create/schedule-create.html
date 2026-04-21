@@ -107,7 +107,6 @@
   </select>
 </div>
 
-<!-- Преподаватель — появляется после выбора -->
 @if (selectedTeacherName()) {
   <div class="flex items-center gap-2 px-3 py-2 rounded-lg
               bg-indigo-50 dark:bg-indigo-900/20
@@ -125,26 +124,28 @@
     </div>
   </div>
 }
+<!-- Аудитория -->
+<div class="flex flex-col gap-1">
+  <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
+                uppercase tracking-wide">Аудитория</label>
+  <select formControlName="classRoomId" ...>
+    <option [value]="null" disabled selected>Выберите аудиторию</option>
+    @for (cr of classRooms(); track cr.id) {
+      <option [value]="cr.id" [disabled]="!roomFits(cr)"
+              [class.text-red-400]="!roomFits(cr)">
+        {{ cr.name }} ({{ cr.capacity }} мест)
+        {{ !roomFits(cr) ? '— мало мест' : '' }}
+      </option>
+    }
+  </select>
 
-        <!-- Аудитория -->
-        <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold text-slate-500 dark:text-slate-400
-                        uppercase tracking-wide">Аудитория</label>
-          <select formControlName="classRoomId"
-                  class="px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-900
-                         border border-slate-200 dark:border-slate-600
-                         text-slate-800 dark:text-slate-100
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500/50
-                         focus:border-indigo-400 transition-colors">
-            <option [value]="null" disabled selected>Выберите аудиторию</option>
-            @for (cr of classRooms(); track cr.id) {
-              <option [value]="cr.id">{{ cr.name }} ({{ cr.capacity }} мест)</option>
-            }
-          </select>
-          @if (form.get('classRoomId')?.invalid && form.get('classRoomId')?.touched) {
-            <span class="text-xs text-red-500">Обязательное поле</span>
-          }
-        </div>
+  <!-- подсказка когда группа выбрана -->
+  @if (groupSize() > 0) {
+    <p class="text-xs text-slate-400">
+      Нужно минимум {{ groupSize() }} мест для этой группы
+    </p>
+  }
+</div>
 
         @if (error()) {
           <div class="px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20
@@ -154,7 +155,6 @@
           </div>
         }
 
-        <!-- Кнопки -->
         <div class="flex items-center justify-end gap-3 pt-2
                     border-t border-slate-100 dark:border-slate-700">
           <button type="button" routerLink="/schedules"

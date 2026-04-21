@@ -9,6 +9,7 @@ import com.teachsync.interaction.feign.responses.GroupCourseResponseForScheduleS
 import com.teachsync.repositories.CourseRepository;
 import com.teachsync.repositories.GroupCourseRepository;
 import com.teachsync.repositories.GroupRepository;
+import com.teachsync.services.feign.groupcourse.GroupCourseSizeDto;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -104,6 +105,19 @@ public class CourseFeignResponseService {
                     );
                 })
                 .toList();
+    }
+
+    public GroupCourseSizeDto getGroupDtoWithSize(Long id){
+        GroupCourse groupCourse = groupCourseRepository.findById(id).orElseThrow();
+        Group group = groupCourse.getGroup();
+        Course course = groupCourse.getCourse();
+        GroupCourseSizeDto groupCourseSizeDto = new GroupCourseSizeDto();
+        groupCourseSizeDto.setId(groupCourse.getId());
+        groupCourseSizeDto.setGroupId(group.getId());
+        groupCourseSizeDto.setCourseId(course.getId());
+        groupCourseSizeDto.setCapacity(group.getCapacity());
+
+        return groupCourseSizeDto;
     }
 
 

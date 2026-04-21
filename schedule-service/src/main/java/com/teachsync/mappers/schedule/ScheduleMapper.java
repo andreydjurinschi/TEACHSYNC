@@ -4,7 +4,6 @@ import com.teachsync.domain.Schedule;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
-import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
 import com.teachsync.mappers.class_room.ClassRoomMapper;
 
 import java.util.Set;
@@ -17,7 +16,7 @@ public class ScheduleMapper {
 
         Set<String> days = schedule.getWeekDays()
                 .stream()
-                .map(sd -> sd.getWeekday().name())  // ← достаём enum как строку "MON", "TUE"
+                .map(Enum::name)
                 .collect(Collectors.toSet());
 
         return new ScheduleBaseDto(

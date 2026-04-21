@@ -19,8 +19,11 @@ public class Schedule {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ScheduleDay> weekDays = new HashSet<>();
+    @ElementCollection(targetClass = WeekDays.class)
+    @CollectionTable(name = "schedule_days_info", joinColumns = @JoinColumn(name = "schedule_id"))
+    @Column(name = "weekday", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Set<WeekDays> weekDays = new HashSet<>();
 
     // relations
     @Column(name = "group_course_id", nullable = false)
@@ -31,7 +34,7 @@ public class Schedule {
     @JoinColumn(name = "class_room_id")
     private ClassRoom classRoom;
 
-    public Schedule(LocalTime startTime, LocalTime endTime, Set<ScheduleDay> weekDays, Long groupCourseId, Long teacherId, ClassRoom classRoom) {
+    public Schedule(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, Long groupCourseId, Long teacherId, ClassRoom classRoom) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.weekDays = weekDays;
@@ -69,11 +72,11 @@ public class Schedule {
         this.endTime = endTime;
     }
 
-    public Set<ScheduleDay> getWeekDays() {
+    public Set<WeekDays> getWeekDays() {
         return weekDays;
     }
 
-    public void setWeekDays(Set<ScheduleDay> weekDays) {
+    public void setWeekDays(Set<WeekDays> weekDays) {
         this.weekDays = weekDays;
     }
 

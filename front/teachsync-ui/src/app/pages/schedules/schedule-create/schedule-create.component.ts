@@ -11,7 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import {
   ClassRoomInfo,
@@ -23,13 +23,14 @@ import { ScheduleService } from '../../../core/services/schedule.service';
 @Component({
   selector: 'app-schedule-create',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './schedule-create.html',
 })
 export class ScheduleCreate implements OnInit {
   form!: FormGroup;
   saving = signal(false);
   error = signal<string | null>(null);
+  groupSize = signal<number>(0);
 
   groupCourses = signal<GroupCourseInfo[]>([]);
   classRooms = signal<ClassRoomInfo[]>([]);
@@ -67,10 +68,22 @@ this.form = this.fb.group({
     this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
     this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
     this.form.get('groupCourseId')!.valueChanges.subscribe(id => {
-    const gc = this.groupCourses().find(g => g.id === +id);
-    this.selectedTeacherName.set(gc?.teacherName ?? null);
+  const numId = Number(id);
+  if (!numId) return;
+
+  const gc = this.groupCourses().find(g => Number(g.id) === numId);
+  this.selectedTeacherName.set(gc?.teacherName ?? null);
+
+  this.scheduleService.getGroupSize(numId).subscribe(size => {
+    this.groupSize.set(size);
   });
+});
   }
+
+  roomFits(room: ClassRoomInfo): boolean {
+  if (this.groupSize() === 0) return true; 
+  return room.capacity >= this.groupSize();
+}
 
   toggleDay(day: WeekDay): void {
     const current: WeekDay[] = this.form.get('weekDays')!.value;
@@ -88,19 +101,23 @@ submit(): void {
   if (this.form.invalid) return;
   const v = this.form.value;
 
-const payload = {
-  startTime: `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`,
-  endTime:   `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`,
-  weekDays:  v.weekDays.map((d: WeekDay) => ({ weekday: d })),
-  groupCourseId: v.groupCourseId,
-  classRoomId:   v.classRoomId,
-};
-
+  const payload = {
+    startTime: `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`,
+    endTime:   `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`,
+    weekDays:  v.weekDays,  // ← просто массив строк ["MON", "TUE"]
+    groupCourseId: v.groupCourseId,
+    classRoomId:   v.classRoomId,
+  };
 
   this.saving.set(true);
   this.scheduleService.create(payload).subscribe({
     next: () => { this.saving.set(false); this.router.navigate(['/schedules']); },
-    error: err => { console.error(err); this.error.set('Ошибка при создании'); this.saving.set(false); }
+    error: err => {
+      console.error(err);
+      const msg = err?.error?.message ?? err?.error ?? 'Ошибка при создании';
+      this.error.set(msg);
+      this.saving.set(false);
+    }
   });
 }
 }

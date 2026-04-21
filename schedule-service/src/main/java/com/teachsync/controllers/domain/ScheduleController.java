@@ -1,20 +1,23 @@
 package com.teachsync.controllers.domain;
 
+import com.teachsync.domain.ClassRoom;
 import com.teachsync.domain.WeekDays;
+import com.teachsync.dto_s.domain.ClassroomValidationResponse;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
+import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.exceptions.InvalidTimeRangeException;
 import com.teachsync.interation.feign.Role;
+import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import com.teachsync.interation.feign.requests.TeacherBaseInfoRequest;
+import com.teachsync.services.ClassRoomService;
 import com.teachsync.services.ScheduleService;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -22,9 +25,13 @@ import java.util.List;
 public class ScheduleController {
 
     private final ScheduleService service;
+    private final ClassRoomService classRoomService;
+    private final GroupCourseClient groupCourseClient;
 
-    public ScheduleController(ScheduleService service) {
+    public ScheduleController(ScheduleService service, ClassRoomService classRoomService, GroupCourseClient groupCourseClient) {
         this.service = service;
+        this.classRoomService = classRoomService;
+        this.groupCourseClient = groupCourseClient;
     }
 
     @GetMapping("/teachers/all")
@@ -50,6 +57,12 @@ public class ScheduleController {
     @GetMapping("/available-teachers/{id}")
     public List<Long> availableTeachers(@PathVariable Long id,@RequestParam WeekDays weekDay) {
         return service.findAvailableTeachers(id, weekDay);
+    }
+
+    @GetMapping("/group-courses/{groupCourseId}/size")
+    public ResponseEntity<Integer> getGroupSize(@PathVariable Long groupCourseId) {
+        GroupCourseDto group = groupCourseClient.getGroupSizeInformation(groupCourseId);
+        return ResponseEntity.ok(group.getCapacity());
     }
 
     @PostMapping("/create")

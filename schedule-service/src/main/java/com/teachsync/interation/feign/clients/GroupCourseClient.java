@@ -1,5 +1,6 @@
 package com.teachsync.interation.feign.clients;
 
+import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,4 +22,7 @@ public interface GroupCourseClient {
 
     @GetMapping("/all")
     List<GroupCourseBaseInfoRequest> getAllGroupCourses();
+
+    @GetMapping("/group/{id}/size")
+    GroupCourseDto getGroupSizeInformation(@PathVariable Long id);
 }

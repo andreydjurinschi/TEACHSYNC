@@ -1,6 +1,7 @@
 package com.teachsync.repositories;
 
 import com.teachsync.domain.Course;
+import com.teachsync.domain.GroupCourse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -47,6 +48,11 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query(nativeQuery = true, value = "delete from group_courses " +
             "where group_id=:group_id and course_id=:course_id")
     void unassignGroupToCourse(@Param("course_id") Long course_id, @Param("group_id") Long group_id );
+
+    @Query(
+            nativeQuery = true, value = "select * from group_courses where id = :id"
+    )
+    GroupCourse getGroupCourseById(@Param("id") Long id);
 
 
 }
