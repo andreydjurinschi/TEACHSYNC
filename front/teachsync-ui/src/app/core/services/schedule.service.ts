@@ -55,6 +55,13 @@ export class ScheduleService {
         );
     }
 
+    getMySchedule(): Observable<ScheduleBase[]> {
+  return this.http.get<ScheduleBase[]>(
+    `${this.base}/my-schedule`,
+    { headers: this.getHeaders() }
+  );
+}
+
     getUnscheduledGroupCourses(): Observable<GroupCourseInfo[]> {
   return this.http.get<GroupCourseInfo[]>(
     `${this.base}/group-courses/group-without-mention-in-schedule`,

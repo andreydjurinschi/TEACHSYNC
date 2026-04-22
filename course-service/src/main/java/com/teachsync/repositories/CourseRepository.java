@@ -22,6 +22,12 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             " where c.id = :course_id", nativeQuery = true)
     Course getCourseWithFullData(@Param("course_id") Long courseId);
 
+    @Query(value = "select c.* from courses c" +
+            " left join course_topics ct on ct.course_id = c.id " +
+            " left join group_courses gc on gc.course_id = c.id " +
+            " where c.teacher_id = :teacher_id", nativeQuery = true)
+    List<Course> getCoursesFullDataForTeacher(@Param("teacher_id") Long teacherId);
+
     @Query(
             nativeQuery = true,
             value = "select c.* from courses c left join group_courses gc on c.id = gc.course_id " +
@@ -53,6 +59,4 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             nativeQuery = true, value = "select * from group_courses where id = :id"
     )
     GroupCourse getGroupCourseById(@Param("id") Long id);
-
-
 }

@@ -23,17 +23,19 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
+
+    private final Logger logger = Logger.getLogger(CourseService.class.getName());
 
     private final CourseRepository repository;
     private final TopicRepository topicRepository;
     private final CategoryRepository categoryRepository;
     private final GroupRepository groupRepository;
     private final UserClient userClient;
-
 
     @Autowired
     public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient) {
@@ -161,8 +163,18 @@ public class CourseService {
     // interaction producer
     public List<CourseBaseDto> getAllForUser(Long userId){
         List<Course> courses = repository.getAllByTeacher(userId);
+        String joined = courses.stream().map(Course::toString).collect(Collectors.joining("\n"));
+        logger.info("Courses for user " + userId + ": " + joined);
         return courses
                 .stream().map(CourseMapper::mapToBaseDto).toList();
+    }
+
+    public List<CourseDetailedDto> getCoursesFullDataForTeacher(Long teacherId) {
+        List<Course> courses = repository.getAllByTeacher(teacherId);
+        String joined = courses.stream().map(Course::toString).collect(Collectors.joining("\n"));
+        logger.info("Courses for user " + teacherId + ": " + joined);
+        return courses
+                .stream().map(CourseMapper::mapToDetailedDto).toList();
     }
 
     private Course getCourse(Long id) {

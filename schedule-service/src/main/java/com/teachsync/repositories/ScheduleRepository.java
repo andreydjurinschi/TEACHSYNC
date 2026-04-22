@@ -78,6 +78,13 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("teacherId") Long teacherId
     );
 
+    @Query("""
+    SELECT DISTINCT s FROM Schedule s
+    LEFT JOIN FETCH s.classRoom
+    WHERE s.teacherId = :teacherId
+""")
+    List<Schedule> findAllForTeacher(@Param("teacherId") Long teacherId);
+
     //todo
 /*    @Query("""
                     select distinct s from Schedule s

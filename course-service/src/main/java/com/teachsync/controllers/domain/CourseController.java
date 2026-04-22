@@ -1,5 +1,6 @@
 package com.teachsync.controllers.domain;
 
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,15 +30,24 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final JwtService jwtService;
 
     @Autowired
-    public CourseController(CourseService courseService) {
+    public CourseController(CourseService courseService, JwtService jwtService) {
         this.courseService = courseService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<CourseBaseDto>> findAll() {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.findAll());
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<CourseDetailedDto>> getMyCourses(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Long teacherId = jwtService.extractUserId(token);
+        return ResponseEntity.ok(courseService.getCoursesFullDataForTeacher(teacherId));
     }
 
     @GetMapping("/{id}")

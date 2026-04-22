@@ -29,6 +29,10 @@ public class JwtService {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
+    public Long extractUserId(String token) {
+        return extractClaimsFromToken(token).get("userId", Long.class);
+    }
+
     private Claims extractClaimsFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getKeySign())

@@ -102,4 +102,13 @@ public class Schedule {
     public void setTeacherId(Long teacherId) {
         this.teacherId = teacherId;
     }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "teacherId=" + teacherId +
+                ", endTime=" + endTime +
+                ", startTime=" + startTime +
+                '}';
+    }
 }

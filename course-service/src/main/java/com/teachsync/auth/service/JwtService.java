@@ -38,4 +38,7 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token).getBody();
     }
+    public Long extractUserId(String token) {
+        return extractClaimsFromToken(token).get("userId", Long.class);
+    }
 }

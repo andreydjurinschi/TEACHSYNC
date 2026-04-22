@@ -1,14 +1,11 @@
 package com.teachsync.controllers.domain;
 
-import com.teachsync.domain.ClassRoom;
-import com.teachsync.domain.Schedule;
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.WeekDays;
-import com.teachsync.dto_s.domain.ClassroomValidationResponse;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
-import com.teachsync.exceptions.InvalidTimeRangeException;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
@@ -30,12 +27,14 @@ import java.util.Set;
 public class ScheduleController {
 
     private final ScheduleService service;
+    private final JwtService jwtService;
     private final ClassRoomService classRoomService;
     private final GroupCourseClient groupCourseClient;
     private final ScheduleRepository scheduleRepository;
 
-    public ScheduleController(ScheduleService service, ClassRoomService classRoomService, GroupCourseClient groupCourseClient, ScheduleRepository scheduleRepository) {
+    public ScheduleController(ScheduleService service, JwtService jwtService, ClassRoomService classRoomService, GroupCourseClient groupCourseClient, ScheduleRepository scheduleRepository) {
         this.service = service;
+        this.jwtService = jwtService;
         this.classRoomService = classRoomService;
         this.groupCourseClient = groupCourseClient;
         this.scheduleRepository = scheduleRepository;
@@ -81,6 +80,14 @@ public class ScheduleController {
     @GetMapping("/group-courses/group-without-mention-in-schedule")
     public ResponseEntity<List<GroupCourseBaseInfoRequest>> getNotMentionedGroups(){
         return ResponseEntity.ok(service.getAllGroupCoursesWithoutSchedule());
+    }
+
+    @GetMapping("/my-schedule")
+    public ResponseEntity<List<ScheduleBaseDto>> getMySchedule(
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Long teacherId = jwtService.extractUserId(token);
+        return ResponseEntity.ok(service.getScheduleForTeacher(teacherId));
     }
 
     @GetMapping("/classrooms/conflicts")

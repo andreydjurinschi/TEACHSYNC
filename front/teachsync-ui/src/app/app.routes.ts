@@ -21,6 +21,8 @@ import { AccountInfo } from './pages/account/account.info.component';
 import { CourseGroups } from './pages/courses/course-groups/course-group.component';
 import { ScheduleList } from './pages/schedules/schedule-list/schedule-list.component';
 import { ScheduleCreate } from './pages/schedules/schedule-create/schedule-create.component';
+import { MyCoursesComponent } from './pages/account/teacher/courses/my-courses.component';
+import { TeacherScheduleComponent } from './pages/account/teacher/schedules/my-schedule.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -51,6 +53,9 @@ export const routes: Routes = [
 
       { path: 'schedules', component: ScheduleList },
       { path: 'schedules/create', component: ScheduleCreate },
+
+      { path: 'profile/courses', component: MyCoursesComponent },
+      { path: 'profile/schedules', component: TeacherScheduleComponent}
     ]
   },
   { path: '**', redirectTo: '/login' }

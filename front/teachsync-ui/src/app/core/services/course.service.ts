@@ -5,6 +5,7 @@ import { CourseBase } from '../models/courses/course.model';
 import { CourseDetailed } from '../models/courses/course-detailed.model';
 import { CourseWithTeacher } from '../models/courses/course-with-teacher.model';
 import { CourseWithGroups } from '../models/courses/course-group.model';
+import { CourseDetailedMy } from '../models/courses/course-detailed-my-model';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
@@ -78,4 +79,12 @@ export class CourseService {
   getWithGroups(courseId: number): Observable<CourseWithGroups>{
       return this.http.get<CourseWithGroups>(`${this.apiUrl}/course-with-groups/${courseId}`, { headers: this.getHeaders() });
   }
+
+  // my 
+  getMyCoursesDetailed(): Observable<CourseDetailedMy[]> {
+  return this.http.get<CourseDetailedMy[]>(
+    `${this.apiUrl}/my`,
+    { headers: this.getHeaders() }
+  );
+}
 }

@@ -72,6 +72,28 @@ public class ScheduleService {
         }).toList();
     }
 
+    public List<ScheduleBaseDto> getScheduleForTeacher(Long teacherId) {
+        List<Schedule> schedules = scheduleRepository.findAllForTeacher(teacherId);
+
+        log.info("Schedules for " + teacherId + ": " + schedules);
+
+        List<Long> groupCourseIds = schedules.stream()
+                .map(Schedule::getGroupCourseId)
+                .distinct()
+                .toList();
+
+        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = groupCourseClient
+                .getGroupCoursesByIds(groupCourseIds)
+                .stream()
+                .collect(Collectors.toMap(GroupCourseBaseInfoRequest::getId, g -> g));
+
+        return schedules.stream().map(schedule -> {
+            ScheduleBaseDto dto = ScheduleMapper.mapToBaseDto(schedule);
+            dto.setGroupCourseDto(groupCourseMap.get(schedule.getGroupCourseId()));
+            return dto;
+        }).toList();
+    }
+
     public List<ClassRoomBaseDto> getAllClassrooms() {
         return classRoomRepository.findAll()
                 .stream()
@@ -194,6 +216,7 @@ public class ScheduleService {
             );
         }
     }
+
 
     private void findClassRoomConflicts(ScheduleCreateDto dto, ClassRoom classRoom) {
         List<Schedule> classRoomConflicts = scheduleRepository.findClassRoomConflicts(
