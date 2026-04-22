@@ -11,7 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 
 import {
   ClassRoomInfo,
@@ -38,6 +38,8 @@ export class ScheduleCreate implements OnInit {
   private fb = inject(FormBuilder);
   private scheduleService = inject(ScheduleService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
 
   selectedTeacherName = signal<string | null>(null);
 
@@ -83,7 +85,16 @@ ngOnInit(): void {
         classRoomId:   [null, Validators.required],
     });
 
-    this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
+  this.scheduleService.getAllGroupCourses().subscribe(d => {
+    this.groupCourses.set(d);
+
+    this.route.queryParams.subscribe(params => {
+      if (params['groupCourseId']) {
+        const id = +params['groupCourseId'];
+        this.form.get('groupCourseId')!.setValue(id);
+      }
+    });
+  });
     this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
 
     this.form.get('groupCourseId')!.valueChanges.subscribe(id => {

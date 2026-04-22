@@ -24,10 +24,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
 public class ScheduleService {
+
+    private final Logger log = Logger.getLogger(ScheduleService.class.getName());
 
     private final ScheduleRepository scheduleRepository;
     private final ClassRoomRepository classRoomRepository;
@@ -90,6 +93,27 @@ public class ScheduleService {
         return ScheduleMapper.mapToBaseDto(schedule);
     }
 
+    public List<GroupCourseBaseInfoRequest> getAllGroupCoursesWithoutSchedule(){
+        List<GroupCourseBaseInfoRequest> allGroupCourses = groupCourseClient.getAllGroupCourses();
+
+        log.info("allGroupCourses: [ " + allGroupCourses.stream().map(GroupCourseBaseInfoRequest::getId).toList() + " ]");
+
+        List<Long> notedGroupCoursesInSchedules = scheduleRepository.findAll().stream().map(Schedule::getGroupCourseId).toList();
+
+        log.info("noted courses: [ " + notedGroupCoursesInSchedules.size() + " ]");
+
+        var result = new ArrayList<GroupCourseBaseInfoRequest>();
+        for(GroupCourseBaseInfoRequest item : allGroupCourses){
+            if(!notedGroupCoursesInSchedules.contains(item.getId())){
+                result.add(item);
+            }
+        }
+
+        log.warning("group courses not mentioned in schedule : [ " + result.stream().map(GroupCourseBaseInfoRequest::getId).sorted().toList() + " ]");
+
+        return result;
+    }
+
     public List<Long> findAvailableTeachers(Long scheduleId, WeekDays weekDays) {
 
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow();
@@ -120,18 +144,6 @@ public class ScheduleService {
         ClassRoom classRoom = classRoomRepository.findById(dto.getClassRoomId())
                 .orElseThrow();
 
-        List<Schedule> conflicts = scheduleRepository.findClassRoomConflicts(
-                dto.getWeekDays(),
-                dto.getStartTime(),
-                dto.getEndTime(),
-                dto.getClassRoomId()
-        );
-        if (!conflicts.isEmpty()) {
-            throw new ScheduleConflictException(
-                    "Кабинет «" + classRoom.getName() + "» уже занят в это время"
-            );
-        }
-
         GroupCourseBaseInfoRequest groupCourse = groupCourseClient
                 .groupCourseBaseInfoRequest(dto.getGroupCourseId());
 
@@ -144,9 +156,14 @@ public class ScheduleService {
             );
         }
 
+        findClassRoomConflicts(dto, classRoom);
+        findTeacherConflicts(dto, groupCourse.getTeacherId());
+        // todo
+        //findGroupCourseConflicts(dto, groupCourse);
+
         Schedule schedule = new Schedule(
                 dto.getStartTime(), dto.getEndTime(),
-                new HashSet<>(),
+                dto.getWeekDays(),
                 dto.getGroupCourseId(),
                 groupCourse.getTeacherId(),
                 classRoom
@@ -154,18 +171,58 @@ public class ScheduleService {
 
         Schedule saved = scheduleRepository.save(schedule);
 
-        Set<ScheduleDay> days = dto.getWeekDays().stream()
-                .map(day -> new ScheduleDay(day, saved))
-                .collect(Collectors.toSet());
-
-        scheduleDayRepository.saveAll(days);
-
         return ScheduleMapper.mapToBaseDto(saved);
     }
+
 
     //TODO: schedule delete logic
     public void delete(Long id){
 
     }
+
+    private void findTeacherConflicts(ScheduleCreateDto dto, Long teacherId) {
+        List<Schedule> teacherConflicts = scheduleRepository.findTeacherConflicts(
+                dto.getWeekDays(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                teacherId
+        );
+        if(!teacherConflicts.isEmpty()){
+            TeacherBaseInfoRequest teacherBaseInfoRequest = teacherClient.requestForUserFromUserService(teacherId);
+            throw new ScheduleConflictException(
+                    "Преподаватель «" + teacherBaseInfoRequest.getName() + " " + teacherBaseInfoRequest.getSurname() + "» уже занят в это время"
+            );
+        }
+    }
+
+    private void findClassRoomConflicts(ScheduleCreateDto dto, ClassRoom classRoom) {
+        List<Schedule> classRoomConflicts = scheduleRepository.findClassRoomConflicts(
+                dto.getWeekDays(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                dto.getClassRoomId()
+        );
+        if (!classRoomConflicts.isEmpty()) {
+            throw new ScheduleConflictException(
+                    "Кабинет «" + classRoom.getName() + "» уже занят в это время"
+            );
+        }
+    }
+
+    // todo
+/*    private void findGroupCourseConflicts(ScheduleCreateDto dto, GroupCourseBaseInfoRequest groupCourseBaseInfoRequest) {
+
+        List<Schedule> groupCourseConflicts = scheduleRepository.findGroupCourseConflicts(
+                dto.getWeekDays(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                groupCourseBaseInfoRequest.getGroupId()
+        );
+        if (!groupCourseConflicts.isEmpty()) {
+            throw new ScheduleConflictException(
+                    "Группа «" + groupCourseBaseInfoRequest.getGroupName() + "» уже занята в это время"
+            );
+        }
+    }*/
 
 }

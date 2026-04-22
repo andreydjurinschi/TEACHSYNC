@@ -54,4 +54,11 @@ export class ScheduleService {
             `${this.base}/group-courses/${groupCourseId}/size`, { headers: this.getHeaders() }
         );
     }
+
+    getUnscheduledGroupCourses(): Observable<GroupCourseInfo[]> {
+  return this.http.get<GroupCourseInfo[]>(
+    `${this.base}/group-courses/group-without-mention-in-schedule`,
+    { headers: this.getHeaders() }
+  );
+}
 }

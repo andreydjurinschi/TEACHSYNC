@@ -73,9 +73,14 @@ public class ScheduleController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Void> createSchedule(@RequestBody ScheduleCreateDto dto) throws InvalidTimeRangeException {
+    public ResponseEntity<Void> createSchedule(@RequestBody ScheduleCreateDto dto) {
         service.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/group-courses/group-without-mention-in-schedule")
+    public ResponseEntity<List<GroupCourseBaseInfoRequest>> getNotMentionedGroups(){
+        return ResponseEntity.ok(service.getAllGroupCoursesWithoutSchedule());
     }
 
     @GetMapping("/classrooms/conflicts")

@@ -1,16 +1,76 @@
 <div class="min-h-screen bg-slate-100 dark:bg-slate-900 p-8">
 
-  
-  <div class="flex items-center justify-between mb-8">
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Расписание</h1>
-    <button routerLink="/schedules/create" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium
-                 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-      Добавить
-    </button>
+  <!-- Кнопки вверху -->
+<div class="flex gap-3 mb-6">
+  <button routerLink="/schedules/create"
+          class="px-4 py-2 text-sm font-medium rounded-lg text-white
+                 bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Добавить
+  </button>
+
+  <button (click)="loadUnscheduled()"
+          class="px-4 py-2 text-sm font-medium rounded-lg
+                 border border-slate-300 dark:border-slate-600
+                 text-slate-700 dark:text-slate-300
+                 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+    </svg>
+    Без расписания
+  </button>
+</div>
+
+<!-- Панель незапланированных -->
+@if (showUnscheduled()) {
+  <div class="mb-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+              dark:border-slate-700 overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3
+                border-b border-slate-100 dark:border-slate-700">
+      <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+        Группы без расписания
+        <span class="ml-2 px-2 py-0.5 text-xs rounded-full
+                     bg-amber-100 dark:bg-amber-900/30
+                     text-amber-700 dark:text-amber-400">
+          {{ unscheduled().length }}
+        </span>
+      </h2>
+      <button (click)="showUnscheduled.set(false)"
+              class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    @if (unscheduled().length === 0) {
+      <p class="px-4 py-6 text-sm text-center text-slate-400">
+        Все группы уже имеют расписание 🎉
+      </p>
+    } @else {
+      <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        @for (gc of unscheduled(); track gc.id) {
+          <div class="flex items-center justify-between px-4 py-3">
+            <div>
+              <p class="text-sm font-medium text-slate-800 dark:text-slate-100">
+                {{ gc.groupName }}
+              </p>
+              <p class="text-xs text-slate-400">{{ gc.courseName }}</p>
+            </div>
+            <button (click)="createForGroup(gc)"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg text-white
+                           bg-indigo-600 hover:bg-indigo-700 transition-colors">
+              Создать расписание
+            </button>
+          </div>
+        }
+      </div>
+    }
   </div>
+}
 
   @if (loading()) {
   <div class="space-y-3">
