@@ -38,9 +38,20 @@ export class ScheduleService {
     create(dto: any): Observable<void> {
         return this.http.post<void>(`${this.base}/create`, dto, { headers: this.getHeaders() });
     }
-getGroupSize(groupCourseId: number): Observable<number> {
-  return this.http.get<number>(
-    `${this.base}/group-courses/${groupCourseId}/size`, { headers: this.getHeaders() }
-  );
-}
+
+    checkClassroomConflicts(
+        days: string[], startTime: string, endTime: string
+    ): Observable<number[]> {
+        const params = { days: days.join(','), startTime, endTime };
+        return this.http.get<number[]>(
+            `${this.base}/classrooms/conflicts`,
+            { headers: this.getHeaders(), params }
+        );
+    }
+
+    getGroupSize(groupCourseId: number): Observable<number> {
+        return this.http.get<number>(
+            `${this.base}/group-courses/${groupCourseId}/size`, { headers: this.getHeaders() }
+        );
+    }
 }

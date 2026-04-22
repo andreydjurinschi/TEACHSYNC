@@ -54,31 +54,50 @@ export class ScheduleCreate implements OnInit {
 readonly hours   = Array.from({length: 24}, (_, i) => i);  
 readonly minutes = [0, 15, 30, 45];          
 
-  ngOnInit(): void {
-this.form = this.fb.group({
-  startHour:    [null, Validators.required],
-  startMinute:  [null, Validators.required],
-  endHour:      [null, Validators.required],
-  endMinute:    [null, Validators.required],
-  weekDays:     [[], Validators.required],
-  groupCourseId:[null, Validators.required],
-  classRoomId:  [null, Validators.required],
-});
+busyClassroomIds = signal<number[]>([]);
+
+private checkConflicts(): void {
+    const v = this.form.value;
+    const days: string[] = v.weekDays ?? [];
+    const startTime = v.startHour != null && v.startMinute != null
+        ? `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`
+        : null;
+    const endTime = v.endHour != null && v.endMinute != null
+        ? `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`
+        : null;
+
+    if (days.length && startTime && endTime) {
+        this.scheduleService.checkClassroomConflicts(days, startTime, endTime)
+            .subscribe(ids => this.busyClassroomIds.set(ids));
+    }
+}
+
+ngOnInit(): void {
+    this.form = this.fb.group({
+        startHour:     [null, Validators.required],
+        startMinute:   [null, Validators.required],
+        endHour:       [null, Validators.required],
+        endMinute:     [null, Validators.required],
+        weekDays:      [[], Validators.required],
+        groupCourseId: [null, Validators.required],
+        classRoomId:   [null, Validators.required],
+    });
 
     this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
     this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
+
     this.form.get('groupCourseId')!.valueChanges.subscribe(id => {
-  const numId = Number(id);
-  if (!numId) return;
+        const gc = this.groupCourses().find(g => g.id === +id);
+        this.selectedTeacherName.set(gc?.teacherName ?? null);
+        this.scheduleService.getGroupSize(+id).subscribe(size => {
+            this.groupSize.set(size);
+        });
+    });
 
-  const gc = this.groupCourses().find(g => Number(g.id) === numId);
-  this.selectedTeacherName.set(gc?.teacherName ?? null);
-
-  this.scheduleService.getGroupSize(numId).subscribe(size => {
-    this.groupSize.set(size);
-  });
-});
-  }
+    ['startHour', 'startMinute', 'endHour', 'endMinute', 'weekDays'].forEach(field =>
+        this.form.get(field)!.valueChanges.subscribe(() => this.checkConflicts())
+    );
+}
 
   roomFits(room: ClassRoomInfo): boolean {
   if (this.groupSize() === 0) return true; 
@@ -104,7 +123,7 @@ submit(): void {
   const payload = {
     startTime: `${String(v.startHour).padStart(2,'0')}:${String(v.startMinute).padStart(2,'0')}`,
     endTime:   `${String(v.endHour).padStart(2,'0')}:${String(v.endMinute).padStart(2,'0')}`,
-    weekDays:  v.weekDays,  // ← просто массив строк ["MON", "TUE"]
+    weekDays:  v.weekDays, 
     groupCourseId: v.groupCourseId,
     classRoomId:   v.classRoomId,
   };

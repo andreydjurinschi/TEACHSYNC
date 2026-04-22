@@ -130,13 +130,15 @@
                 uppercase tracking-wide">Аудитория</label>
   <select formControlName="classRoomId" ...>
     <option [value]="null" disabled selected>Выберите аудиторию</option>
-    @for (cr of classRooms(); track cr.id) {
-      <option [value]="cr.id" [disabled]="!roomFits(cr)"
-              [class.text-red-400]="!roomFits(cr)">
-        {{ cr.name }} ({{ cr.capacity }} мест)
-        {{ !roomFits(cr) ? '— мало мест' : '' }}
-      </option>
-    }
+@for (cr of classRooms(); track cr.id) {
+  <option [value]="cr.id"
+          [disabled]="!roomFits(cr) || busyClassroomIds().includes(cr.id)"
+          [class.text-red-400]="!roomFits(cr) || busyClassroomIds().includes(cr.id)">
+    {{ cr.name }} ({{ cr.capacity }} мест)
+    @if (!roomFits(cr)) { — мало мест }
+    @else if (busyClassroomIds().includes(cr.id)) { — занята }
+  </option>
+}
   </select>
 
   <!-- подсказка когда группа выбрана -->
@@ -145,6 +147,7 @@
       Нужно минимум {{ groupSize() }} мест для этой группы
     </p>
   }
+  
 </div>
 
         @if (error()) {

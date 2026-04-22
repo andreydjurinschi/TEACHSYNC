@@ -1,6 +1,7 @@
 package com.teachsync.controllers.domain;
 
 import com.teachsync.domain.ClassRoom;
+import com.teachsync.domain.Schedule;
 import com.teachsync.domain.WeekDays;
 import com.teachsync.dto_s.domain.ClassroomValidationResponse;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
@@ -12,13 +13,17 @@ import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import com.teachsync.interation.feign.requests.TeacherBaseInfoRequest;
+import com.teachsync.repositories.ScheduleRepository;
 import com.teachsync.services.ClassRoomService;
 import com.teachsync.services.ScheduleService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/teachsync/schedules")
@@ -27,11 +32,13 @@ public class ScheduleController {
     private final ScheduleService service;
     private final ClassRoomService classRoomService;
     private final GroupCourseClient groupCourseClient;
+    private final ScheduleRepository scheduleRepository;
 
-    public ScheduleController(ScheduleService service, ClassRoomService classRoomService, GroupCourseClient groupCourseClient) {
+    public ScheduleController(ScheduleService service, ClassRoomService classRoomService, GroupCourseClient groupCourseClient, ScheduleRepository scheduleRepository) {
         this.service = service;
         this.classRoomService = classRoomService;
         this.groupCourseClient = groupCourseClient;
+        this.scheduleRepository = scheduleRepository;
     }
 
     @GetMapping("/teachers/all")
@@ -69,5 +76,21 @@ public class ScheduleController {
     public ResponseEntity<Void> createSchedule(@RequestBody ScheduleCreateDto dto) throws InvalidTimeRangeException {
         service.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/classrooms/conflicts")
+    public ResponseEntity<List<Long>> getConflictingClassrooms(
+            @RequestParam Set<WeekDays> days,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
+
+        List<Long> busyRoomIds = scheduleRepository
+                .findAllConflictingSchedules(days, startTime, endTime)
+                .stream()
+                .map(s -> s.getClassRoom().getId())
+                .distinct()
+                .toList();
+
+        return ResponseEntity.ok(busyRoomIds);
     }
 }

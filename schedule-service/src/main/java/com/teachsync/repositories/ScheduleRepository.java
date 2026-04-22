@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
@@ -32,6 +33,35 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("day") String day,
             @Param("start") LocalTime start,
             @Param("end") LocalTime end
+    );
+
+    // 1. Для create() — проверяем конкретную аудиторию (4 параметра)
+    @Query("""
+    SELECT DISTINCT s FROM Schedule s
+    JOIN s.weekDays wd
+    WHERE wd IN :days
+    AND s.startTime < :endTime
+    AND s.endTime > :startTime
+    AND s.classRoom.id = :classRoomId
+""")
+    List<Schedule> findClassRoomConflicts(
+            @Param("days")        Set<WeekDays> days,
+            @Param("startTime")   LocalTime startTime,
+            @Param("endTime")     LocalTime endTime,
+            @Param("classRoomId") Long classRoomId
+    );
+
+    @Query("""
+    SELECT DISTINCT s FROM Schedule s
+    JOIN s.weekDays wd
+    WHERE wd IN :days
+    AND s.startTime < :endTime
+    AND s.endTime > :startTime
+""")
+    List<Schedule> findAllConflictingSchedules(
+            @Param("days")      Set<WeekDays> days,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime")   LocalTime endTime
     );
 }
 

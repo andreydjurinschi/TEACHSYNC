@@ -1,5 +1,6 @@
 package com.teachsync.controllers.advice;
 
+import com.teachsync.exceptions.ScheduleConflictException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -29,5 +30,16 @@ public class CustomExceptionHandlerController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errors);
+    }
+    @ExceptionHandler(ScheduleConflictException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(ScheduleConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegal(IllegalArgumentException e) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("message", e.getMessage()));
     }
 }

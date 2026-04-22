@@ -43,7 +43,6 @@ public class Schedule {
         this.classRoom = classRoom;
     }
 
-
     public Schedule() {
 
     }

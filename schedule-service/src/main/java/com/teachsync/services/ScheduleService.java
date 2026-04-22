@@ -9,6 +9,7 @@ import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
+import com.teachsync.exceptions.ScheduleConflictException;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.clients.TeacherClient;
@@ -118,6 +119,18 @@ public class ScheduleService {
     public ScheduleBaseDto create(ScheduleCreateDto dto) {
         ClassRoom classRoom = classRoomRepository.findById(dto.getClassRoomId())
                 .orElseThrow();
+
+        List<Schedule> conflicts = scheduleRepository.findClassRoomConflicts(
+                dto.getWeekDays(),
+                dto.getStartTime(),
+                dto.getEndTime(),
+                dto.getClassRoomId()
+        );
+        if (!conflicts.isEmpty()) {
+            throw new ScheduleConflictException(
+                    "Кабинет «" + classRoom.getName() + "» уже занят в это время"
+            );
+        }
 
         GroupCourseBaseInfoRequest groupCourse = groupCourseClient
                 .groupCourseBaseInfoRequest(dto.getGroupCourseId());
