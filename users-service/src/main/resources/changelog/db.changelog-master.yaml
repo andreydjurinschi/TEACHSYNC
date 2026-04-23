@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: changelog/changeset/001-insert-10-users.sql
+  - include:
+      file: changelog/changeset/002-insert-categories.sql
+  - include:
+      file: changelog/changeset/003-insert-into-teacher_specializations.sql

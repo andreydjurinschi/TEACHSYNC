@@ -3,6 +3,8 @@ package com.teachsync.domain;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -28,6 +30,15 @@ public class User {
     private LocalDate registeredAt;
 
     private String profilePicture;
+
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_specializations",
+            joinColumns = @JoinColumn(name = "teacher_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> specializations = new HashSet<>();
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -108,6 +119,14 @@ public class User {
 
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public Set<Category> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<Category> specializations) {
+        this.specializations = specializations;
     }
 }
 
