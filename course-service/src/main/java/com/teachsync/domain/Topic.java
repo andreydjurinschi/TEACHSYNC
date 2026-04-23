@@ -62,4 +62,12 @@ public class Topic {
     public Long getId() {
         return id;
     }
+
+    @Override
+    public String toString() {
+        return "Topic{" +
+                "name='" + name + '\'' +
+                ", tag=" + tag +
+                '}';
+    }
 }

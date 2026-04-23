@@ -3,6 +3,7 @@ import { Component, inject, OnInit, PLATFORM_ID, signal, computed } from '@angul
 import { RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
 import { CourseBase } from '../../../core/models/courses/course.model';
+import { RuleService } from '../../../core/services/role.rule.service';
 
 interface CourseGroup {
   category: string;
@@ -17,7 +18,7 @@ interface CourseGroup {
 })
 export class CourseList implements OnInit {
   courses = signal<CourseBase[]>([]);
-
+  
   grouped = computed<CourseGroup[]>(() => {
     const map = new Map<string, CourseBase[]>();
     for (const course of this.courses()) {
@@ -27,9 +28,10 @@ export class CourseList implements OnInit {
     }
     return Array.from(map.entries()).map(([category, courses]) => ({ category, courses }));
   });
-
+  
   private platformId = inject(PLATFORM_ID);
   private courseService = inject(CourseService);
+  public ruleService = inject(RuleService);
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;

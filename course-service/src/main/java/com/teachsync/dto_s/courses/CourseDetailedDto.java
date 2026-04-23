@@ -6,19 +6,39 @@ import com.teachsync.dto_s.topics.TopicBaseDto;
 import java.util.Set;
 
 public class CourseDetailedDto {
-
+    private Long id;
     private String name;
     private String description;
     private Set<TopicBaseDto> topics;
     private Set<GroupShortDto> groups;
+    private String categoryName;
 
     // TODO: teacher base dto from feign request
     /*private TeacherBaseDto teacherDto;*/
-    public CourseDetailedDto(String name, String description, Set<TopicBaseDto> topics, Set<GroupShortDto> groups) {
+
+    public CourseDetailedDto(Long id, String name, String description, Set<TopicBaseDto> topics, Set<GroupShortDto> groups, String categoryName) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.topics = topics;
         this.groups = groups;
+        this.categoryName = categoryName;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 
     public String getName() {

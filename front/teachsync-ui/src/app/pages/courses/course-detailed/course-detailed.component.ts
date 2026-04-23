@@ -5,6 +5,7 @@ import { CourseBase } from '../../../core/models/courses/course.model';
 import { CourseDetailed as CourseDetailedModel } from '../../../core/models/courses/course-detailed.model';
 import { CourseWithTeacher } from '../../../core/models/courses/course-with-teacher.model';
 import { CourseService } from '../../../core/services/course.service';
+import { RuleService } from '../../../core/services/role.rule.service';
 
 @Component({
   selector: 'app-course-detailed',
@@ -19,6 +20,7 @@ export class CourseDetailed implements OnInit {
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
+  public ruleSevice = inject(RuleService)
 
   constructor(private courseService: CourseService) {}
 

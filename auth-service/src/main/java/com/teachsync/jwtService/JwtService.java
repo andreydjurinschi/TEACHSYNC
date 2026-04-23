@@ -22,10 +22,12 @@ public class JwtService {
     }
 
     public String generateToken(UserRequest user){
+        String subjectUsername = user.getName().concat(".").concat(user.getSurname());
         return Jwts.builder()
-                .setSubject(user.getEmail())
+                .setSubject(subjectUsername)
                 .claim("roles", user.getRole().name())
                 .claim("userId", user.getId())
+                .claim("email", user.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)

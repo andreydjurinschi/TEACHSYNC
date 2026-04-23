@@ -6,9 +6,11 @@ import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { CategoryBase } from '../../../core/models/category/category.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
-import { forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs'
+import { RuleService } from '../../../core/services/role.rule.service';
 
 @Component({
+
   selector: 'app-course-edit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
@@ -27,11 +29,13 @@ export class CourseEdit implements OnInit {
   private courseService = inject(CourseService);
   private categoryService = inject(CategoryService);
 
+  public ruleService = inject(RuleService)
+
   ngOnInit(): void {
     this.form = this.fb.group({
-      name:        ['', [Validators.required, Validators.minLength(3)]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
-      categoryId:  [null],
+      categoryId: [null],
     });
 
     if (!isPlatformBrowser(this.platformId)) return;
@@ -39,31 +43,31 @@ export class CourseEdit implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('id'));
 
     forkJoin({
-      course:     this.courseService.getById(id),
+      course: this.courseService.getById(id),
       categories: this.categoryService.getAll(),
     }).subscribe({
       next: ({ course, categories }) => {
         this.course.set(course);
         this.categories.set(categories);
         this.form.patchValue({
-          name:        course.name,
+          name: course.name,
           description: course.description,
-          categoryId:  course.categoryId ?? null,
+          categoryId: course.categoryId ?? null,
         });
-        
+
       },
       error: err => console.error(err),
     });
   }
 
-submit(): void {
-  if (this.form.invalid) return;
-  const id = this.course()?.id;
-  if (!id) return;
-  this.loading.set(true);
-  this.courseService.update(id, this.form.value).subscribe({
-    next: () => this.router.navigate(['/courses', id]),
-    error: () => this.loading.set(false),
-  });
-}
+  submit(): void {
+    if (this.form.invalid) return;
+    const id = this.course()?.id;
+    if (!id) return;
+    this.loading.set(true);
+    this.courseService.update(id, this.form.value).subscribe({
+      next: () => this.router.navigate(['/courses', id]),
+      error: () => this.loading.set(false),
+    });
+  }
 }

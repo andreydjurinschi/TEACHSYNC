@@ -39,7 +39,7 @@ public class CourseMapper {
         Set<TopicBaseDto> topicBaseDtoSet = course.getTopics().stream().map(topic -> new TopicBaseDto(topic.getId(),topic.getName(), topic.getTag())).collect(Collectors.toSet());
         Set<GroupShortDto> groupShortDtoSet = course.getGroups().stream().map(group -> new GroupShortDto(group.getName())).collect(Collectors.toSet());
         return new CourseDetailedDto(
-                course.getName(), course.getDescription(), topicBaseDtoSet, groupShortDtoSet
+                course.getId(),course.getName(), course.getDescription(), topicBaseDtoSet, groupShortDtoSet, course.getCategory().getName() != null ? course.getCategory().getName() : null
         );
     }
 

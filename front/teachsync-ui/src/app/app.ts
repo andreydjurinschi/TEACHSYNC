@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
+import { RuleService } from './core/services/role.rule.service';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,7 @@ import { ThemeService } from './core/services/theme.service';
 export class App {
   private themeService = inject(ThemeService);
 
-  constructor() {
+  constructor(public ruleService: RuleService) {
     document.documentElement.classList.toggle('dark', this.themeService.theme() === 'dark');
   }
 }

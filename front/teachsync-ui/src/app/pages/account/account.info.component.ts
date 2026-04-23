@@ -37,7 +37,7 @@ export class AccountInfo implements OnInit {
       const token = localStorage.getItem('jwt_token');
       if (!token) return null;
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.sub ?? payload.email ?? null;
+      return payload['email']
     } catch {
       return null;
     }

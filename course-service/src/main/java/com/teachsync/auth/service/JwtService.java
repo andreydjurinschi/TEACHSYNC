@@ -21,10 +21,7 @@ public class JwtService {
     }
 
     public String extractUsername(String token){
-        String u = extractClaimsFromToken(token).getSubject();
-        System.out.println("token " + token);
-        System.out.println("Extracted subject from token: " + u);
-        return u;
+        return extractClaimsFromToken(token).getSubject();
     }
 
     public List<SimpleGrantedAuthority> getAuthorities(String token){

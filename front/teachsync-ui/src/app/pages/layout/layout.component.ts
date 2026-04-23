@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   inject,
@@ -24,7 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-layout',
   standalone: true,
   imports: [
-    RouterOutlet, RouterLink,
+    RouterOutlet, RouterLink, CommonModule,
     MatSidenavModule, MatListModule,
     MatIconModule, MatToolbarModule, MatButtonModule
   ],
@@ -53,6 +53,12 @@ export class LayoutComponent implements OnInit {
       }
     }
   }
+
+  coursesOpen = false;
+
+toggleCourses() {
+  this.coursesOpen = !this.coursesOpen;
+}
 
   logout() {
     this.auth.logout();

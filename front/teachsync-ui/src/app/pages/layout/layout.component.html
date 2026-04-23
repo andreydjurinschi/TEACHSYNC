@@ -161,16 +161,41 @@
       }
 
       @if (role === 'TEACHER') {
-      <a routerLink="/profile/courses" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
-            hover:bg-white/10 hover:text-white transition-all group">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
-           C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
-           C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13
-           C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-        <span class="text-sm font-medium">Мои курсы</span>
-      </a>
+<div class="relative" (click)="toggleCourses()" tabindex="0">
+  <button
+    class="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
+           hover:bg-white/10 hover:text-white transition-all">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13
+               C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13
+               C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13
+               C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+    </svg>
+
+    <span class="text-sm font-medium flex-1 text-left">Курсы</span>
+
+    <svg class="w-4 h-4 transition-transform"
+         [class.rotate-180]="coursesOpen"
+         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
+
+  <div *ngIf="coursesOpen"
+       class="mt-1 ml-8 space-y-1">
+    <a routerLink="/courses"
+       class="block px-3 py-2 rounded-md text-slate-400 hover:text-white hover:bg-white/10 text-sm">
+      Все курсы
+    </a>
+
+    <a routerLink="/profile/courses"
+       class="block px-3 py-2 rounded-md text-slate-400 hover:text-white hover:bg-white/10 text-sm">
+      Мои курсы
+    </a>
+  </div>
+</div>
       <a routerLink="/profile/schedules" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300
       hover:bg-white/10 hover:text-white transition-all group">
   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

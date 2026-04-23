@@ -1,4 +1,3 @@
-<!-- ═══════════════════ СПИСОК ═══════════════════ -->
 @if (!selected()) {
   <div class="min-h-screen bg-slate-100 dark:bg-slate-900 p-8">
     <h1 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Мои курсы</h1>
@@ -77,11 +76,11 @@
                       {{ course.description }}
                     </p>
                   }
-                  <!-- Превью тегов тем -->
                   @if (course.topics?.length) {
                     <div class="flex flex-wrap gap-1 mt-3">
                       @for (topic of course.topics.slice(0, 3); track topic.id) {
-                        <span [class]="'px-1.5 py-0.5 text-xs rounded-full border ' + getTagConfig(topic.topicTag).classes">
+                        <span [class]="'px-1.5 py-0.5 text-xs rounded-full border '
+                                       + getTagConfig(topic.topicTag).classes">
                           {{ getTagConfig(topic.topicTag).label }}
                         </span>
                       }
@@ -105,11 +104,9 @@
   </div>
 }
 
-<!-- ═══════════════════ ДЕТАЛИ ═══════════════════ -->
 @if (selected()) {
   <div class="min-h-screen bg-slate-100 dark:bg-slate-900 p-8">
 
-    <!-- Шапка -->
     <div class="flex items-center gap-3 mb-8">
       <button (click)="backToList()"
               class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700
@@ -132,13 +129,11 @@
 
     <div class="max-w-3xl mx-auto space-y-5">
 
-      <!-- ── Фото + описание ── -->
       <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
                   dark:border-slate-700 overflow-hidden">
         @if (selected()!.photoUrl) {
           <img [src]="selected()!.photoUrl" [alt]="selected()!.name"
-               class="w-full h-56 object-cover"
-               loading="lazy" width="800" height="224">
+               class="w-full h-56 object-cover" loading="lazy" width="800" height="224">
         } @else {
           <div class="w-full h-40 bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
             <span class="text-4xl font-bold text-slate-300 dark:text-slate-500 select-none">
@@ -157,17 +152,15 @@
         </div>
       </div>
 
-      <!-- ── Темы + Группы (два столбца) ── -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-        <!-- Темы -->
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
                     dark:border-slate-700 p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400
                        uppercase tracking-widest">Темы</h3>
             <span class="text-xs text-slate-400 dark:text-slate-500">
-              {{ selected()!.topics?.length }}
+              {{ selected()!.topics?.length ?? 0 }}
             </span>
           </div>
           @if (!selected()!.topics?.length) {
@@ -187,14 +180,13 @@
           }
         </div>
 
-        <!-- Группы -->
         <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
                     dark:border-slate-700 p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400
                        uppercase tracking-widest">Группы</h3>
             <span class="text-xs text-slate-400 dark:text-slate-500">
-              {{ selected()!.groups?.length }}
+              {{ selected()!.groups?.length ?? 0 }}
             </span>
           </div>
           @if (!selected()!.groups?.length) {
@@ -219,99 +211,33 @@
 
       </div>
 
-      <!-- ── Форма редактирования ── -->
-      @if (editingId() === selected()!.id) {
-        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
-                    dark:border-slate-700 p-6">
-          <h3 class="text-xs font-semibold text-slate-500 dark:text-slate-400
-                     uppercase tracking-widest mb-4">Редактирование</h3>
-          @if (error()) {
-            <div class="mb-4 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/20
-                        border border-red-200 dark:border-red-800
-                        text-xs text-red-600 dark:text-red-400">{{ error() }}</div>
-          }
-          <form [formGroup]="editForm" (ngSubmit)="saveEdit(selected()!.id)" class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                Название
-              </label>
-              <input formControlName="name" type="text"
-                     class="w-full px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-700
-                            border border-slate-200 dark:border-slate-600
-                            text-slate-900 dark:text-white
-                            focus:outline-none focus:ring-2 focus:ring-indigo-500/30
-                            focus:border-indigo-500 transition-colors">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                Описание
-              </label>
-              <textarea formControlName="description" rows="3"
-                        class="w-full px-3 py-2 text-sm rounded-lg resize-none
-                               bg-slate-50 dark:bg-slate-700
-                               border border-slate-200 dark:border-slate-600
-                               text-slate-900 dark:text-white
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500/30
-                               focus:border-indigo-500 transition-colors"></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                Категория
-              </label>
-              <select formControlName="categoryId"
-                      class="w-full px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-700
-                             border border-slate-200 dark:border-slate-600
-                             text-slate-900 dark:text-white
-                             focus:outline-none focus:ring-2 focus:ring-indigo-500/30
-                             focus:border-indigo-500 transition-colors">
-                <option [value]="0">Без категории</option>
-                @for (cat of categories(); track cat.id) {
-                  <option [value]="cat.id">{{ cat.name }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
-                Ссылка на фото
-              </label>
-              <input formControlName="photoUrl" type="url"
-                     class="w-full px-3 py-2 text-sm rounded-lg bg-slate-50 dark:bg-slate-700
-                            border border-slate-200 dark:border-slate-600
-                            text-slate-900 dark:text-white placeholder-slate-400
-                            focus:outline-none focus:ring-2 focus:ring-indigo-500/30
-                            focus:border-indigo-500 transition-colors"
-                     placeholder="https://...">
-            </div>
-            <div class="flex gap-3 pt-1">
-              <button type="submit"
-                      [disabled]="editForm.invalid || saving()"
-                      class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700
-                             disabled:opacity-50 disabled:cursor-not-allowed
-                             text-white text-sm font-medium rounded-lg transition">
-                {{ saving() ? 'Сохранение...' : 'Сохранить' }}
-              </button>
-              <button type="button" (click)="cancelEdit()"
-                      class="px-5 py-2.5 bg-slate-200 dark:bg-slate-700
-                             hover:bg-slate-300 dark:hover:bg-slate-600
-                             text-slate-700 dark:text-slate-300
-                             text-sm font-medium rounded-lg transition">
-                Отмена
-              </button>
-            </div>
-          </form>
-        </div>
-      }
+      <div class="flex gap-3">
+        <a [routerLink]="['/courses/edit', selected()!.id]"
+           class="inline-flex items-center gap-2 px-5 py-2.5
+                  bg-indigo-600 hover:bg-indigo-700
+                  text-white text-sm font-medium rounded-lg transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5
+                     m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Редактировать курс
+        </a>
 
-      <!-- ── Кнопка редактировать ── -->
-      @if (editingId() !== selected()!.id) {
-        <div>
-          <button (click)="startEdit(selected()!)"
-                  class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700
-                         text-white text-sm font-medium rounded-lg transition">
-            Редактировать курс
-          </button>
-        </div>
-      }
+        <a [routerLink]="['/courses', selected()!.id, 'topics']"
+           class="inline-flex items-center gap-2 px-5 py-2.5
+                  bg-slate-100 dark:bg-slate-700
+                  hover:bg-slate-200 dark:hover:bg-slate-600
+                  text-slate-700 dark:text-slate-300
+                  text-sm font-medium rounded-lg transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                     M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          Управлять темами
+        </a>
+      </div>
 
     </div>
   </div>
