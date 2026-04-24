@@ -1,10 +1,13 @@
 package com.teachsync.controller.domain;
 
+import com.teachsync.domain.Role;
 import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
+import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -63,5 +68,33 @@ public class UserController {
     @GetMapping("/teacher/{id}/courses")
     public ResponseEntity<UserWithCoursesDto> getWithCourses(@PathVariable Long id){
         return ResponseEntity.ok(service.getUserWithCourses(id));
+    }
+
+    @GetMapping("/{id}/specializations")
+    public ResponseEntity<Set<SpecializationsBaseDto>> getSpecializations(@PathVariable Long id){
+        return ResponseEntity.ok(service.getSpecializations(id));
+    }
+
+    @PostMapping("/{teacherId}/specializations/{categoryId}")
+    public ResponseEntity<Void> addSpecializations(@PathVariable Long teacherId, @PathVariable Long categoryId){
+        service.addSpecializationForTeacher(teacherId, categoryId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+    }
+
+    @GetMapping("/teachers")
+    public ResponseEntity<List<TeacherResponse>> getAllTeachers(){
+        return ResponseEntity.ok(
+                service.findAllByRole(Role.TEACHER).stream().map(
+                        t -> new  TeacherResponse(
+                                t.getId(), t.getName(), t.getSurname(), t.getEmail(), t.getSpecializations()
+                        )
+                ).collect(Collectors.toList())
+        );
+    }
+
+    @DeleteMapping("/{teacherId}/specializations/{categoryId}")
+    public ResponseEntity<Void> deleteSpecializations(@PathVariable Long teacherId, @PathVariable Long categoryId){
+        service.removeSpecializationForTeacher(teacherId, categoryId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
     }
 }

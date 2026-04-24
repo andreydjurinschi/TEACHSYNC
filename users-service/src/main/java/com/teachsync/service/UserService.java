@@ -12,6 +12,7 @@ import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.interaction.responses.feign.UserResponse;
 import com.teachsync.mapper.SpecializationMapper;
 import com.teachsync.mapper.UserMapper;
+import com.teachsync.repository.SpecializationsRepository;
 import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
@@ -30,10 +31,12 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository repository;
     private final CourseClient courseClient;
+    private final SpecializationsRepository specializationsRepository;
 
-    public UserService(UserRepository repository, CourseClient courseClient) {
+    public UserService(UserRepository repository, CourseClient courseClient, SpecializationsRepository specializationsRepository) {
         this.repository = repository;
         this.courseClient = courseClient;
+        this.specializationsRepository = specializationsRepository;
     }
 
     public List<UserBaseDto> findAll() {
@@ -146,6 +149,27 @@ public class UserService {
                 user.getEmail(),
                 user.getSpecializations().stream().map(SpecializationMapper::mapToBaseDto).collect(Collectors.toSet())
         );
+    }
+
+    @Transactional
+    public void addSpecializationForTeacher(Long teacherId, Long categoryId){
+        User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
+        Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
+
+        specializationsRepository.addSpecializationForUser(user.getId(), category.getId());
+    }
+
+    @Transactional
+    public void removeSpecializationForTeacher(Long teacherId, Long categoryId){
+        User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
+        Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
+
+        specializationsRepository.removeSpecializationForUser(user.getId(), category.getId());
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations(Long id) {
+        User user = getUser(id);
+        return user.getSpecializations().stream().map(SpecializationMapper::mapToBaseDto).collect(Collectors.toSet());
     }
 
     private User getUser(Long id) {

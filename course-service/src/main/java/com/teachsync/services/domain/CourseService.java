@@ -146,6 +146,13 @@ public class CourseService {
         course.setTeacherId(userId);
     }
 
+    @Transactional
+    public void unassignTeacherFromCourse(Long courseId) {
+        Course course = repository.getCourseWithFullData(courseId);
+
+        course.setTeacherId(null);
+    }
+
     public CourseWithTeacherRequest getCourseWithTeacher(Long id){
         Course course = getCourse(id);
         Long teacherId = course.getTeacherId();

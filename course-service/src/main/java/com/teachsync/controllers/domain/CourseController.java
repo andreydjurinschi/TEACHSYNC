@@ -110,11 +110,19 @@ public class CourseController {
                 .status(HttpStatus.NO_CONTENT).body(null);
     }
     // feign
-    @PutMapping("/assign/{courseId}/{teacherId}")
-    public ResponseEntity<Void> isTeacher(@PathVariable("courseId") Long courseId, @PathVariable("teacherId") Long teacherId) {
+    @PutMapping("/assign-teacher/{courseId}/{teacherId}")
+    public ResponseEntity<Void> assignTeacher(@PathVariable Long courseId, @PathVariable Long teacherId) {
         courseService.assignTeacherToCourse(courseId, teacherId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @PutMapping("/unassign-teacher/{courseId}/")
+    public ResponseEntity<Void> unassignTeacher(@PathVariable Long courseId) {
+        courseService.unassignTeacherFromCourse(courseId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+
 
     @GetMapping("/with-teacher/{id}")
     public ResponseEntity<CourseWithTeacherRequest> getCourseWithTeacher(@PathVariable Long id) {

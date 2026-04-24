@@ -3,7 +3,7 @@ export interface CourseBase {
   name: string;
   description: string;
   photoUrl?: string;
-  teacherId?: number;
+  teacher?: number;
   categoryId?: number;
   categoryName?: string;
 }

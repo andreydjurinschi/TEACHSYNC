@@ -40,7 +40,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/swagger-ui/**").permitAll();
                     auth.requestMatchers("/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/teachsync/users/edit/account/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
-                    auth.requestMatchers("/teachsync/users/**").hasRole("ADMIN");
+                    auth.requestMatchers("/teachsync/users/**").hasAnyRole("ADMIN", "MANAGER");
                     auth.requestMatchers("/teachsync/account/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
                     auth.anyRequest().authenticated();
                 })

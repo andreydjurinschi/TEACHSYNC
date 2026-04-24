@@ -20,11 +20,13 @@ public class CourseMapper {
     public static CourseBaseDto mapToBaseDto(Course course) {
         Category category = course.getCategory();
         String categoryName = null;
+        Long categoryId = null;
         if(category != null){
             categoryName =  category.getName();
+            categoryId = category.getId();
         }
         return new CourseBaseDto(
-                course.getId(), course.getName(), course.getDescription(), course.getPhotoUrl(), categoryName,course.getTeacherId()
+                course.getId(), course.getName(), course.getDescription(), course.getPhotoUrl(), categoryId, categoryName,course.getTeacherId()
         );
     }
 

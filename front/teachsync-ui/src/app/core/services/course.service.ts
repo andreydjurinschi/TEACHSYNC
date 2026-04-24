@@ -80,6 +80,22 @@ export class CourseService {
       return this.http.get<CourseWithGroups>(`${this.apiUrl}/course-with-groups/${courseId}`, { headers: this.getHeaders() });
   }
 
+  assignTeacher(courseId: number, teacherId: number) {
+  return this.http.put<void>(
+    `${this.apiUrl}/assign-teacher/${courseId}/${teacherId}`,
+    {},
+    { headers: this.getHeaders() }
+  );
+}
+
+unassignTeacher(courseId: number) {
+  return this.http.put<void>(
+    `${this.apiUrl}/unassign-teacher/${courseId}/`,
+    {},
+    { headers: this.getHeaders() }
+  );
+}
+
   // my 
   getMyCoursesDetailed(): Observable<CourseDetailedMy[]> {
   return this.http.get<CourseDetailedMy[]>(

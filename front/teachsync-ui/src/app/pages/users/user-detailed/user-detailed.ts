@@ -1,23 +1,14 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  signal,
-  computed
-} from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  ActivatedRoute,
-  Router,
-  RouterLink,
-} from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import {
-  UserWithCourses,
-} from '../../../core/models/users/user.detailed.model';
+import { UserWithCourses } from '../../../core/models/users/user.detailed.model';
 import { User } from '../../../core/models/users/user.model';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { TeacherService } from '../../../core/services/teacher.service';
+import { CategoryBase } from '../../../core/models/category/category.model';
 
 @Component({
   selector: 'app-user-detailed',
@@ -27,26 +18,25 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class UserDetailed implements OnInit {
 
-  user = signal<User | null>(null);
-  userWithCourses = signal<UserWithCourses | null>(null);
-  loading = signal<boolean>(false);
+  user             = signal<User | null>(null);
+  userWithCourses  = signal<UserWithCourses | null>(null);
+  specializations  = signal<CategoryBase[]>([]);   // ← новый сигнал
+  loading          = signal(false);
   selectedCourseId = signal<number | null>(null);
 
   currentEmail = computed(() => {
-  const token = this.authService.getToken();
-  if (!token) return null;
+    const token = this.authService.getToken();
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload?.sub ?? null;
+  });
 
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  return payload?.sub ?? null;
-});
-
-isSelf = computed(() =>
-  this.currentEmail() === this.userWithCourses()?.email
-);
+  isSelf = computed(() => this.currentEmail() === this.userWithCourses()?.email);
 
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
+    private teacherService: TeacherService,   // ← inject
     private router: Router,
     private authService: AuthService
   ) {}
@@ -56,19 +46,6 @@ isSelf = computed(() =>
     this.loadUser(userId);
   }
 
-  confirmDelete(): void {
-  const id = this.userWithCourses()?.id;
-  if (!id) return;
-
-  const confirmed = confirm(`Удалить пользователя ${this.userWithCourses()?.name} ${this.userWithCourses()?.surname}?`);
-  if (!confirmed) return;
-
-  this.userService.delete(id).subscribe({
-    next: () => this.router.navigate(['/users']),
-    error: err => console.error('Ошибка при удалении:', err)
-  });
-}
-
   loadUser(id: number): void {
     this.loading.set(true);
 
@@ -77,33 +54,24 @@ isSelf = computed(() =>
         this.user.set(user);
 
         if (user.role === 'TEACHER') {
+          // загружаем специализации параллельно с курсами
+          this.teacherService.getSpecializations(id).subscribe({
+            next: specs => this.specializations.set(specs),
+            error: ()  => this.specializations.set([])
+          });
 
           this.userService.getWithCourses(user.id).subscribe({
-            next: userWithCourses => {
-              this.userWithCourses.set(userWithCourses);
-            },
-            error: () => {
-
-              this.userWithCourses.set({
-                id: user.id,
-                name: user.name,
-                surname: user.surname,
-                email: user.email,
-                courseNames: [],
-                available: false
-              });
-            },
+            next: data => this.userWithCourses.set(data),
+            error: () => this.userWithCourses.set({
+              id: user.id, name: user.name, surname: user.surname,
+              email: user.email, courseNames: [], available: false
+            }),
             complete: () => this.loading.set(false)
           });
         } else {
-          
           this.userWithCourses.set({
-            id: user.id,
-            name: user.name,
-            surname: user.surname,
-            email: user.email,
-            courseNames: [],
-            available: false
+            id: user.id, name: user.name, surname: user.surname,
+            email: user.email, courseNames: [], available: false
           });
           this.loading.set(false);
         }
@@ -116,11 +84,21 @@ isSelf = computed(() =>
     });
   }
 
-  trackByCourseId(_: number, course: any) {
-  return course.id;
-}
+  confirmDelete(): void {
+    const id = this.userWithCourses()?.id;
+    if (!id) return;
+    if (!confirm(`Удалить пользователя ${this.userWithCourses()?.name} ${this.userWithCourses()?.surname}?`)) return;
+    this.userService.delete(id).subscribe({
+      next: () => this.router.navigate(['/users']),
+      error: err => console.error(err)
+    });
+  }
 
-  toggleCourse(id: number){
-      this.selectedCourseId.set(this.selectedCourseId() === id ? null : id)
+  toggleCourse(id: number): void {
+    this.selectedCourseId.set(this.selectedCourseId() === id ? null : id);
+  }
+
+  trackByCourseId(_: number, course: any) {
+    return course.id;
   }
 }

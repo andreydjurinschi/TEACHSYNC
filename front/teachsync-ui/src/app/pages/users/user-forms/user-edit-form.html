@@ -1,4 +1,5 @@
-<div class="relative min-h-screen flex items-center justify-center p-8 bg-slate-100 dark:bg-slate-900">
+<div class="relative min-h-screen flex items-center justify-center p-8
+            bg-slate-100 dark:bg-slate-900">
 
   <div class="absolute top-8 left-8 flex items-center gap-3">
     <a routerLink="/users" class="text-slate-400 hover:text-white transition">
@@ -6,11 +7,14 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
     </a>
-    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Изменить {{ user()?.name }} {{ user()?.surname }}</h2>
+    <h2 class="text-2xl font-bold text-slate-900 dark:text-white">
+      Изменить {{ user()?.name }} {{ user()?.surname }}
+    </h2>
   </div>
 
   <div class="w-full max-w-4xl">
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8">
+    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+                dark:border-slate-700 p-8">
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
 
         <div class="grid grid-cols-2 gap-4">
@@ -18,15 +22,15 @@
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Имя</label>
             <input formControlName="name" type="text"
                    class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
-                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
-                          dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"/>
+                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white
+                          focus:outline-none focus:border-indigo-500 transition"/>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Фамилия</label>
             <input formControlName="surname" type="text"
                    class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
-                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
-                          dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"/>
+                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white
+                          focus:outline-none focus:border-indigo-500 transition"/>
           </div>
         </div>
 
@@ -35,8 +39,8 @@
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
             <input formControlName="email" type="email"
                    class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
-                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400
-                          dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"/>
+                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white
+                          focus:outline-none focus:border-indigo-500 transition"/>
           </div>
           <div>
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Роль</label>
@@ -51,15 +55,49 @@
           </div>
         </div>
 
+        @if (isTeacher()) {
+          <div>
+            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">
+              Специализации
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              @for (cat of categories(); track cat.id) {
+                <button type="button"
+                        (click)="toggleSpec(cat.id)"
+                        [class]="isSpecSelected(cat.id)
+                          ? 'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ' +
+                            'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 ' +
+                            'text-indigo-700 dark:text-indigo-300'
+                          : 'flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ' +
+                            'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 ' +
+                            'text-slate-600 dark:text-slate-400 hover:border-slate-300'">
+                  @if (isSpecSelected(cat.id)) {
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  } @else {
+                    <span class="w-4 h-4 rounded border border-slate-300 dark:border-slate-500 shrink-0"></span>
+                  }
+                  {{ cat.name }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
         <div class="flex gap-3 pt-2">
-          <button type="submit" [disabled]="form.invalid"
-                  class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50
+          <button type="submit"
+                  [disabled]="form.invalid || saving()"
+                  class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700
+                         disabled:opacity-50 disabled:cursor-not-allowed
                          text-white font-medium rounded-lg transition">
-            Сохранить изменения
+            {{ saving() ? 'Сохранение...' : 'Сохранить изменения' }}
           </button>
           <a routerLink="/users"
-             class="flex-1 py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600
-                    text-slate-700 dark:text-slate-300 font-medium rounded-lg transition text-center">
+             class="flex-1 py-2.5 bg-slate-200 dark:bg-slate-700
+                    hover:bg-slate-300 dark:hover:bg-slate-600
+                    text-slate-700 dark:text-slate-300
+                    font-medium rounded-lg transition text-center">
             Отменить
           </a>
         </div>
@@ -67,5 +105,4 @@
       </form>
     </div>
   </div>
-
 </div>

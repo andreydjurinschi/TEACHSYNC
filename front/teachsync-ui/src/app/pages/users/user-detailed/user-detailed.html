@@ -38,6 +38,18 @@
       </div>
 
       <div *ngIf="user()?.role === 'TEACHER'" class="px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+        <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400
+             uppercase tracking-wider mb-3">Специализации</h3>
+  <div class="flex flex-wrap gap-2">
+    <span *ngFor="let spec of specializations()"
+          class="px-2.5 py-0.5 text-xs font-medium rounded-full
+                 bg-slate-100 dark:bg-slate-700
+                 text-slate-600 dark:text-slate-300
+                 border border-slate-200 dark:border-slate-600">
+      {{ spec.name }}
+    </span>
+  </div>
+  <br>
         <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Курсы</h3>
 <div *ngIf="userWithCourses()?.available; else noCourses" class="space-y-2">
 

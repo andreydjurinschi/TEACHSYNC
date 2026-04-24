@@ -5,14 +5,16 @@ public class CourseBaseDto {
     private String name;
     private String description;
     private String photoUrl;
+    private Long categoryId;
     private String categoryName;
     private Long teacher;
 
-    public CourseBaseDto(Long id, String name, String description, String photoUrl,String categoryName, Long teacher) {
+    public CourseBaseDto(Long id, String name, String description, String photoUrl, Long categoryId, String categoryName, Long teacher) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.photoUrl = photoUrl;
+        this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.teacher = teacher;
     }
@@ -66,5 +68,13 @@ public class CourseBaseDto {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 }
