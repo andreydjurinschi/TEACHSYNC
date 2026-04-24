@@ -4,6 +4,8 @@ package com.teachsync.interaction.responses.feign;
 import com.teachsync.domain.Role;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AccountInfoResponse {
     private Long id;
@@ -13,8 +15,9 @@ public class AccountInfoResponse {
     private LocalDate registeredAt;
     private Role role;
     private String profilePicture;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
-    public AccountInfoResponse(Long id, String email, String name, String surname, LocalDate registeredAt, Role role, String profilePicture) {
+    public AccountInfoResponse(Long id, String email, String name, String surname, LocalDate registeredAt, Role role, String profilePicture, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.email = email;
         this.name = name;
@@ -22,6 +25,7 @@ public class AccountInfoResponse {
         this.registeredAt = registeredAt;
         this.role = role;
         this.profilePicture = profilePicture;
+        this.specializations = specializations;
     }
 
     public AccountInfoResponse() {
@@ -81,6 +85,14 @@ public class AccountInfoResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
     }
 }
 

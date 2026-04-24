@@ -3,6 +3,8 @@ package com.teachsync.interaction.responses.feign;
 import com.teachsync.domain.Role;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserResponse {
     private Long id;
@@ -13,16 +15,18 @@ public class UserResponse {
     private String profilePicture;
     private LocalDate registeredAt;
     private Role role;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
-    public UserResponse(Long id, String name, String surname, String email, String password, LocalDate registeredAt, String profilePicture , Role role) {
+    public UserResponse(Long id, String name, String surname, String email, String password, String profilePicture, LocalDate registeredAt, Role role, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
-        this.registeredAt = registeredAt;
         this.profilePicture = profilePicture;
+        this.registeredAt = registeredAt;
         this.role = role;
+        this.specializations = specializations;
     }
 
     public UserResponse() {
@@ -90,6 +94,14 @@ public class UserResponse {
 
     public void setProfilePicture(String profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
     }
 }
 

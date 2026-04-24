@@ -1,16 +1,21 @@
 package com.teachsync.interaction.responses.feign;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class TeacherBaseInfoForScheduleServiceResponse {
     private Long id;
     private String name;
     private String surname;
     private String email;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<SpecializationsBaseDto>();
 
-    public TeacherBaseInfoForScheduleServiceResponse(Long id, String name, String surname, String email) {
+    public TeacherBaseInfoForScheduleServiceResponse(Long id, String name, String surname, String email, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
+        this.specializations = specializations;
     }
 
     public TeacherBaseInfoForScheduleServiceResponse() {
@@ -46,5 +51,13 @@ public class TeacherBaseInfoForScheduleServiceResponse {
 
     public void setSurname(String surname) {
         this.surname = surname;
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
     }
 }

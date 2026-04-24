@@ -80,6 +80,10 @@ public class UserInternalController {
         accountInfoResponse.setRole(response.getRole());
         accountInfoResponse.setProfilePicture(response.getProfilePicture());
         accountInfoResponse.setRegisteredAt(response.getRegisteredAt());
+        accountInfoResponse.setSpecializations(
+                response.getSpecializations()
+        );
+
         return accountInfoResponse;
     }
 }

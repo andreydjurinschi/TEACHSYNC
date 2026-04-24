@@ -1,6 +1,8 @@
 package com.teachsync.interaction.feign.requests;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserRequest {
     private Long id;
@@ -11,8 +13,9 @@ public class UserRequest {
     private LocalDate registeredAt;
     private String profilePicture;
     private Role role;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
-    public UserRequest(Long id, String name, String surname, String email, String password, LocalDate registeredAt, String profilePicture, Role role) {
+    public UserRequest(Long id, String name, String surname, String email, String password, LocalDate registeredAt, String profilePicture, Role role, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -21,6 +24,7 @@ public class UserRequest {
         this.registeredAt = registeredAt;
         this.profilePicture = profilePicture;
         this.role = role;
+        this.specializations = specializations;
     }
 
     public UserRequest() {
@@ -86,5 +90,13 @@ public class UserRequest {
         return profilePicture;
     }
     public void setProfilePicture(String profilePicture) {}
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
+    }
 }
 

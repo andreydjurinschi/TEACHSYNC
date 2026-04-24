@@ -1,4 +1,6 @@
 package com.teachsync.interaction.responses.feign;
 
-public record TeacherResponse(Long id, String name, String surname, String email) {
+import java.util.Set;
+
+public record TeacherResponse(Long id, String name, String surname, String email, Set<SpecializationsBaseDto> specializations) {
 }

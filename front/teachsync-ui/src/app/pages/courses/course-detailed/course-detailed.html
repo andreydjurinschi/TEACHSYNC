@@ -31,26 +31,44 @@
       </div>
     </div>
 
-    @if (withTeacher()) {
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-      <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
-        Преподаватель
-      </h3>
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
-          <span class="text-indigo-400 font-bold text-lg">
-            {{ withTeacher()!.teacherRequest.name[0] }}{{ withTeacher()!.teacherRequest.surname[0] }}
-          </span>
-        </div>
-        <div>
-          <p class="text-slate-900 dark:text-white font-semibold">
-            {{ withTeacher()!.teacherRequest.name }} {{ withTeacher()!.teacherRequest.surname }}
-          </p>
-          <p class="text-slate-500 dark:text-slate-400 text-sm">{{ withTeacher()!.teacherRequest.email }}</p>
-        </div>
+@if (withTeacher()) {
+  <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+              dark:border-slate-700 p-6">
+    <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400
+               uppercase tracking-widest mb-4">Преподаватель</h3>
+
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center
+                  justify-center shrink-0">
+        <span class="text-indigo-400 font-bold text-lg">
+          {{ withTeacher()!.teacherRequest.name[0] }}{{ withTeacher()!.teacherRequest.surname[0] }}
+        </span>
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <p class="text-slate-900 dark:text-white font-semibold">
+          {{ withTeacher()!.teacherRequest.name }} {{ withTeacher()!.teacherRequest.surname }}
+        </p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-3">
+          {{ withTeacher()!.teacherRequest.email }}
+        </p>
+
+        @if (withTeacher()!.teacherRequest.specializations?.length) {
+          <div class="flex flex-wrap gap-1.5">
+            @for (spec of withTeacher()!.teacherRequest.specializations; track spec.id) {
+              <span class="px-2.5 py-0.5 text-xs font-medium rounded-full
+                           bg-slate-100 dark:bg-slate-700
+                           text-slate-600 dark:text-slate-300
+                           border border-slate-200 dark:border-slate-600">
+                {{ spec.name }}
+              </span>
+            }
+          </div>
+        }
       </div>
     </div>
-    }
+  </div>
+}
 
     <div class="grid grid-cols-2 gap-6">
 

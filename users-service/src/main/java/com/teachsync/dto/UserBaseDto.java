@@ -1,8 +1,11 @@
 package com.teachsync.dto;
 
 import com.teachsync.domain.Role;
+import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UserBaseDto {
 
@@ -12,14 +15,16 @@ public class UserBaseDto {
     private String email;
     private LocalDate registeredAt;
     private Role role;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
-    public UserBaseDto(Long id, String name, String surname, String email, LocalDate registeredAt, Role role) {
+    public UserBaseDto(Long id, String name, String surname, String email, LocalDate registeredAt, Role role, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.registeredAt = registeredAt;
         this.role = role;
+        this.specializations = specializations;
     }
 
     public UserBaseDto() {
@@ -71,5 +76,13 @@ public class UserBaseDto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
     }
 }

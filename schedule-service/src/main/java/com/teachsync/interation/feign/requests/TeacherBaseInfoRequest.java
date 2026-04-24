@@ -3,6 +3,8 @@ package com.teachsync.interation.feign.requests;
 import com.teachsync.interation.feign.Role;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TeacherBaseInfoRequest {
     private Long id;
@@ -11,14 +13,16 @@ public class TeacherBaseInfoRequest {
     private String email;
     private LocalDate registeredAt;
     private Role role;
+    private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
-    public TeacherBaseInfoRequest(Long id, String name, String surname, String email, LocalDate registeredAt, Role role) {
+    public TeacherBaseInfoRequest(Long id, String name, String surname, String email, LocalDate registeredAt, Role role, Set<SpecializationsBaseDto> specializations) {
         this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.registeredAt = registeredAt;
         this.role = role;
+        this.specializations = specializations;
     }
 
     public String getSurname() {
@@ -70,5 +74,13 @@ public class TeacherBaseInfoRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Set<SpecializationsBaseDto> getSpecializations() {
+        return specializations;
+    }
+
+    public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
+        this.specializations = specializations;
     }
 }

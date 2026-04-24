@@ -1,13 +1,16 @@
 package com.teachsync.service;
 
+import com.teachsync.domain.Category;
 import com.teachsync.domain.Role;
 import com.teachsync.domain.User;
 import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
 import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.interaction.responses.feign.UserResponse;
+import com.teachsync.mapper.SpecializationMapper;
 import com.teachsync.mapper.UserMapper;
 import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
@@ -21,6 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -46,9 +50,19 @@ public class UserService {
             return null;
         }
         return new UserResponse(
-                user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getPassword(), user.getRegisteredAt(), user.getProfilePicture() ,user.getRole()
+                user.getId(),
+                user.getName(),
+                user.getSurname(),
+                user.getEmail(),
+                user.getPassword(),
+                user.getProfilePicture(),
+                user.getRegisteredAt(),
+                user.getRole(),
+                user.getSpecializations().stream().map(SpecializationMapper::mapToBaseDto).collect(Collectors.toSet())
         );
     }
+
+
 
     public UserBaseDto findById(Long id) {
         if (id == null) {
@@ -126,7 +140,11 @@ public class UserService {
     public TeacherResponse getTeacherForCourseService(Long id) {
         User user = getUser(id);
         return new TeacherResponse(
-                user.getId(), user.getName(), user.getSurname(), user.getEmail()
+                user.getId(),
+                user.getName(),
+                user.getSurname(),
+                user.getEmail(),
+                user.getSpecializations().stream().map(SpecializationMapper::mapToBaseDto).collect(Collectors.toSet())
         );
     }
 

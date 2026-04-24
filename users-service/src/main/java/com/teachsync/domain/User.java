@@ -31,7 +31,7 @@ public class User {
 
     private String profilePicture;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "teacher_specializations",
             joinColumns = @JoinColumn(name = "teacher_id"),
