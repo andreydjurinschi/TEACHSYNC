@@ -1,7 +1,8 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 import { ScheduleBase } from '../../../../core/models/schedules/schedule-base.model';
+import { WeekDay } from '../../../../core/models/schedules/schedule-base.model';
 
 const DAY_ORDER = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
 
@@ -16,11 +17,16 @@ export class TeacherScheduleComponent implements OnInit {
 
   schedules = signal<ScheduleBase[]>([]);
   loading   = signal(true);
+  activeDay = signal<WeekDay | 'all'>('all');
+
+readonly DAY_ORDER: WeekDay[] = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
 
   readonly DAY_LABELS: Record<string, string> = {
     MON: 'Пн', TUE: 'Вт', WED: 'Ср',
     THU: 'Чт', FRI: 'Пт', SAT: 'Сб', SUN: 'Вс'
   };
+
+  readonly todayKey: string = DAY_ORDER[((new Date().getDay() + 6) % 7)];
 
   ngOnInit(): void {
     this.scheduleService.getMySchedule().subscribe({
@@ -28,6 +34,21 @@ export class TeacherScheduleComponent implements OnInit {
       error: () => this.loading.set(false)
     });
   }
+
+
+slotsForDay(day: WeekDay | 'all'): ScheduleBase[] {
+  if (day === 'all') return [];
+  return this.schedules()
+    .filter(s => s.weekDays.includes(day))
+    .sort((a, b) => {
+      const ta = a.startTime[0] * 60 + a.startTime[1];
+      const tb = b.startTime[0] * 60 + b.startTime[1];
+      return ta - tb;
+    });
+}
+setDay(day: WeekDay | 'all'): void {
+  this.activeDay.set(day);
+}
 
   formatTime(t: number[]): string {
     if (!t) return '—';

@@ -12,82 +12,153 @@
     </div>
   }
 
-  @if (!loading() && schedules().length === 0) {
-    <div class="flex flex-col items-center justify-center py-24
-                text-slate-400 dark:text-slate-500">
-      <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7
-                 a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-      </svg>
-      <p class="text-sm italic">Расписание пусто</p>
+  @if (!loading()) {
+
+    <!-- Day tabs -->
+    <div class="flex gap-2 flex-wrap mb-6">
+      <button
+        (click)="setDay('all')"
+        [class.bg-indigo-600]="activeDay() === 'all'"
+        [class.text-white]="activeDay() === 'all'"
+        [class.border-indigo-600]="activeDay() === 'all'"
+        [class.text-slate-500]="activeDay() !== 'all'"
+        [class.dark:text-slate-400]="activeDay() !== 'all'"
+        class="px-5 py-1.5 rounded-full text-sm font-semibold border border-slate-200
+               dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors">
+        Все дни
+      </button>
+      @for (day of DAY_ORDER; track day) {
+        <button
+          (click)="setDay(day)"
+          [class.bg-indigo-600]="activeDay() === day"
+          [class.text-white]="activeDay() === day"
+          [class.border-indigo-600]="activeDay() === day"
+          [class.text-slate-500]="activeDay() !== day"
+          [class.dark:text-slate-400]="activeDay() !== day"
+          [class.font-bold]="day === todayKey"
+          class="px-4 py-1.5 rounded-full text-sm font-semibold border border-slate-200
+                 dark:border-slate-700 bg-white dark:bg-slate-800 transition-colors">
+          {{ DAY_LABELS[day] }}
+        </button>
+      }
     </div>
-  }
 
-  @if (!loading() && schedules().length > 0) {
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
-                dark:border-slate-700 overflow-hidden">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-slate-100 dark:border-slate-700
-                     bg-slate-50 dark:bg-slate-800/80">
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
-                       dark:text-slate-400 uppercase tracking-widest">Время</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
-                       dark:text-slate-400 uppercase tracking-widest">Дни</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
-                       dark:text-slate-400 uppercase tracking-widest">Группа / Курс</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
-                       dark:text-slate-400 uppercase tracking-widest">Аудитория</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (s of schedules(); track s.id) {
-            <tr class="border-b border-slate-100 dark:border-slate-700/50
-                       hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+    <!-- ALL DAYS: calendar grid -->
+    @if (activeDay() === 'all') {
+      <div class="grid grid-cols-7 gap-3">
+        @for (day of DAY_ORDER; track day) {
+          <div class="flex flex-col gap-2">
 
-              <td class="px-4 py-3">
-                <span class="font-mono font-medium text-slate-900 dark:text-white">
+            <div class="text-center text-xs font-bold uppercase tracking-widest py-2"
+                 [class.text-indigo-500]="day === todayKey"
+                 [class.text-slate-400]="day !== todayKey"
+                 [class.dark:text-slate-500]="day !== todayKey">
+              {{ DAY_LABELS[day] }}
+            </div>
+
+            @if (slotsForDay(day).length === 0) {
+              <div class="flex items-center justify-center min-h-[80px] rounded-xl
+                          border border-dashed border-slate-200 dark:border-slate-700
+                          text-xs text-slate-300 dark:text-slate-600 italic">
+                —
+              </div>
+            }
+
+            @for (s of slotsForDay(day); track s.id) {
+              <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-100
+                          dark:border-slate-700 p-3 shadow-sm">
+                <p class="font-mono text-xs font-semibold text-slate-400 dark:text-slate-500 mb-1">
                   {{ formatTime(s.startTime) }} — {{ formatTime(s.endTime) }}
-                </span>
-              </td>
-
-              <td class="px-4 py-3">
-                <div class="flex gap-1 flex-wrap">
-                  @for (day of sortedDays(s.weekDays); track day) {
-                    <span class="px-1.5 py-0.5 text-xs font-medium rounded
-                                 bg-indigo-50 dark:bg-indigo-900/30
-                                 text-indigo-600 dark:text-indigo-400">
-                      {{ DAY_LABELS[day] }}
-                    </span>
-                  }
-                </div>
-              </td>
-
-              <td class="px-4 py-3">
-                <p class="font-medium text-slate-900 dark:text-white">
+                </p>
+                <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">
                   {{ s.groupCourseDto?.groupName ?? '—' }}
                 </p>
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                <p class="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
                   {{ s.groupCourseDto?.courseName ?? '—' }}
                 </p>
-              </td>
-              <td class="px-4 py-3">
-                <span class="text-slate-900 dark:text-white">
-                  {{ s.classRoomBaseDto?.name ?? '—' }}
-                </span>
-                @if (s.classRoomBaseDto?.capacity) {
-                  <span class="text-xs text-slate-400 dark:text-slate-500 ml-1">
-                    ({{ s.classRoomBaseDto.capacity }} мест)
+                @if (s.classRoomBaseDto?.name) {
+                  <span class="inline-flex mt-2 text-xs font-medium rounded-full px-2 py-0.5
+                               bg-indigo-50 dark:bg-indigo-900/30
+                               text-indigo-600 dark:text-indigo-400">
+                    {{ s.classRoomBaseDto.name }}
+                    @if (s.classRoomBaseDto.capacity) {
+                      · {{ s.classRoomBaseDto.capacity }} мест
+                    }
                   </span>
                 }
-              </td>
+              </div>
+            }
 
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- SINGLE DAY: list view -->
+    @if (activeDay() !== 'all') {
+
+      @if (slotsForDay(activeDay()).length === 0) {
+        <div class="flex flex-col items-center justify-center py-24
+                    text-slate-400 dark:text-slate-500">
+          <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7
+                     a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <p class="text-sm italic">В этот день занятий нет</p>
+        </div>
+      }
+
+      @if (slotsForDay(activeDay()).length > 0) {
+        <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+                    dark:border-slate-700 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-100 dark:border-slate-700
+                         bg-slate-50 dark:bg-slate-800/80">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
+                           dark:text-slate-400 uppercase tracking-widest">Время</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
+                           dark:text-slate-400 uppercase tracking-widest">Группа / Курс</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500
+                           dark:text-slate-400 uppercase tracking-widest">Аудитория</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of slotsForDay(activeDay()); track s.id) {
+                <tr class="border-b border-slate-100 dark:border-slate-700/50
+                           hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                  <td class="px-4 py-3">
+                    <span class="font-mono font-medium text-slate-900 dark:text-white">
+                      {{ formatTime(s.startTime) }} — {{ formatTime(s.endTime) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3">
+                    <p class="font-medium text-slate-900 dark:text-white">
+                      {{ s.groupCourseDto?.groupName ?? '—' }}
+                    </p>
+                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                      {{ s.groupCourseDto?.courseName ?? '—' }}
+                    </p>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="text-slate-900 dark:text-white">
+                      {{ s.classRoomBaseDto?.name ?? '—' }}
+                    </span>
+                    @if (s.classRoomBaseDto?.capacity) {
+                      <span class="text-xs text-slate-400 dark:text-slate-500 ml-1">
+                        ({{ s.classRoomBaseDto.capacity }} мест)
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+
   }
 
 </div>

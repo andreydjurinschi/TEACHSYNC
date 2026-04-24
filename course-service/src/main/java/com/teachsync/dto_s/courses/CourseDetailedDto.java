@@ -13,9 +13,6 @@ public class CourseDetailedDto {
     private Set<GroupShortDto> groups;
     private String categoryName;
 
-    // TODO: teacher base dto from feign request
-    /*private TeacherBaseDto teacherDto;*/
-
     public CourseDetailedDto(Long id, String name, String description, Set<TopicBaseDto> topics, Set<GroupShortDto> groups, String categoryName) {
         this.id = id;
         this.name = name;

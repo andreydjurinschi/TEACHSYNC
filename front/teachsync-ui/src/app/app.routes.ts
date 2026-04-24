@@ -20,7 +20,7 @@ import { CourseCreate } from './pages/courses/course-create/course-create.compon
 import { AccountInfo } from './pages/account/account.info.component';
 import { CourseGroups } from './pages/courses/course-groups/course-group.component';
 import { ScheduleList } from './pages/schedules/schedule-list/schedule-list.component';
-import { ScheduleCreate } from './pages/schedules/schedule-create/schedule-create.component';
+import { ScheduleCreateComponent } from './pages/schedules/schedule-create/schedule-create.component';
 import { MyCoursesComponent } from './pages/account/teacher/courses/my-courses.component';
 import { TeacherScheduleComponent } from './pages/account/teacher/schedules/my-schedule.component';
 
@@ -52,7 +52,7 @@ export const routes: Routes = [
       { path: 'profile', component: AccountInfo },
 
       { path: 'schedules', component: ScheduleList },
-      { path: 'schedules/create', component: ScheduleCreate },
+      { path: 'schedules/create', component: ScheduleCreateComponent },
 
       { path: 'profile/courses', component: MyCoursesComponent },
       { path: 'profile/schedules', component: TeacherScheduleComponent}
