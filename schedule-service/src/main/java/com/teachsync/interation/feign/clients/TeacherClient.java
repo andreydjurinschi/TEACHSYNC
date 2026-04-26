@@ -13,7 +13,7 @@ import java.util.List;
 
 // todo consul discovery
 
-@FeignClient(name = "users-service", url = "http://localhost:8080/internal/users")
+@FeignClient(name = "users-service", url = "http://localhost:8083/internal/users")
 public interface TeacherClient {
     @GetMapping("/{id}")
     TeacherBaseInfoRequest requestForUserFromUserService(@PathVariable("id") Long userId);

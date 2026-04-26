@@ -1,5 +1,8 @@
 package com.teachsync.interaction.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CourseBaseDto {
     private Long id;
     private String name;

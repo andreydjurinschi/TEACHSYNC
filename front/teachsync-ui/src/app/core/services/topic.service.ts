@@ -5,7 +5,7 @@ import { Topic, TopicTag } from '../models/topics/topic.model';
 
 @Injectable({ providedIn: 'root' })
 export class TopicService {
-  private apiUrl = 'http://localhost:8081/teachsync/topics';
+  private apiUrl = 'http://localhost:8080/teachsync/topics';
 
   constructor(private http: HttpClient) {}
 

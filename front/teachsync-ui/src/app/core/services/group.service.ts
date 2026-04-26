@@ -7,7 +7,7 @@ import { GroupCreate } from '../../pages/groups/group-forms/group-create.compone
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
-  private apiUrl = 'http://localhost:8081/teachsync/groups';
+  private apiUrl = 'http://localhost:8080/teachsync/groups';
 
   constructor(private http: HttpClient) {}
 

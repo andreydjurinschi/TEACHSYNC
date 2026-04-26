@@ -6,7 +6,7 @@ import { CategoryBase } from '../models/category/category.model';
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
   
-  private base = 'http://localhost:8081/teachsync/categories';
+  private base = 'http://localhost:8080/teachsync/categories';
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {

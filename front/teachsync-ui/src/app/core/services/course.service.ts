@@ -9,7 +9,7 @@ import { CourseDetailedMy } from '../models/courses/course-detailed-my-model';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
-  private apiUrl = 'http://localhost:8081/teachsync/courses';
+  private apiUrl = 'http://localhost:8080/teachsync/courses';
 
   constructor(private http: HttpClient) {}
 

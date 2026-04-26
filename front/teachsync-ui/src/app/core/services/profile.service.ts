@@ -6,7 +6,7 @@ import { ProfileInfo } from "../models/profile/profile-info.model";
 @Injectable({providedIn: 'root'})
 export class ProfileService {
     
-    private apiURL = 'http://localhost:8090/teachsync/account/info'
+    private apiURL = 'http://localhost:8080/teachsync/account/info'
 
     constructor(private http: HttpClient){}
 

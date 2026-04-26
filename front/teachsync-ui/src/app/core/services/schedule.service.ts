@@ -5,7 +5,7 @@ import { ClassRoomInfo, GroupCourseInfo, ScheduleBase, TeacherInfo } from '../mo
 
 @Injectable({ providedIn: 'root' })
 export class ScheduleService {
-    private base = 'http://localhost:8082/teachsync/schedules';
+    private base = 'http://localhost:8080/teachsync/schedules';
 
     constructor(private http: HttpClient) { }
 
