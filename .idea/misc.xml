@@ -11,6 +11,7 @@
         <option value="$PROJECT_DIR$/course-service/pom.xml" />
         <option value="$PROJECT_DIR$/auth-service/pom.xml" />
         <option value="$PROJECT_DIR$/replacement-service/pom.xml" />
+        <option value="$PROJECT_DIR$/teachsync-events/pom.xml" />
       </list>
     </option>
   </component>

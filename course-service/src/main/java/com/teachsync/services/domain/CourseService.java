@@ -1,5 +1,6 @@
 package com.teachsync.services.domain;
 
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.Category;
 import com.teachsync.domain.Course;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
@@ -7,6 +8,7 @@ import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
+import com.teachsync.interaction.kafka.CourseEventProducer;
 import com.teachsync.mappers.CourseMapper;
 import com.teachsync.repositories.CategoryRepository;
 import com.teachsync.repositories.CourseRepository;
@@ -16,6 +18,8 @@ import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.repositories.GroupRepository;
 import com.teachsync.repositories.TopicRepository;
+import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +40,16 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final GroupRepository groupRepository;
     private final UserClient userClient;
+    private final CourseEventProducer courseEventProducer;
 
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, CourseEventProducer courseEventProducer, JwtService jwtService) {
         this.repository = repository;
         this.topicRepository = topicRepository;
         this.categoryRepository = categoryRepository;
         this.groupRepository = groupRepository;
         this.userClient = userClient;
+        this.courseEventProducer = courseEventProducer;
     }
 
     public List<CourseBaseDto> findAll(){
@@ -65,6 +71,12 @@ public class CourseService {
             course.setCategory(category);
         }
         repository.save(course);
+
+        courseEventProducer.publishCourseCreated(new CourseCreatedEvent(
+                course.getId(),
+                course.getName(),
+                course.getTeacherId()
+        ));
     }
 
     @Transactional
@@ -144,6 +156,12 @@ public class CourseService {
             throw new IllegalArgumentException("this user is not a teacher");
         }
         course.setTeacherId(userId);
+
+        courseEventProducer.publishCourseTeacherAssigned(
+                new CourseTeacherAssignedEvent(
+                      course.getId(), course.getName(), userId
+                )
+        );
     }
 
     @Transactional
