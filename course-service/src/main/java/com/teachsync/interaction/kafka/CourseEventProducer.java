@@ -2,7 +2,12 @@ package com.teachsync.interaction.kafka;
 
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
+import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -57,4 +62,69 @@ public class CourseEventProducer {
             }
         }));
     }
+
+    public void publishCourseEdited(CourseUpdatedEvent event){
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate
+                .send(KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event);
+
+        future.whenComplete((result, ex) -> {
+            if(ex != null){
+                log.error("Failed publish event for course updated in  course service: CourseUpdatedEvent");
+            }else{
+                log.info("CourseUpdatedEvent published successfully... updated course: {}", event.getCourseId());
+            }
+        });
+    }
+
+    public void publishCourseGroupEnrolled(CourseGroupEnrolledEvent event){
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate
+                .send(KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event);
+
+        future.whenComplete((result, ex) -> {
+            if(ex != null){
+                log.error("Failed publish event for course groupEnrolled in  course service: CourseGroupEnrolledEvent");
+            }else{
+                log.info("CourseGroupEnrolledEvent published successfully... courseId: {}; groupId: {}", event.getCourseId(), event.getGroupId());
+            }
+        });
+    }
+
+    public void publishCourseGroupRemoved(CourseGroupRelationRemovedEvent event){
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate
+                .send(KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event);
+
+        future.whenComplete((result, ex) -> {
+            if(ex != null){
+                log.error("Failed publish event for course group removed in  course service: CourseGroupRelationRemovedEvent, {}", ex.getMessage());
+            }
+            log.info("CourseGroupRelationRemovedEvent published successfully... courseId: {}, groupId: {}", event.getCourseId(), event.getGroupId());
+        });
+    }
+
+    public void publishCourseTopicAdded(CourseTopicsAddedEvent event){
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(
+                KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event);
+
+        future.whenComplete((result, ex) -> {
+            if(ex != null){
+                log.error("Failed publish event for course topic add in  course service: CourseTopicsAddedEvent, {}", ex.getMessage());
+            }else{
+                log.info("CourseTopicsAddedEvent published successfully... courseId: {}, topicId: {}", event.getCourseId(), event.getTopicId());
+            }
+        });
+    }
+
+    public void publishCourseTopicRemoved(CourseTopicRemovedEvent event){
+        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(
+                KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event);
+
+        future.whenComplete((result, ex) -> {
+            if(ex != null){
+                log.error("Failed publish event for course topic remove in  course service: CourseTopicRemovedEvent, {}", ex.getMessage());
+            }else{
+                log.info("CourseTopicRemovedEvent published successfully... courseId: {}, topicId: {}", event.getCourseId(), event.getTopicId());
+            }
+        });
+    }
+
 }

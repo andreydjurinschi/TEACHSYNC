@@ -1,5 +1,6 @@
 package com.teachsync.controllers.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.teachsync.auth.service.JwtService;
 import com.teachsync.dto_s.courses.CourseBaseDto;
 import com.teachsync.dto_s.courses.CourseCreateDto;

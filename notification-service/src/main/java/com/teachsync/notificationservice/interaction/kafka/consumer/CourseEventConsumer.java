@@ -8,7 +8,12 @@ import com.teachsync.notificationservice.service.NotificationService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
+import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -51,6 +56,49 @@ public class CourseEventConsumer {
                     log.info("This message would be sent to teacher with: id {}, course name: {}",
                             courseTeacherAssignedEvent.getTeacherAssigned(),
                             courseTeacherAssignedEvent.getCourseName());
+                }
+                case ActionTypes.COURSE_EDITED -> {
+                    CourseUpdatedEvent courseUpdatedEvent = objectMapper.
+                            readValue(rawMessage, CourseUpdatedEvent.class);
+                    log.info("CourseUpdatedEvent notification would be sent to all MANAGERS and ASSIGNED TEACHER, message: {}", courseUpdatedEvent.toString());
+                }
+                case ActionTypes.COURSE_GROUP_ENROLLED -> {
+                    CourseGroupEnrolledEvent courseGroupEnrolledEvent = objectMapper.
+                            readValue(rawMessage, CourseGroupEnrolledEvent.class);
+                    log.info("CourseGroupEnrolledEvent notification would be sent to all MANAGERS and ASSIGNED TEACHER, data: {},{},{},{}",
+                            courseGroupEnrolledEvent.getCourseId(), courseGroupEnrolledEvent.getGroupId(), courseGroupEnrolledEvent.getCourseName(), courseGroupEnrolledEvent.getGroupName()
+                    );
+                }
+                case ActionTypes.COURSE_GROUP_REMOVED -> {
+                    CourseGroupRelationRemovedEvent courseGroupRelationRemovedEvent = objectMapper.
+                            readValue(rawMessage, CourseGroupRelationRemovedEvent.class);
+                    log.info("CourseGroupRelationRemovedEvent notification would be sent ASSIGNED TEACHER and ALL MANAGERS(message content: need to create schedule for this course-group relation), data: course id: {},group id:{}, course name {},group name: {}, teacher id: {}",
+                            courseGroupRelationRemovedEvent.getCourseId(),
+                            courseGroupRelationRemovedEvent.getGroupId(),
+                            courseGroupRelationRemovedEvent.getCourseName(),
+                            courseGroupRelationRemovedEvent.getGroupName(),
+                            courseGroupRelationRemovedEvent.getTeacherId()
+                    );
+                }
+                case ActionTypes.COURSE_TOPIC_ADDED -> {
+                    CourseTopicsAddedEvent courseTopicsAddedEvent = objectMapper.
+                            readValue(rawMessage, CourseTopicsAddedEvent.class);
+                    log.info("CourseTopicsAddedEvent notification would be send to ASSIGNED USER: {},{},{},{}",
+                            courseTopicsAddedEvent.getCourseId(),
+                            courseTopicsAddedEvent.getTopicId(),
+                            courseTopicsAddedEvent.getCourseName(),
+                            courseTopicsAddedEvent.getTopicName()
+                    );
+                }
+                case ActionTypes.COURSE_TOPIC_REMOVED -> {
+                    CourseTopicRemovedEvent courseTopicRemovedEvent = objectMapper.
+                            readValue(rawMessage, CourseTopicRemovedEvent.class);
+                    log.info("CourseTopicRemovedEvent notification would be send to ASSIGNED USER: {},{},{},{}",
+                            courseTopicRemovedEvent.getCourseId(),
+                            courseTopicRemovedEvent.getTopicId(),
+                            courseTopicRemovedEvent.getCourseName(),
+                            courseTopicRemovedEvent.getTopicName()
+                    );
                 }
             }
         } catch (Exception e) {

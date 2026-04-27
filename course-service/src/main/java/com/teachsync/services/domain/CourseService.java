@@ -1,8 +1,12 @@
 package com.teachsync.services.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.Category;
 import com.teachsync.domain.Course;
+import com.teachsync.domain.Group;
+import com.teachsync.domain.Topic;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
@@ -19,7 +23,12 @@ import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.repositories.GroupRepository;
 import com.teachsync.repositories.TopicRepository;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
+import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
+import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,15 +50,17 @@ public class CourseService {
     private final GroupRepository groupRepository;
     private final UserClient userClient;
     private final CourseEventProducer courseEventProducer;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, CourseEventProducer courseEventProducer, JwtService jwtService) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, CourseEventProducer courseEventProducer, JwtService jwtService, ObjectMapper objectMapper) {
         this.repository = repository;
         this.topicRepository = topicRepository;
         this.categoryRepository = categoryRepository;
         this.groupRepository = groupRepository;
         this.userClient = userClient;
         this.courseEventProducer = courseEventProducer;
+        this.objectMapper = objectMapper;
     }
 
     public List<CourseBaseDto> findAll(){
@@ -80,8 +91,9 @@ public class CourseService {
     }
 
     @Transactional
-    public void updateCourse(Long id, CourseUpdateDto dto){
+    public void updateCourse(Long id, CourseUpdateDto dto) {
        Course course = getCourse(id);
+       String previousState = course.toString();
         if(StringUtils.hasText(dto.getName())){
             course.setName(dto.getName());
         }
@@ -96,6 +108,11 @@ public class CourseService {
                     .orElseThrow(() -> new NoSuchElementException("Category not found"));
             course.setCategory(category);
         }
+        String newState =  course.toString();
+
+        courseEventProducer.publishCourseEdited(new CourseUpdatedEvent(
+                course.getId(), previousState, newState
+        ));
     }
 
     @Transactional
@@ -106,30 +123,46 @@ public class CourseService {
 
     @Transactional
     public void assignTopicToCourse(Long courseId, Long topicId){
-        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
-        topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        Course course = repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        Topic topic = topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
         repository.assignTopicToCourse(courseId, topicId);
+
+        courseEventProducer.publishCourseTopicAdded(new CourseTopicsAddedEvent(
+                courseId, topicId, course.getName(), topic.getName()
+        ));
     }
 
     @Transactional
     public void assignGroupToCourse(Long courseId, Long groupId){
-        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
-        groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
+        Course course = repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        Group group = groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
         repository.assignGroupToCourse(courseId, groupId);
+
+        courseEventProducer.publishCourseGroupEnrolled(new CourseGroupEnrolledEvent(
+                courseId, groupId, course.getName(), group.getName(), course.getTeacherId()
+        ));
     }
 
     @Transactional
     public void unassignTopicToCourse(Long courseId, Long topicId){
-        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
-        topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        Course course = repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        Topic topic = topicRepository.findById(topicId).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
         repository.unassignTopicToCourse(courseId, topicId);
+
+        courseEventProducer.publishCourseTopicRemoved(new CourseTopicRemovedEvent(
+                courseId, topicId, course.getName(), topic.getName()
+        ));
     }
 
     @Transactional
     public void unassignGroupToCourse(Long courseId, Long groupId){
-        repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
-        groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
+        Course course = repository.findById(courseId).orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+        Group group = groupRepository.findById(groupId).orElseThrow(() -> new NoSuchElementException("this group does not exist"));
         repository.unassignGroupToCourse(courseId, groupId);
+
+        courseEventProducer.publishCourseGroupRemoved(new CourseGroupRelationRemovedEvent(
+                courseId, groupId, course.getName(), group.getName(), course.getTeacherId()
+        ));
     }
 
     public CourseDetailedDto getAllCourseData(Long id){
