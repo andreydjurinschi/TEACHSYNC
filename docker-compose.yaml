@@ -10,6 +10,8 @@ services:
       - "5435:5432"
     volumes:
       - users_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
 
   course-db:
     image: postgres:15
@@ -21,6 +23,8 @@ services:
       - "5437:5432"
     volumes:
       - course_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
 
   schedule-db:
     image: postgres:15
@@ -32,6 +36,8 @@ services:
       - "5434:5432"
     volumes:
       - schedule_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
 
   replacement-db:
     image: postgres:15
@@ -43,86 +49,90 @@ services:
       - "5436:5432"
     volumes:
       - replacement_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
 
-  # ================= Consul =================
-#  consul:
-#    image: consul:1.15.4
-#    ports:
-#      - "8500:8500"
-#      - "8600:8600/udp"
-#    command: "agent -dev -client=0.0.0.0"
-#    networks:
-#      teachsync_net:
+  # ================= Kafka =================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - teachsync_net
 
-  # ================= Services =================
-#  users-service:
-#    build: ./users-service
-#    container_name: users-service
-#    depends_on:
-#      - users-db
-#      - consul
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://users-db:5432/users
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgres
-#      SPRING_CLOUD_CONSUL_HOST: consul
-#    ports:
-#      - "8080:8080"
-#    networks:
-#      teachsync_net:
-#
-#
-#  course-service:
-#    build: ./course-service
-#    container_name: course-service
-#    depends_on:
-#      - course-db
-#      - consul
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://course-db:5432/courses
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgres
-#      SPRING_CLOUD_CONSUL_HOST: consul
-#    ports:
-#      - "8081:8081"
-#    networks:
-#      teachsync_net:
-#
-#  schedule-service:
-#    build:
-#      context: ./schedule-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - schedule-db
-#      - users-service
-#      - course-service
-#      - consul
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:postgresql://schedule-db:5433/schedules
-#      SPRING_DATASOURCE_USERNAME: postgres
-#      SPRING_DATASOURCE_PASSWORD: postgres
-#      SPRING_CLOUD_CONSUL_HOST: consul
-#    ports:
-#      - "8082:8082"
-#    networks:
-#      teachsync_net:
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    networks:
+      - teachsync_net
 
-  # ================= Redis Caching =================
-#  redis:
-#    image: redis:7.4-alpine
-#    restart: always
-#    ports:
-#      - "6379:6379"
-#    volumes:
-#      - cache:/data
+  # Kafka UI — удобный дашборд для отладки
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "9090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: teachsync
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    networks:
+      - teachsync_net
+
+  # ================= Notification DB =================
+  notification-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5438:5432"
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
+
+  # ================= Audit DB =================
+  audit-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: audit
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5439:5432"
+    volumes:
+      - audit_data:/var/lib/postgresql/data
+    networks:
+      - teachsync_net
+
 volumes:
-  cache:
   users_data:
   course_data:
   schedule_data:
   replacement_data:
+  notification_data:
+  audit_data:
+  cache:
 
 networks:
   teachsync_net:
     driver: bridge
-

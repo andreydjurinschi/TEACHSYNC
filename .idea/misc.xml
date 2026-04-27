@@ -12,7 +12,14 @@
         <option value="$PROJECT_DIR$/auth-service/pom.xml" />
         <option value="$PROJECT_DIR$/replacement-service/pom.xml" />
         <option value="$PROJECT_DIR$/teachsync-events/pom.xml" />
+        <option value="$PROJECT_DIR$/teachsync-events/notification-service/pom.xml" />
+        <option value="$PROJECT_DIR$/notification-service/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/teachsync-events/notification-service/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="17 (2)" project-jdk-type="JavaSDK" />

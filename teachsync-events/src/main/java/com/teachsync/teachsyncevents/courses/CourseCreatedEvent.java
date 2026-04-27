@@ -16,6 +16,9 @@ public class CourseCreatedEvent extends BaseEvent {
         this.teacherId = teacherId;
     }
 
+    public CourseCreatedEvent() {
+    }
+
     public Long getCourseId() {
         return courseId;
     }
