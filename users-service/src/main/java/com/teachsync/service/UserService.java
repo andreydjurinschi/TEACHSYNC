@@ -4,6 +4,7 @@ import com.teachsync.domain.Category;
 import com.teachsync.domain.Role;
 import com.teachsync.domain.User;
 import com.teachsync.dto.AccountUpdateDto;
+import com.teachsync.interaction.KAFKA.producer.UserEventProducer;
 import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
@@ -17,6 +18,11 @@ import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
+import com.teachsync.teachsyncevents.users.UserCreatedEvent;
+import com.teachsync.teachsyncevents.users.UserDeletedEvent;
+import com.teachsync.teachsyncevents.users.UserRoleChangedEvent;
+import com.teachsync.teachsyncevents.users.UserSpecializationAddedEvent;
+import com.teachsync.teachsyncevents.users.UserSpecializationRemovedEvent;
 import com.teachsync.utils.PasswordUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +38,13 @@ public class UserService {
     private final UserRepository repository;
     private final CourseClient courseClient;
     private final SpecializationsRepository specializationsRepository;
+    private final UserEventProducer userEventProducer;
 
-    public UserService(UserRepository repository, CourseClient courseClient, SpecializationsRepository specializationsRepository) {
+    public UserService(UserRepository repository, CourseClient courseClient, SpecializationsRepository specializationsRepository, UserEventProducer userEventProducer) {
         this.repository = repository;
         this.courseClient = courseClient;
         this.specializationsRepository = specializationsRepository;
+        this.userEventProducer = userEventProducer;
     }
 
     public List<UserBaseDto> findAll() {
@@ -66,7 +74,6 @@ public class UserService {
     }
 
 
-
     public UserBaseDto findById(Long id) {
         if (id == null) {
             return null;
@@ -81,6 +88,10 @@ public class UserService {
         user.setRegisteredAt(LocalDate.now());
         user.setPassword(PasswordUtils.hash(user.getPassword()));
         repository.save(user);
+        userEventProducer.publishUserCreated(new UserCreatedEvent(
+                user.getId(), user.getRole().toString(), user.getEmail(),
+                user.getName(), user.getSurname()
+        ));
     }
 
     @Transactional
@@ -89,11 +100,17 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
-        if (dto.getRole() != null) user.setRole(dto.getRole());
+        if (dto.getRole() != null) {
+            Role role = user.getRole();
+            user.setRole(dto.getRole());
+            userEventProducer.publishUserRoleChanged(new UserRoleChangedEvent(
+                    user.getId(), role.name(), user.getRole().name()
+            ));
+        }
     }
 
     @Transactional
-    public void editUserAccount(Long id, AccountUpdateDto dto){
+    public void editUserAccount(Long id, AccountUpdateDto dto) {
         User user = getUser(id);
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
@@ -102,7 +119,8 @@ public class UserService {
         if (StringUtils.hasText(dto.getPassword())) {
             String hashedPassword = PasswordUtils.hash(dto.getPassword());
             user.setPassword(hashedPassword);
-        };
+        }
+        ;
     }
 
     public List<UserBaseDto> findAllByRole(Role role) {
@@ -121,7 +139,11 @@ public class UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = repository.findById(id).orElseThrow(() -> new NoSuchElementException("User not found"));
+        User temp = user;
         repository.delete(user);
+        userEventProducer.publishUserDeleted(new UserDeletedEvent(
+                temp.getId(), temp.getEmail(), temp.getName(), temp.getSurname(), temp.getRole().name()
+        ));
     }
 
     // feign
@@ -152,19 +174,28 @@ public class UserService {
     }
 
     @Transactional
-    public void addSpecializationForTeacher(Long teacherId, Long categoryId){
+    public void addSpecializationForTeacher(Long teacherId, Long categoryId) {
         User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
         Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 
         specializationsRepository.addSpecializationForUser(user.getId(), category.getId());
+        userEventProducer.publishUserSpecializationAdded(new UserSpecializationAddedEvent(
+                user.getId(), category.getName()
+        ));
+
     }
 
     @Transactional
-    public void removeSpecializationForTeacher(Long teacherId, Long categoryId){
+    public void removeSpecializationForTeacher(Long teacherId, Long categoryId) {
         User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
         Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
 
         specializationsRepository.removeSpecializationForUser(user.getId(), category.getId());
+
+        userEventProducer.publishUserSpecializationRemoved(new UserSpecializationRemovedEvent(
+                user.getId(), category.getName()
+        ));
+
     }
 
     public Set<SpecializationsBaseDto> getSpecializations(Long id) {

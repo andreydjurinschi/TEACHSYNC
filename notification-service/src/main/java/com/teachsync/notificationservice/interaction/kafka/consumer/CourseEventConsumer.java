@@ -5,8 +5,10 @@ import com.teachsync.notificationservice.domain.Notification;
 import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.enums.TargetRole;
 import com.teachsync.notificationservice.service.NotificationService;
+import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,17 +35,30 @@ public class CourseEventConsumer {
             containerFactory = "kafkaListenerContainerFactory"
     )
 
-    public void consumeCourseCreated(String rawMessage){
-        try{
-            CourseCreatedEvent courseCreatedEvent = objectMapper.
-                    readValue(rawMessage, CourseCreatedEvent.class);
-            handleCourseCreated(courseCreatedEvent);
+    public void consumeCourseCreated(String rawMessage) {
+        try {
+            var node = objectMapper.readTree(rawMessage);
+            String eventType = node.get("actionType").asText();
+            switch (eventType) {
+                case ActionTypes.COURSE_CREATED -> {
+                    CourseCreatedEvent courseCreatedEvent = objectMapper.
+                            readValue(rawMessage, CourseCreatedEvent.class);
+                    handleCourseCreated(courseCreatedEvent);
+                }
+                case ActionTypes.COURSE_TEACHER_ASSIGNED -> {
+                    CourseTeacherAssignedEvent courseTeacherAssignedEvent = objectMapper.
+                            readValue(rawMessage, CourseTeacherAssignedEvent.class);
+                    log.info("This message would be sent to teacher with: id {}, course name: {}",
+                            courseTeacherAssignedEvent.getTeacherAssigned(),
+                            courseTeacherAssignedEvent.getCourseName());
+                }
+            }
         } catch (Exception e) {
             log.error("Failed to process course event: {}", e.getMessage());
         }
     }
 
-    private void handleCourseCreated(CourseCreatedEvent event){
+    private void handleCourseCreated(CourseCreatedEvent event) {
         Notification notification = new Notification();
         notification.setTargetSubject(TargetSubject.COURSE_CREATED);
         notification.setTargetRole(TargetRole.ADMIN);
