@@ -1,0 +1,120 @@
+<section class="min-h-full bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] px-6 py-8 dark:bg-[radial-gradient(circle_at_top_right,_rgba(96,165,250,0.14),_transparent_28%),linear-gradient(180deg,_#0f172a_0%,_#111827_100%)]">
+  <div class="mx-auto max-w-5xl">
+    <div class="mb-8 flex flex-col gap-4 rounded-3xl border border-slate-200/70 bg-white/85 p-6 shadow-[0_30px_80px_-45px_rgba(15,23,42,0.45)] backdrop-blur dark:border-slate-700/60 dark:bg-slate-900/70 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-sky-600 dark:text-sky-300">
+          TeachSync Event Stream
+        </p>
+        <h1 class="text-3xl font-semibold text-slate-900 dark:text-white">
+          {{ getRoleTitle() }}
+        </h1>
+        <p class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+          Все события, которые требуют реакции вашей роли в микросервисной системе.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+          Непрочитано: <span class="font-semibold">{{ unreadCount() }}</span>
+        </div>
+        <button
+          type="button"
+          (click)="markAllAsRead()"
+          [disabled]="markingAll() || unreadCount() === 0"
+          class="rounded-2xl bg-sky-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-400">
+          {{ markingAll() ? 'Обработка...' : 'Прочитать все' }}
+        </button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="grid gap-4">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="h-36 animate-pulse rounded-3xl border border-slate-200/70 bg-white/80 dark:border-slate-700/60 dark:bg-slate-900/70"></div>
+        }
+      </div>
+    } @else if (error()) {
+      <div class="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+        {{ error() }}
+      </div>
+    } @else if (!notifications().length) {
+      <div class="rounded-3xl border border-dashed border-slate-300 bg-white/75 p-12 text-center dark:border-slate-700 dark:bg-slate-900/60">
+        <p class="text-lg font-medium text-slate-800 dark:text-slate-100">Пока нет уведомлений</p>
+        <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Как только в системе появятся новые события, они отобразятся здесь.
+        </p>
+      </div>
+    } @else {
+      <div class="grid gap-4">
+        @for (item of notifications(); track trackById($index, item)) {
+          <article
+            class="group rounded-3xl border p-5 shadow-[0_18px_60px_-40px_rgba(15,23,42,0.6)] transition hover:-translate-y-0.5"
+            [class.border-sky-200]="!item.read"
+            [class.bg-white]="!item.read"
+            [class.dark:border-sky-700/60]="!item.read"
+            [class.dark:bg-slate-900/90]="!item.read"
+            [class.border-slate-200/70]="item.read"
+            [class.bg-white/75]="item.read"
+            [class.dark:border-slate-700/60]="item.read"
+            [class.dark:bg-slate-900/65]="item.read">
+
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0 flex-1">
+                <div class="mb-3 flex flex-wrap items-center gap-2">
+                  <span
+                    class="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                    [class.bg-sky-100]="!item.read"
+                    [class.text-sky-700]="!item.read"
+                    [class.dark:bg-sky-900/40]="!item.read"
+                    [class.dark:text-sky-300]="!item.read"
+                    [class.bg-slate-100]="item.read"
+                    [class.text-slate-600]="item.read"
+                    [class.dark:bg-slate-800]="item.read"
+                    [class.dark:text-slate-300]="item.read">
+                    {{ getSubjectLabel(item.targetSubject) }}
+                  </span>
+
+                  <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    {{ getSourceLabel(item.sourceService) }}
+                  </span>
+
+                  @if (!item.read) {
+                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      Новое
+                    </span>
+                  }
+                </div>
+
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white">
+                  {{ item.title }}
+                </h2>
+                <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  {{ item.message }}
+                </p>
+              </div>
+
+              <div class="flex shrink-0 flex-col items-start gap-3 md:items-end">
+                <time class="text-xs uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                  {{ item.createdAt | date:'dd.MM.yyyy HH:mm' }}
+                </time>
+
+                @if (!item.read) {
+                  <button
+                    type="button"
+                    (click)="markAsRead(item)"
+                    class="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-medium text-sky-700 transition hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/40">
+                    Отметить как прочитанное
+                  </button>
+                } @else {
+                  <span class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    Прочитано
+                  </span>
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>

@@ -1,7 +1,6 @@
 package com.teachsync.notificationservice.interaction.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.teachsync.notificationservice.domain.Notification;
 import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.enums.TargetRole;
 import com.teachsync.notificationservice.service.NotificationService;
@@ -22,9 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CourseEventConsumer {
 
-    private static final Logger log = LoggerFactory.getLogger(
-            CourseEventConsumer.class
-    );
+    private static final Logger log = LoggerFactory.getLogger(CourseEventConsumer.class);
 
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
@@ -39,84 +36,172 @@ public class CourseEventConsumer {
             groupId = "notification-service",
             containerFactory = "kafkaListenerContainerFactory"
     )
-
-    public void consumeCourseCreated(String rawMessage) {
+    public void consumeCourseEvents(String rawMessage) {
         try {
             var node = objectMapper.readTree(rawMessage);
             String eventType = node.get("actionType").asText();
             switch (eventType) {
-                case ActionTypes.COURSE_CREATED -> {
-                    CourseCreatedEvent courseCreatedEvent = objectMapper.
-                            readValue(rawMessage, CourseCreatedEvent.class);
-                    handleCourseCreated(courseCreatedEvent);
-                }
-                case ActionTypes.COURSE_TEACHER_ASSIGNED -> {
-                    CourseTeacherAssignedEvent courseTeacherAssignedEvent = objectMapper.
-                            readValue(rawMessage, CourseTeacherAssignedEvent.class);
-                    log.info("This message would be sent to teacher with: id {}, course name: {}",
-                            courseTeacherAssignedEvent.getTeacherAssigned(),
-                            courseTeacherAssignedEvent.getCourseName());
-                }
-                case ActionTypes.COURSE_EDITED -> {
-                    CourseUpdatedEvent courseUpdatedEvent = objectMapper.
-                            readValue(rawMessage, CourseUpdatedEvent.class);
-                    log.info("CourseUpdatedEvent notification would be sent to all MANAGERS and ASSIGNED TEACHER, message: {}", courseUpdatedEvent.toString());
-                }
-                case ActionTypes.COURSE_GROUP_ENROLLED -> {
-                    CourseGroupEnrolledEvent courseGroupEnrolledEvent = objectMapper.
-                            readValue(rawMessage, CourseGroupEnrolledEvent.class);
-                    log.info("CourseGroupEnrolledEvent notification would be sent to all MANAGERS and ASSIGNED TEACHER, data: {},{},{},{}",
-                            courseGroupEnrolledEvent.getCourseId(), courseGroupEnrolledEvent.getGroupId(), courseGroupEnrolledEvent.getCourseName(), courseGroupEnrolledEvent.getGroupName()
-                    );
-                }
-                case ActionTypes.COURSE_GROUP_REMOVED -> {
-                    CourseGroupRelationRemovedEvent courseGroupRelationRemovedEvent = objectMapper.
-                            readValue(rawMessage, CourseGroupRelationRemovedEvent.class);
-                    log.info("CourseGroupRelationRemovedEvent notification would be sent ASSIGNED TEACHER and ALL MANAGERS(message content: need to create schedule for this course-group relation), data: course id: {},group id:{}, course name {},group name: {}, teacher id: {}",
-                            courseGroupRelationRemovedEvent.getCourseId(),
-                            courseGroupRelationRemovedEvent.getGroupId(),
-                            courseGroupRelationRemovedEvent.getCourseName(),
-                            courseGroupRelationRemovedEvent.getGroupName(),
-                            courseGroupRelationRemovedEvent.getTeacherId()
-                    );
-                }
-                case ActionTypes.COURSE_TOPIC_ADDED -> {
-                    CourseTopicsAddedEvent courseTopicsAddedEvent = objectMapper.
-                            readValue(rawMessage, CourseTopicsAddedEvent.class);
-                    log.info("CourseTopicsAddedEvent notification would be send to ASSIGNED USER: {},{},{},{}",
-                            courseTopicsAddedEvent.getCourseId(),
-                            courseTopicsAddedEvent.getTopicId(),
-                            courseTopicsAddedEvent.getCourseName(),
-                            courseTopicsAddedEvent.getTopicName()
-                    );
-                }
-                case ActionTypes.COURSE_TOPIC_REMOVED -> {
-                    CourseTopicRemovedEvent courseTopicRemovedEvent = objectMapper.
-                            readValue(rawMessage, CourseTopicRemovedEvent.class);
-                    log.info("CourseTopicRemovedEvent notification would be send to ASSIGNED USER: {},{},{},{}",
-                            courseTopicRemovedEvent.getCourseId(),
-                            courseTopicRemovedEvent.getTopicId(),
-                            courseTopicRemovedEvent.getCourseName(),
-                            courseTopicRemovedEvent.getTopicName()
-                    );
-                }
+                case ActionTypes.COURSE_CREATED -> handleCourseCreated(objectMapper.readValue(rawMessage, CourseCreatedEvent.class));
+                case ActionTypes.COURSE_TEACHER_ASSIGNED -> handleCourseTeacherAssigned(objectMapper.readValue(rawMessage, CourseTeacherAssignedEvent.class));
+                case ActionTypes.COURSE_EDITED -> handleCourseUpdated(objectMapper.readValue(rawMessage, CourseUpdatedEvent.class));
+                case ActionTypes.COURSE_GROUP_ENROLLED -> handleCourseGroupEnrolled(objectMapper.readValue(rawMessage, CourseGroupEnrolledEvent.class));
+                case ActionTypes.COURSE_GROUP_REMOVED -> handleCourseGroupRemoved(objectMapper.readValue(rawMessage, CourseGroupRelationRemovedEvent.class));
+                case ActionTypes.COURSE_TOPIC_ADDED -> handleCourseTopicAdded(objectMapper.readValue(rawMessage, CourseTopicsAddedEvent.class));
+                case ActionTypes.COURSE_TOPIC_REMOVED -> handleCourseTopicRemoved(objectMapper.readValue(rawMessage, CourseTopicRemovedEvent.class));
+                default -> log.info("Unsupported course event type: {}", eventType);
             }
         } catch (Exception e) {
-            log.error("Failed to process course event: {}", e.getMessage());
+            log.error("Failed to process course event: {}", e.getMessage(), e);
         }
     }
 
     private void handleCourseCreated(CourseCreatedEvent event) {
-        Notification notification = new Notification();
-        notification.setTargetSubject(TargetSubject.COURSE_CREATED);
-        notification.setTargetRole(TargetRole.ADMIN);
-        notification.setTitle("Создан новый курс");
-        notification.setMessage("Курс " + event.getCourseName() + " был успешно создан");
-        notification.setSourceService(event.getServiceName());
-        notification.setEventId(event.getUuid());
-        notificationService.save(notification);
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_CREATED,
+                TargetRole.ADMIN,
+                "Создан новый курс",
+                "Курс \"" + event.getCourseName() + "\" успешно создан."
+        );
+        log.info("Saved COURSE_CREATED notification for admins: {}", event.getUuid());
+    }
 
-        log.info("notification was saved for all ADMINS: {}", notification.getEventId());
+    private void handleCourseTeacherAssigned(CourseTeacherAssignedEvent event) {
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.TEACHER_ASSIGNED,
+                event.getTeacherAssigned(),
+                "Назначение на курс",
+                "Вы назначены преподавателем курса \"" + event.getCourseName() + "\"."
+        );
+        log.info("Saved COURSE_TEACHER_ASSIGNED notification for teacher {}", event.getTeacherAssigned());
+    }
 
+    private void handleCourseUpdated(CourseUpdatedEvent event) {
+        String message = "Курс с идентификатором " + event.getCourseId() + " был обновлен.";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_UPDATED,
+                TargetRole.MANAGER,
+                "Курс обновлен",
+                message
+        );
+        Long teacherId = extractTeacherId(event.getNewState());
+        if (teacherId != null) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.COURSE_UPDATED,
+                    teacherId,
+                    "Курс обновлен",
+                    message
+            );
+        }
+        log.info("Saved COURSE_EDITED notifications for managers and teacher {}", teacherId);
+    }
+
+    private void handleCourseGroupEnrolled(CourseGroupEnrolledEvent event) {
+        String message = "Группа \"" + event.getGroupName() + "\" прикреплена к курсу \"" + event.getCourseName() + "\".";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_GROUP_ENROLLED,
+                TargetRole.MANAGER,
+                "Группа добавлена к курсу",
+                message
+        );
+        if (event.getTeacherId() != null) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.COURSE_GROUP_ENROLLED,
+                    event.getTeacherId(),
+                    "Группа добавлена к вашему курсу",
+                    message
+            );
+        }
+        log.info("Saved COURSE_GROUP_ENROLLED notifications for course {}", event.getCourseId());
+    }
+
+    private void handleCourseGroupRemoved(CourseGroupRelationRemovedEvent event) {
+        String message = "Связь курса \"" + event.getCourseName() + "\" и группы \"" + event.getGroupName() + "\" удалена. Требуется актуализация расписания.";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_GROUP_REMOVED,
+                TargetRole.MANAGER,
+                "Связь курса и группы удалена",
+                message
+        );
+        if (event.getTeacherId() != null) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.COURSE_GROUP_REMOVED,
+                    event.getTeacherId(),
+                    "Изменение состава курса",
+                    message
+            );
+        }
+        log.info("Saved COURSE_GROUP_REMOVED notifications for course {}", event.getCourseId());
+    }
+
+    private void handleCourseTopicAdded(CourseTopicsAddedEvent event) {
+        if (event.getTeacherId() == null) {
+            log.info("Skipped COURSE_TOPIC_ADDED notification for course {} because teacher is not assigned", event.getCourseId());
+            return;
+        }
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_TOPIC_ADDED,
+                event.getTeacherId(),
+                "Новая тема в курсе",
+                "В курс \"" + event.getCourseName() + "\" добавлена тема \"" + event.getTopicName() + "\"."
+        );
+        log.info("Saved COURSE_TOPIC_ADDED notification for teacher {}", event.getTeacherId());
+    }
+
+    private void handleCourseTopicRemoved(CourseTopicRemovedEvent event) {
+        if (event.getTeacherId() == null) {
+            log.info("Skipped COURSE_TOPIC_REMOVED notification for course {} because teacher is not assigned", event.getCourseId());
+            return;
+        }
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_TOPIC_REMOVED,
+                event.getTeacherId(),
+                "Тема удалена из курса",
+                "Из курса \"" + event.getCourseName() + "\" удалена тема \"" + event.getTopicName() + "\"."
+        );
+        log.info("Saved COURSE_TOPIC_REMOVED notification for teacher {}", event.getTeacherId());
+    }
+
+    private Long extractTeacherId(String courseState) {
+        if (courseState == null) {
+            return null;
+        }
+        String marker = "teacherId=";
+        int start = courseState.indexOf(marker);
+        if (start < 0) {
+            return null;
+        }
+        int valueStart = start + marker.length();
+        int valueEnd = courseState.indexOf(',', valueStart);
+        if (valueEnd < 0) {
+            valueEnd = courseState.indexOf('}', valueStart);
+        }
+        if (valueEnd < 0) {
+            valueEnd = courseState.length();
+        }
+        String teacherValue = courseState.substring(valueStart, valueEnd).trim();
+        if (teacherValue.isBlank() || "null".equalsIgnoreCase(teacherValue)) {
+            return null;
+        }
+        return Long.valueOf(teacherValue);
     }
 }

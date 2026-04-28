@@ -2,6 +2,7 @@ package com.teachsync.notificationservice.service;
 
 import com.teachsync.notificationservice.domain.Notification;
 import com.teachsync.notificationservice.domain.NotificationRead;
+import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.dto.NotificationDto;
 import com.teachsync.notificationservice.enums.TargetRole;
 import com.teachsync.notificationservice.repository.NotificationReadRepository;
@@ -26,6 +27,48 @@ public class NotificationService {
     }
 
     public void save(Notification notification) {
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void saveForRole(String eventId,
+                            String sourceService,
+                            TargetSubject targetSubject,
+                            TargetRole targetRole,
+                            String title,
+                            String message) {
+        if (notificationRepository.existsByEventIdAndTargetRoleAndTargetUserId(eventId, targetRole, null)) {
+            return;
+        }
+
+        Notification notification = new Notification();
+        notification.setEventId(eventId);
+        notification.setSourceService(sourceService);
+        notification.setTargetSubject(targetSubject);
+        notification.setTargetRole(targetRole);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void saveForUser(String eventId,
+                            String sourceService,
+                            TargetSubject targetSubject,
+                            Long userId,
+                            String title,
+                            String message) {
+        if (notificationRepository.existsByEventIdAndTargetRoleAndTargetUserId(eventId, null, userId)) {
+            return;
+        }
+
+        Notification notification = new Notification();
+        notification.setEventId(eventId);
+        notification.setSourceService(sourceService);
+        notification.setTargetSubject(targetSubject);
+        notification.setTargetUserId(userId);
+        notification.setTitle(title);
+        notification.setMessage(message);
         notificationRepository.save(notification);
     }
 

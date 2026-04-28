@@ -53,4 +53,12 @@ public class CourseGroupEnrolledEvent extends BaseEvent {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
+
+    public Long getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(Long teacherId) {
+        this.teacherId = teacherId;
+    }
 }

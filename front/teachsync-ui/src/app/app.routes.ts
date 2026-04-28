@@ -23,6 +23,7 @@ import { ScheduleList } from './pages/schedules/schedule-list/schedule-list.comp
 import { ScheduleCreateComponent } from './pages/schedules/schedule-create/schedule-create.component';
 import { MyCoursesComponent } from './pages/account/teacher/courses/my-courses.component';
 import { TeacherScheduleComponent } from './pages/account/teacher/schedules/my-schedule.component';
+import { NotificationsComponent } from './pages/notifications/notifications.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -55,7 +56,8 @@ export const routes: Routes = [
       { path: 'schedules/create', component: ScheduleCreateComponent },
 
       { path: 'profile/courses', component: MyCoursesComponent },
-      { path: 'profile/schedules', component: TeacherScheduleComponent}
+      { path: 'profile/schedules', component: TeacherScheduleComponent},
+      { path: 'notifications', component: NotificationsComponent }
     ]
   },
   { path: '**', redirectTo: '/login' }

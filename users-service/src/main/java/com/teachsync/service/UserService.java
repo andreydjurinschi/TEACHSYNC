@@ -177,6 +177,9 @@ public class UserService {
     public void addSpecializationForTeacher(Long teacherId, Long categoryId) {
         User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
         Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        if (user.getRole() != Role.TEACHER) {
+            throw new IllegalArgumentException("Specialization can be assigned only to teacher");
+        }
 
         specializationsRepository.addSpecializationForUser(user.getId(), category.getId());
         userEventProducer.publishUserSpecializationAdded(new UserSpecializationAddedEvent(
@@ -189,6 +192,9 @@ public class UserService {
     public void removeSpecializationForTeacher(Long teacherId, Long categoryId) {
         User user = repository.findById(teacherId).orElseThrow(() -> new NoSuchElementException("Teacher not found"));
         Category category = specializationsRepository.findById(categoryId).orElseThrow(() -> new NoSuchElementException("Category not found"));
+        if (user.getRole() != Role.TEACHER) {
+            throw new IllegalArgumentException("Specialization can be removed only from teacher");
+        }
 
         specializationsRepository.removeSpecializationForUser(user.getId(), category.getId());
 

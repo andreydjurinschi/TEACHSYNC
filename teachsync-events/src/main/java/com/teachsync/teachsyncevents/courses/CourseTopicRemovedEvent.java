@@ -8,16 +8,18 @@ public class CourseTopicRemovedEvent extends BaseEvent {
     private Long topicId;
     private String courseName;
     private String topicName;
+    private Long teacherId;
 
     public CourseTopicRemovedEvent() {
     }
 
-    public CourseTopicRemovedEvent(Long courseId, Long topicId, String courseName, String topicName) {
+    public CourseTopicRemovedEvent(Long courseId, Long topicId, String courseName, String topicName, Long teacherId) {
         super("course-service", ActionTypes.COURSE_TOPIC_REMOVED);
         this.courseId = courseId;
         this.topicId = topicId;
         this.courseName = courseName;
         this.topicName = topicName;
+        this.teacherId = teacherId;
     }
 
     public Long getCourseId() {
@@ -50,5 +52,13 @@ public class CourseTopicRemovedEvent extends BaseEvent {
 
     public void setTopicName(String topicName) {
         this.topicName = topicName;
+    }
+
+    public Long getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(Long teacherId) {
+        this.teacherId = teacherId;
     }
 }

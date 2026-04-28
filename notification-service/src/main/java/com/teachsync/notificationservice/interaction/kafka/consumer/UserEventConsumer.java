@@ -1,8 +1,9 @@
 package com.teachsync.notificationservice.interaction.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.teachsync.notificationservice.domain.TargetSubject;
+import com.teachsync.notificationservice.enums.TargetRole;
 import com.teachsync.notificationservice.service.NotificationService;
-import com.teachsync.teachsyncevents.base.BaseEvent;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.users.UserCreatedEvent;
@@ -18,8 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserEventConsumer {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(UserEventConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(UserEventConsumer.class);
 
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
@@ -36,37 +36,87 @@ public class UserEventConsumer {
     )
     public void consumeUserEvents(String rawMessage) {
         try {
-            log.info("Consuming user events from Kafka topic: {}", rawMessage);
             var node = objectMapper.readTree(rawMessage);
             String eventType = node.get("actionType").asText();
             switch (eventType) {
-                case ActionTypes.USER_ROLE_CHANGED -> {
-                    UserRoleChangedEvent userRoleChangedEvent = objectMapper.readValue(rawMessage, UserRoleChangedEvent.class);
-                    log.info("RoleChangingNotification would be sent to: {}, {}, {}",
-                            userRoleChangedEvent.getUserId(),
-                            userRoleChangedEvent.getPreviousRole(),
-                            userRoleChangedEvent.getNewRole());
-                }
-                case ActionTypes.USER_CREATED -> {
-                    UserCreatedEvent userCreatedEvent = objectMapper.readValue(rawMessage, UserCreatedEvent.class);
-                    log.info("UserCreatedEventNotification would be sent to All ADMINS: deleted use info: {}", userCreatedEvent.getUserId());
-                }
-                case ActionTypes.USER_DELETED -> {
-                    UserDeletedEvent userDeletedEvent = objectMapper.readValue(rawMessage, UserDeletedEvent.class);
-                    log.info("UserCreatedEventNotification would be sent to All ADMINS and MANAGERS: deleted use id: {}", userDeletedEvent.getUserId());
-                }
-                case ActionTypes.USER_SPEC_ADDED -> {
-                    UserSpecializationAddedEvent userSpecializationAddedEvent = objectMapper.readValue(rawMessage, UserSpecializationAddedEvent.class);
-                    log.info("UserSpecializationAddedEvent notification would be sent to TEACHER with id {}", userSpecializationAddedEvent.getUserId());
-                }
-                case ActionTypes.USER_SPEC_DELETED -> {
-                    UserSpecializationRemovedEvent userSpecializationRemovedEvent  = objectMapper.readValue(rawMessage, UserSpecializationRemovedEvent.class);
-                    log.info("UserSpecializationRemovedEvent notification would be sent to teacher with id: {}", userSpecializationRemovedEvent.getUserId());
-                }
+                case ActionTypes.USER_ROLE_CHANGED -> handleUserRoleChanged(objectMapper.readValue(rawMessage, UserRoleChangedEvent.class));
+                case ActionTypes.USER_CREATED -> handleUserCreated(objectMapper.readValue(rawMessage, UserCreatedEvent.class));
+                case ActionTypes.USER_DELETED -> handleUserDeleted(objectMapper.readValue(rawMessage, UserDeletedEvent.class));
+                case ActionTypes.USER_SPEC_ADDED -> handleUserSpecializationAdded(objectMapper.readValue(rawMessage, UserSpecializationAddedEvent.class));
+                case ActionTypes.USER_SPEC_DELETED -> handleUserSpecializationRemoved(objectMapper.readValue(rawMessage, UserSpecializationRemovedEvent.class));
+                default -> log.info("Unsupported user event type: {}", eventType);
             }
         } catch (Exception e) {
-            log.error("Error handling userRoleChangedEvent: {}", e.getMessage());
+            log.error("Error handling user event: {}", e.getMessage(), e);
         }
     }
 
+    private void handleUserRoleChanged(UserRoleChangedEvent event) {
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_ROLE_CHANGED,
+                event.getUserId(),
+                "Роль учетной записи изменена",
+                "Ваша роль изменена с \"" + event.getPreviousRole() + "\" на \"" + event.getNewRole() + "\"."
+        );
+        log.info("Saved USER_ROLE_CHANGED notification for user {}", event.getUserId());
+    }
+
+    private void handleUserCreated(UserCreatedEvent event) {
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_CREATED,
+                TargetRole.ADMIN,
+                "Создан новый пользователь",
+                "Создан пользователь " + event.getFirstName() + " " + event.getLastName() + " с ролью " + event.getUserRole() + "."
+        );
+        log.info("Saved USER_CREATED notification for admins: {}", event.getUserId());
+    }
+
+    private void handleUserDeleted(UserDeletedEvent event) {
+        String message = "Удален пользователь " + event.getFirstName() + " " + event.getLastName() + " с ролью " + event.getRole() + ".";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_DELETED,
+                TargetRole.ADMIN,
+                "Пользователь удален",
+                message
+        );
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_DELETED,
+                TargetRole.MANAGER,
+                "Пользователь удален",
+                message
+        );
+        log.info("Saved USER_DELETED notifications for admins and managers: {}", event.getUserId());
+    }
+
+    private void handleUserSpecializationAdded(UserSpecializationAddedEvent event) {
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_SPECIALIZATION_ADDED,
+                event.getUserId(),
+                "Добавлена специализация",
+                "Вам добавлена специализация \"" + event.getSpecializationName() + "\"."
+        );
+        log.info("Saved USER_SPEC_ADDED notification for teacher {}", event.getUserId());
+    }
+
+    private void handleUserSpecializationRemoved(UserSpecializationRemovedEvent event) {
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.USER_SPECIALIZATION_REMOVED,
+                event.getUserId(),
+                "Специализация удалена",
+                "У вас удалена специализация \"" + event.getCategoryName() + "\"."
+        );
+        log.info("Saved USER_SPEC_DELETED notification for teacher {}", event.getUserId());
+    }
 }

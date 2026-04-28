@@ -38,6 +38,10 @@ public class JwtAuthentificationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
         String email = jwtService.extractUsername(token);
 
+        System.out.println("AUTH HEADER: " + request.getHeader("Authorization"));
+        System.out.println("EMAIL: " + email);
+        System.out.println("AUTHORITIES: " + jwtService.getAuthorities(token));
+
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                     email,

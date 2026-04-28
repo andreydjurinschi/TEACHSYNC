@@ -11,4 +11,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByTargetUserIdOrderByCreatedAtDesc(Long userId);
 
     List<Notification> findByTargetRoleOrderByCreatedAtDesc(TargetRole role);
+
+    boolean existsByEventIdAndTargetRoleAndTargetUserId(String eventId, TargetRole targetRole, Long targetUserId);
 }

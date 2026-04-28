@@ -41,23 +41,11 @@ public class SecurityConfig {
                     auth.requestMatchers("/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/teachsync/users/edit/account/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
                     auth.requestMatchers("/teachsync/users/**").hasAnyRole("ADMIN", "MANAGER");
-                    auth.requestMatchers("/teachsync/account/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
+                    auth.requestMatchers("/teachsync/account/**").authenticated();
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthentificationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-/*    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }*/
 }

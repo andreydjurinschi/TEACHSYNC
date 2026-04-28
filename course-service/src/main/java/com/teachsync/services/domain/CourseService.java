@@ -1,6 +1,5 @@
 package com.teachsync.services.domain;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.Category;
@@ -128,7 +127,7 @@ public class CourseService {
         repository.assignTopicToCourse(courseId, topicId);
 
         courseEventProducer.publishCourseTopicAdded(new CourseTopicsAddedEvent(
-                courseId, topicId, course.getName(), topic.getName()
+                courseId, topicId, course.getName(), topic.getName(), course.getTeacherId()
         ));
     }
 
@@ -150,7 +149,7 @@ public class CourseService {
         repository.unassignTopicToCourse(courseId, topicId);
 
         courseEventProducer.publishCourseTopicRemoved(new CourseTopicRemovedEvent(
-                courseId, topicId, course.getName(), topic.getName()
+                courseId, topicId, course.getName(), topic.getName(), course.getTeacherId()
         ));
     }
 
@@ -202,6 +201,13 @@ public class CourseService {
         Course course = repository.getCourseWithFullData(courseId);
 
         course.setTeacherId(null);
+    }
+
+    @Transactional
+    public int unassignTeacherFromAllCourses(Long teacherId) {
+        List<Course> courses = repository.getAllByTeacher(teacherId);
+        courses.forEach(course -> course.setTeacherId(null));
+        return courses.size();
     }
 
     public CourseWithTeacherRequest getCourseWithTeacher(Long id){
