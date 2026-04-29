@@ -36,6 +36,7 @@ public class CourseFeignResponseService {
 
         List<Long> teacherIds = groupCourses.stream()
                 .map(gc -> gc.getCourse().getTeacherId())
+                .filter(id -> id != null)
                 .distinct()
                 .toList();
 
@@ -57,6 +58,8 @@ public class CourseFeignResponseService {
                     return new GroupCourseResponseForScheduleService(
                             gc.getId(), gc.getGroup().getId(), gc.getCourse().getId(),
                             gc.getGroup().getName(), gc.getCourse().getName(),
+                            gc.getCourse().getCategory() == null ? null : gc.getCourse().getCategory().getId(),
+                            gc.getCourse().getCategory() == null ? null : gc.getCourse().getCategory().getName(),
                             teacherId, teacherName
                     );
                 })
@@ -69,13 +72,15 @@ public class CourseFeignResponseService {
         Course course = groupCourse.getCourse();
         Group group = groupCourse.getGroup();
 
-        TeacherRequest teacher = userClient.getTeacher(course.getTeacherId());
+        TeacherRequest teacher = course.getTeacherId() == null ? null : userClient.getTeacher(course.getTeacherId());
 
         return new GroupCourseResponseForScheduleService(
                 groupCourse.getId(), group.getId(), course.getId(),
                 group.getName(), course.getName(),
+                course.getCategory() == null ? null : course.getCategory().getId(),
+                course.getCategory() == null ? null : course.getCategory().getName(),
                 course.getTeacherId(),
-                teacher.name() + " " + teacher.surname()
+                teacher == null ? "—" : teacher.name() + " " + teacher.surname()
         );
     }
 
@@ -84,6 +89,7 @@ public class CourseFeignResponseService {
 
         List<Long> teacherIds = groupCourses.stream()
                 .map(gc -> gc.getCourse().getTeacherId())
+                .filter(id -> id != null)
                 .distinct()
                 .toList();
 
@@ -101,6 +107,8 @@ public class CourseFeignResponseService {
                     return new GroupCourseResponseForScheduleService(
                             gc.getId(), gc.getGroup().getId(), gc.getCourse().getId(),
                             gc.getGroup().getName(), gc.getCourse().getName(),
+                            gc.getCourse().getCategory() == null ? null : gc.getCourse().getCategory().getId(),
+                            gc.getCourse().getCategory() == null ? null : gc.getCourse().getCategory().getName(),
                             teacherId, teacherName
                     );
                 })

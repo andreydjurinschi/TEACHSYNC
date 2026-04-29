@@ -6,10 +6,12 @@ import com.teachsync.dto_s.replacementRequest.ReplacementRequestBaseDto;
 public class ReplacementMapper {
 
     public static ReplacementRequestBaseDto mapToBaseDto(ReplacementRequest replacementRequest){
-        return new ReplacementRequestBaseDto(
+        ReplacementRequestBaseDto dto = new ReplacementRequestBaseDto(
                 null, null, null,
                 replacementRequest.getRequestedAt(), replacementRequest.getLessonDate(),
                 null, replacementRequest.getReason(), replacementRequest.getStatus()
         );
+        dto.setId(replacementRequest.getId());
+        return dto;
     }
 }

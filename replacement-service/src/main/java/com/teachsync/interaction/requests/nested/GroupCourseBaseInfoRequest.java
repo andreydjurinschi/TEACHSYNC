@@ -6,13 +6,26 @@ public class GroupCourseBaseInfoRequest {
     private Long courseId;
     private String groupName;
     private String courseName;
+    private Long categoryId;
+    private String categoryName;
+    private Long teacherId;
+    private String teacherName;
 
     public GroupCourseBaseInfoRequest(Long id, Long groupId, Long courseId, String groupName, String courseName) {
+        this(id, groupId, courseId, groupName, courseName, null, null, null, null);
+    }
+
+    public GroupCourseBaseInfoRequest(Long id, Long groupId, Long courseId, String groupName, String courseName,
+                                      Long categoryId, String categoryName, Long teacherId, String teacherName) {
         this.id = id;
         this.groupId = groupId;
         this.courseId = courseId;
         this.groupName = groupName;
         this.courseName = courseName;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.teacherId = teacherId;
+        this.teacherName = teacherName;
     }
 
     public GroupCourseBaseInfoRequest() {
@@ -57,6 +70,14 @@ public class GroupCourseBaseInfoRequest {
     public void setCourseName(String courseName) {
         this.courseName = courseName;
     }
-}
 
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public Long getTeacherId() { return teacherId; }
+    public void setTeacherId(Long teacherId) { this.teacherId = teacherId; }
+    public String getTeacherName() { return teacherName; }
+    public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
+}
 

@@ -88,6 +88,22 @@ export class CourseService {
   );
 }
 
+requestTeacher(courseId: number, teacherId: number) {
+  return this.http.post<void>(
+    `${this.apiUrl}/teacher-requests/${courseId}/${teacherId}`,
+    {},
+    { headers: this.getHeaders() }
+  );
+}
+
+approveTeacherRequest(courseId: number, teacherId: number) {
+  return this.http.put<void>(
+    `${this.apiUrl}/teacher-requests/${courseId}/${teacherId}/approve`,
+    {},
+    { headers: this.getHeaders() }
+  );
+}
+
 unassignTeacher(courseId: number) {
   return this.http.put<void>(
     `${this.apiUrl}/unassign-teacher/${courseId}/`,

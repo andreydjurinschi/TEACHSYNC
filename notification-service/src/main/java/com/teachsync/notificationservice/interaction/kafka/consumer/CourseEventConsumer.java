@@ -9,7 +9,9 @@ import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherAssignmentRequestedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
@@ -42,7 +44,9 @@ public class CourseEventConsumer {
             String eventType = node.get("actionType").asText();
             switch (eventType) {
                 case ActionTypes.COURSE_CREATED -> handleCourseCreated(objectMapper.readValue(rawMessage, CourseCreatedEvent.class));
+                case ActionTypes.COURSE_TEACHER_ASSIGNMENT_REQUESTED -> handleCourseTeacherAssignmentRequested(objectMapper.readValue(rawMessage, CourseTeacherAssignmentRequestedEvent.class));
                 case ActionTypes.COURSE_TEACHER_ASSIGNED -> handleCourseTeacherAssigned(objectMapper.readValue(rawMessage, CourseTeacherAssignedEvent.class));
+                case ActionTypes.COURSE_TEACHER_UNASSIGNED -> handleCourseTeacherUnassigned(objectMapper.readValue(rawMessage, CourseTeacherUnassignedEvent.class));
                 case ActionTypes.COURSE_EDITED -> handleCourseUpdated(objectMapper.readValue(rawMessage, CourseUpdatedEvent.class));
                 case ActionTypes.COURSE_GROUP_ENROLLED -> handleCourseGroupEnrolled(objectMapper.readValue(rawMessage, CourseGroupEnrolledEvent.class));
                 case ActionTypes.COURSE_GROUP_REMOVED -> handleCourseGroupRemoved(objectMapper.readValue(rawMessage, CourseGroupRelationRemovedEvent.class));
@@ -77,6 +81,35 @@ public class CourseEventConsumer {
                 "Вы назначены преподавателем курса \"" + event.getCourseName() + "\"."
         );
         log.info("Saved COURSE_TEACHER_ASSIGNED notification for teacher {}", event.getTeacherAssigned());
+    }
+
+    private void handleCourseTeacherAssignmentRequested(CourseTeacherAssignmentRequestedEvent event) {
+        String category = event.getCategoryName() == null ? "категория не указана" : "категория: \"" + event.getCategoryName() + "\"";
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.TEACHER_ASSIGNMENT_REQUESTED,
+                event.getTeacherId(),
+                "Запрос на ведение курса",
+                "Вам предложено вести курс \"" + event.getCourseName() + "\" (" + category + "). Подтвердите запрос, если готовы взять группу.",
+                "/courses/" + event.getCourseId() + "?assignmentRequest=true"
+        );
+        log.info("Saved COURSE_TEACHER_ASSIGNMENT_REQUESTED notification for teacher {}", event.getTeacherId());
+    }
+
+    private void handleCourseTeacherUnassigned(CourseTeacherUnassignedEvent event) {
+        String category = event.getCategoryName() == null ? "без указанной категории" : "категория: \"" + event.getCategoryName() + "\"";
+        String message = "Курс \"" + event.getCourseName() + "\" остался без преподавателя (" + category + "). "
+                + "Нужно назначить свободного преподавателя с подходящей категорией и согласовать ведение группы.";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_TEACHER_UNASSIGNED,
+                TargetRole.MANAGER,
+                "Курс без преподавателя",
+                message
+        );
+        log.info("Saved COURSE_TEACHER_UNASSIGNED notification for managers: course {}", event.getCourseId());
     }
 
     private void handleCourseUpdated(CourseUpdatedEvent event) {

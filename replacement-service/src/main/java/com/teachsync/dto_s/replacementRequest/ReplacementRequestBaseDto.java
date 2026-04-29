@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ReplacementRequestBaseDto {
+    private Long id;
     private ScheduleBaseDtoRequest scheduleBaseDtoRequest;
     private TeacherBaseInfoRequest teacherBaseInfoRequest;
     private GroupCourseBaseInfoRequest groupCourseBaseInfoRequest;
@@ -29,6 +30,14 @@ public class ReplacementRequestBaseDto {
         this.approvedByTeacherBaseInfoRequest = approvedByTeacherBaseInfoRequest;
         this.reason = reason;
         this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public ScheduleBaseDtoRequest getScheduleBaseDtoRequest() {

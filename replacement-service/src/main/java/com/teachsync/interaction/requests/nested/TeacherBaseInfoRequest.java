@@ -5,6 +5,8 @@ import java.util.Set;
 
 public class TeacherBaseInfoRequest {
     private Long id;
+    private String name;
+    private String surname;
     private String fullName;
     private String email;
     private Set<SpecializationsBaseDto> specializations = new HashSet<>();
@@ -25,6 +27,22 @@ public class TeacherBaseInfoRequest {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
     }
 
     public String getFullName() {
@@ -49,5 +67,12 @@ public class TeacherBaseInfoRequest {
 
     public void setSpecializations(Set<SpecializationsBaseDto> specializations) {
         this.specializations = specializations;
+    }
+
+    public String displayName() {
+        if (fullName != null && !fullName.isBlank()) {
+            return fullName;
+        }
+        return ((name == null ? "" : name) + " " + (surname == null ? "" : surname)).trim();
     }
 }
