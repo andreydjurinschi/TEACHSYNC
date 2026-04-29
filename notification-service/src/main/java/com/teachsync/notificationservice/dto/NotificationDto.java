@@ -14,6 +14,7 @@ public class NotificationDto {
     private Long targetUserId;
     private TargetSubject targetSubject;
     private String sourceService;
+    private String actionUrl;
     private boolean read;
     private LocalDateTime createdAt;
 
@@ -33,6 +34,8 @@ public class NotificationDto {
     public void setTargetSubject(TargetSubject targetSubject) { this.targetSubject = targetSubject; }
     public String getSourceService() { return sourceService; }
     public void setSourceService(String sourceService) { this.sourceService = sourceService; }
+    public String getActionUrl() { return actionUrl; }
+    public void setActionUrl(String actionUrl) { this.actionUrl = actionUrl; }
     public boolean isRead() { return read; }
     public void setRead(boolean read) { this.read = read; }
     public LocalDateTime getCreatedAt() { return createdAt; }

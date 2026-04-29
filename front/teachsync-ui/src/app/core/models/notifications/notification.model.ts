@@ -2,10 +2,11 @@ export interface NotificationItem {
   id: number;
   title: string;
   message: string;
-  targetRole?: 'ADMIN' | 'MANAGER' | 'TEACHER' | null;
-  targetUserId?: number | null;
+  targetRole?: string;
+  targetUserId?: number;
   targetSubject: string;
   sourceService: string;
-  createdAt: string;
+  actionUrl?: string;
   read: boolean;
+  createdAt: string;
 }

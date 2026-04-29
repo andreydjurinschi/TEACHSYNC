@@ -1,11 +1,11 @@
 databaseChangeLog:
-  - include:
-      file: changelog/changeset/001-insert-data-into-courses-table.sql
-  - include:
-      file: changelog/changeset/002-insert-data-into-groups-table.sql
-  - include:
-      file: changelog/changeset/003-insert-data-into-topics-table.sql
-  - include:
-      file: changelog/changeset/004-insert-data-into-intermediate-tables.sql
-  - include:
-      file: changelog/changeset/005-update-course-table-set-teachers.sql
+#  - include:
+#      file: changelog/changeset/001-insert-data-into-courses-table.sql
+#  - include:
+#      file: changelog/changeset/002-insert-data-into-groups-table.sql
+#  - include:
+#      file: changelog/changeset/003-insert-data-into-topics-table.sql
+#  - include:
+#      file: changelog/changeset/004-insert-data-into-intermediate-tables.sql
+#  - include:
+#      file: changelog/changeset/005-update-course-table-set-teachers.sql

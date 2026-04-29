@@ -9,6 +9,16 @@ public class ActionTypes {
     public static final String COURSE_GROUP_REMOVED = "COURSE_GROUP_REMOVED";
     public static final String COURSE_TOPIC_ADDED = "COURSE_TOPIC_ADDED";
     public static final String COURSE_TOPIC_REMOVED = "COURSE_TOPIC_REMOVED";
+    public static final String COURSE_TEACHER_UNASSIGNED = "COURSE_TEACHER_UNASSIGNED";
+    public static final String COURSE_TEACHER_ASSIGNMENT_REQUESTED = "COURSE_TEACHER_ASSIGNMENT_REQUESTED";
+
+    // schedules
+    public static final String SCHEDULE_CREATED = "SCHEDULE_CREATED";
+
+    // replacements
+    public static final String REPLACEMENT_REQUESTED = "REPLACEMENT_REQUESTED";
+    public static final String REPLACEMENT_APPROVED = "REPLACEMENT_APPROVED";
+    public static final String REPLACEMENT_STATUS_CHANGED = "REPLACEMENT_STATUS_CHANGED";
 
     // users
     public static final String USER_ROLE_CHANGED = "USER_ROLE_CHANGED";

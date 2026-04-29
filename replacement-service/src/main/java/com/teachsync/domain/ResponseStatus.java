@@ -1,5 +1,5 @@
 package com.teachsync.domain;
 
 public enum ResponseStatus {
-    ACCEPTED, DECLINED
+    PENDING, ACCEPTED, DECLINED
 }

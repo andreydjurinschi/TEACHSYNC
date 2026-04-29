@@ -58,6 +58,17 @@ public class NotificationService {
                             Long userId,
                             String title,
                             String message) {
+        saveForUser(eventId, sourceService, targetSubject, userId, title, message, null);
+    }
+
+    @Transactional
+    public void saveForUser(String eventId,
+                            String sourceService,
+                            TargetSubject targetSubject,
+                            Long userId,
+                            String title,
+                            String message,
+                            String actionUrl) {
         if (notificationRepository.existsByEventIdAndTargetRoleAndTargetUserId(eventId, null, userId)) {
             return;
         }
@@ -69,6 +80,7 @@ public class NotificationService {
         notification.setTargetUserId(userId);
         notification.setTitle(title);
         notification.setMessage(message);
+        notification.setActionUrl(actionUrl);
         notificationRepository.save(notification);
     }
 
@@ -140,6 +152,7 @@ public class NotificationService {
         dto.setTargetUserId(n.getTargetUserId());
         dto.setTargetSubject(n.getTargetSubject());
         dto.setSourceService(n.getSourceService());
+        dto.setActionUrl(n.getActionUrl());
         dto.setCreatedAt(n.getCreatedAt());
         dto.setRead(isRead);
         return dto;

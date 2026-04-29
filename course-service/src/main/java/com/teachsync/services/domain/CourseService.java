@@ -24,7 +24,9 @@ import com.teachsync.repositories.TopicRepository;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherAssignmentRequestedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
+import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
@@ -183,10 +185,7 @@ public class CourseService {
         Course course = repository.findById(courseId)
                 .orElseThrow(() -> new NoSuchElementException("course not found: " + courseId));
 
-        TeacherCheckRequest response = userClient.isTeacher(userId);
-        if (response == null || !response.isTeacher()) {
-            throw new IllegalArgumentException("this user is not a teacher");
-        }
+        validateTeacherCanLeadCourse(course, userId);
         course.setTeacherId(userId);
 
         courseEventProducer.publishCourseTeacherAssigned(
@@ -197,16 +196,54 @@ public class CourseService {
     }
 
     @Transactional
+    public void requestTeacherForCourse(Long courseId, Long teacherId) {
+        Course course = getCourse(courseId);
+        if (course.getTeacherId() != null) {
+            throw new IllegalArgumentException("course already has a teacher");
+        }
+        validateTeacherCanLeadCourse(course, teacherId);
+        Category category = course.getCategory();
+        courseEventProducer.publishCourseTeacherAssignmentRequested(
+                new CourseTeacherAssignmentRequestedEvent(
+                        course.getId(),
+                        course.getName(),
+                        teacherId,
+                        category == null ? null : category.getId(),
+                        category == null ? null : category.getName()
+                )
+        );
+    }
+
+    @Transactional
+    public void approveTeacherAssignment(Long courseId, Long teacherId) {
+        Course course = getCourse(courseId);
+        if (course.getTeacherId() != null) {
+            throw new IllegalArgumentException("course already has a teacher");
+        }
+        validateTeacherCanLeadCourse(course, teacherId);
+        course.setTeacherId(teacherId);
+        courseEventProducer.publishCourseTeacherAssigned(
+                new CourseTeacherAssignedEvent(
+                        course.getId(), course.getName(), teacherId
+                )
+        );
+    }
+
+    @Transactional
     public void unassignTeacherFromCourse(Long courseId) {
         Course course = repository.getCourseWithFullData(courseId);
-
+        Long previousTeacherId = course.getTeacherId();
         course.setTeacherId(null);
+        publishCourseTeacherUnassigned(course, previousTeacherId, "Учитель снят с курса вручную");
     }
 
     @Transactional
     public int unassignTeacherFromAllCourses(Long teacherId) {
         List<Course> courses = repository.getAllByTeacher(teacherId);
-        courses.forEach(course -> course.setTeacherId(null));
+        courses.forEach(course -> {
+            course.setTeacherId(null);
+            publishCourseTeacherUnassigned(course, teacherId, "У пользователя изменилась роль или учетная запись удалена");
+        });
         return courses.size();
     }
 
@@ -246,5 +283,35 @@ public class CourseService {
                 .orElseThrow(() -> new NoSuchElementException("this course does not exist"));
     }
 
+    private void validateTeacherCanLeadCourse(Course course, Long teacherId) {
+        TeacherCheckRequest response = userClient.isTeacher(teacherId);
+        if (response == null || !response.isTeacher()) {
+            throw new IllegalArgumentException("this user is not a teacher");
+        }
+        Category category = course.getCategory();
+        if (category == null) {
+            return;
+        }
+        TeacherRequest teacher = userClient.getTeacher(teacherId);
+        boolean hasRequiredCategory = teacher.specializations() != null
+                && teacher.specializations().stream().anyMatch(s -> category.getId().equals(s.getId()));
+        if (!hasRequiredCategory) {
+            throw new IllegalArgumentException("teacher does not have required course category");
+        }
+    }
+
+    private void publishCourseTeacherUnassigned(Course course, Long previousTeacherId, String reason) {
+        Category category = course.getCategory();
+        courseEventProducer.publishCourseTeacherUnassigned(
+                new CourseTeacherUnassignedEvent(
+                        course.getId(),
+                        course.getName(),
+                        previousTeacherId,
+                        category == null ? null : category.getId(),
+                        category == null ? null : category.getName(),
+                        reason
+                )
+        );
+    }
 
 }

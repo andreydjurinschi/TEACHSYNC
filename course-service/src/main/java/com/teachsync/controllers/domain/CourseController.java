@@ -117,6 +117,18 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PostMapping("/teacher-requests/{courseId}/{teacherId}")
+    public ResponseEntity<Void> requestTeacher(@PathVariable Long courseId, @PathVariable Long teacherId) {
+        courseService.requestTeacherForCourse(courseId, teacherId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @PutMapping("/teacher-requests/{courseId}/{teacherId}/approve")
+    public ResponseEntity<Void> approveTeacherRequest(@PathVariable Long courseId, @PathVariable Long teacherId) {
+        courseService.approveTeacherAssignment(courseId, teacherId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
     @PutMapping("/unassign-teacher/{courseId}/")
     public ResponseEntity<Void> unassignTeacher(@PathVariable Long courseId) {
         courseService.unassignTeacherFromCourse(courseId);

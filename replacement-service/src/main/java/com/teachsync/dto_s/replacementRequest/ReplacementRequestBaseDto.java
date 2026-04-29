@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class ReplacementRequestBaseDto {
+    private Long id;
     private ScheduleBaseDtoRequest scheduleBaseDtoRequest;
     private TeacherBaseInfoRequest teacherBaseInfoRequest;
     private GroupCourseBaseInfoRequest groupCourseBaseInfoRequest;
@@ -19,6 +20,7 @@ public class ReplacementRequestBaseDto {
     private TeacherBaseInfoRequest approvedByTeacherBaseInfoRequest;
     private String reason;
     private Status status;
+    private int pendingInvitationsCount;
 
     public ReplacementRequestBaseDto(ScheduleBaseDtoRequest scheduleBaseDtoRequest, TeacherBaseInfoRequest teacherBaseInfoRequest, GroupCourseBaseInfoRequest groupCourseBaseInfoRequest, LocalDateTime requestedAt, LocalDate lessonDate, TeacherBaseInfoRequest approvedByTeacherBaseInfoRequest, String reason, Status status) {
         this.scheduleBaseDtoRequest = scheduleBaseDtoRequest;
@@ -29,6 +31,14 @@ public class ReplacementRequestBaseDto {
         this.approvedByTeacherBaseInfoRequest = approvedByTeacherBaseInfoRequest;
         this.reason = reason;
         this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public ScheduleBaseDtoRequest getScheduleBaseDtoRequest() {
@@ -93,5 +103,13 @@ public class ReplacementRequestBaseDto {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public int getPendingInvitationsCount() {
+        return pendingInvitationsCount;
+    }
+
+    public void setPendingInvitationsCount(int pendingInvitationsCount) {
+        this.pendingInvitationsCount = pendingInvitationsCount;
     }
 }

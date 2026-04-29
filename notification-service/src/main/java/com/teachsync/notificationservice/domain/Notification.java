@@ -28,6 +28,7 @@ public class Notification {
 
     private String sourceService;
     private String eventId;
+    private String actionUrl;
 
 
     @Column(name = "created_at")
@@ -90,6 +91,14 @@ public class Notification {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public String getActionUrl() {
+        return actionUrl;
+    }
+
+    public void setActionUrl(String actionUrl) {
+        this.actionUrl = actionUrl;
     }
 
     public LocalDateTime getCreatedAt() {

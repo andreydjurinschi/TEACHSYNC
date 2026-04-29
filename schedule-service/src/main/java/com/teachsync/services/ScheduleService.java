@@ -15,10 +15,12 @@ import com.teachsync.interation.feign.clients.GroupCourseClient;
 import com.teachsync.interation.feign.clients.TeacherClient;
 import com.teachsync.interation.feign.requests.GroupCourseBaseInfoRequest;
 import com.teachsync.interation.feign.requests.TeacherBaseInfoRequest;
+import com.teachsync.interation.kafka.ScheduleEventProducer;
 import com.teachsync.mappers.schedule.ScheduleMapper;
 import com.teachsync.repositories.ClassRoomRepository;
 import com.teachsync.repositories.ScheduleDayRepository;
 import com.teachsync.repositories.ScheduleRepository;
+import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
 import com.teachsync.validator.CustomTimeValidator;
 import org.springframework.stereotype.Service;
 
@@ -38,14 +40,16 @@ public class ScheduleService {
     private final TeacherClient teacherClient;
     private final GroupCourseClient groupCourseClient;
     private final ScheduleDayRepository scheduleDayRepository;
+    private final ScheduleEventProducer scheduleEventProducer;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient, ScheduleDayRepository scheduleDayRepository) {
+    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient, ScheduleDayRepository scheduleDayRepository, ScheduleEventProducer scheduleEventProducer) {
         this.scheduleRepository = scheduleRepository;
         this.classRoomRepository = classRoomRepository;
         this.timeValidator = timeValidator;
         this.teacherClient = teacherClient;
         this.groupCourseClient = groupCourseClient;
         this.scheduleDayRepository = scheduleDayRepository;
+        this.scheduleEventProducer = scheduleEventProducer;
     }
 
     public List<ScheduleBaseDto> getAll() {
@@ -112,7 +116,10 @@ public class ScheduleService {
     public ScheduleBaseDto getById(Long id){
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("this schedule does not exist"));
-        return ScheduleMapper.mapToBaseDto(schedule);
+        ScheduleBaseDto dto = ScheduleMapper.mapToBaseDto(schedule);
+        dto.setTeacherDto(teacherClient.requestForUserFromUserService(schedule.getTeacherId()));
+        dto.setGroupCourseDto(groupCourseClient.groupCourseBaseInfoRequest(schedule.getGroupCourseId()));
+        return dto;
     }
 
     public List<GroupCourseBaseInfoRequest> getAllGroupCoursesWithoutSchedule(){
@@ -168,6 +175,9 @@ public class ScheduleService {
 
         GroupCourseBaseInfoRequest groupCourse = groupCourseClient
                 .groupCourseBaseInfoRequest(dto.getGroupCourseId());
+        if (groupCourse.getTeacherId() == null) {
+            throw new IllegalArgumentException("Нельзя создать расписание для курса без преподавателя");
+        }
 
         GroupCourseDto groupSize = groupCourseClient
                 .getGroupSizeInformation(dto.getGroupCourseId());
@@ -192,6 +202,17 @@ public class ScheduleService {
         );
 
         Schedule saved = scheduleRepository.save(schedule);
+        scheduleEventProducer.publishScheduleCreated(new ScheduleCreatedEvent(
+                saved.getId(),
+                saved.getTeacherId(),
+                saved.getGroupCourseId(),
+                groupCourse.getCourseName(),
+                groupCourse.getGroupName(),
+                classRoom.getName(),
+                saved.getStartTime(),
+                saved.getEndTime(),
+                saved.getWeekDays().stream().map(Enum::name).collect(Collectors.toSet())
+        ));
 
         return ScheduleMapper.mapToBaseDto(saved);
     }
