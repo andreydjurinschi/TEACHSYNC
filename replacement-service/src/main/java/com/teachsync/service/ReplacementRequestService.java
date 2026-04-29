@@ -20,18 +20,25 @@ import com.teachsync.repository.ReplacementRequestRepository;
 import com.teachsync.repository.ReplacementResponseRepository;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementRequestedEvent;
+import com.teachsync.teachsyncevents.replacements.ReplacementStatusChangedEvent;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class ReplacementRequestService {
+
+    private static final Set<Status> ACTIVE_STATUSES = Set.of(Status.PENDING, Status.APPROVED);
+    private static final Set<Status> PROBLEMATIC_STATUSES = Set.of(Status.PENDING, Status.EXPIRED, Status.AUTO_CLOSED);
 
     private final ReplacementRequestRepository repository;
     private final ReplacementResponseRepository responseRepository;
@@ -62,6 +69,11 @@ public class ReplacementRequestService {
                 ? dto.getTeacherRequested()
                 : schedule.getTeacherDto().getId();
 
+        validateLessonDate(dto.getLessonDate(), schedule.getEndTime());
+        if (repository.existsByScheduleIdAndLessonDateAndStatusIn(schedule.getId(), dto.getLessonDate(), ACTIVE_STATUSES)) {
+            throw new IllegalStateException("Active replacement already exists for this lesson");
+        }
+
         ReplacementRequest request = new ReplacementRequest(
                 schedule.getId(),
                 groupCourse.getId(),
@@ -75,6 +87,13 @@ public class ReplacementRequestService {
         ReplacementRequest saved = repository.save(request);
 
         List<TeacherBaseInfoRequest> candidates = findCandidateTeachers(saved, schedule, groupCourse);
+        if (candidates.isEmpty()) {
+            saved.setStatus(Status.AUTO_CLOSED);
+            publishStatusChanged(saved, groupCourse, schedule,
+                    "Система не нашла свободных преподавателей с подходящей специализацией.");
+            return enrich(saved);
+        }
+
         for (TeacherBaseInfoRequest candidate : candidates) {
             responseRepository.save(new ReplacementResponse(saved, ResponseStatus.PENDING, candidate.getId()));
             eventProducer.publishReplacementRequested(new ReplacementRequestedEvent(
@@ -102,7 +121,14 @@ public class ReplacementRequestService {
     }
 
     public List<ReplacementRequestBaseDto> getForTeacher(Long teacherId) {
-        return repository.findByTeacherRequestedOrApprovedByIdOrderByLessonDateDesc(teacherId, teacherId)
+        return repository.findVisibleForTeacher(teacherId)
+                .stream()
+                .map(this::enrich)
+                .toList();
+    }
+
+    public List<ReplacementRequestBaseDto> getProblematicRequests() {
+        return repository.findByStatusInOrderByPriority(PROBLEMATIC_STATUSES)
                 .stream()
                 .map(this::enrich)
                 .toList();
@@ -110,11 +136,7 @@ public class ReplacementRequestService {
 
     @Transactional
     public ReplacementRequestBaseDto approve(Long requestId, Long teacherId) {
-        ReplacementRequest request = repository.findById(requestId)
-                .orElseThrow(() -> new EntityNotFoundException("Replacement request not found"));
-        if (request.getStatus() != Status.PENDING) {
-            throw new IllegalStateException("Replacement request is already closed");
-        }
+        ReplacementRequest request = getPendingRequest(requestId);
         ReplacementResponse response = responseRepository
                 .findByReplacementRequestIdAndTeacherResponse(requestId, teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher was not invited to this replacement"));
@@ -151,6 +173,54 @@ public class ReplacementRequestService {
         return enrich(request);
     }
 
+    @Transactional
+    public ReplacementRequestBaseDto decline(Long requestId, Long teacherId) {
+        ReplacementRequest request = getPendingRequest(requestId);
+        ReplacementResponse response = responseRepository
+                .findByReplacementRequestIdAndTeacherResponse(requestId, teacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher was not invited to this replacement"));
+
+        if (response.getResponseStatus() == ResponseStatus.ACCEPTED) {
+            throw new IllegalStateException("Accepted replacement cannot be declined");
+        }
+
+        response.setResponseStatus(ResponseStatus.DECLINED);
+        autoCloseIfNoPendingCandidates(request);
+        return enrich(request);
+    }
+
+    @Transactional
+    public ReplacementRequestBaseDto cancel(Long requestId, Long teacherId) {
+        ReplacementRequest request = getPendingRequest(requestId);
+        if (!teacherId.equals(request.getTeacherRequested())) {
+            throw new IllegalArgumentException("Only requesting teacher can cancel replacement");
+        }
+        request.setStatus(Status.CANCELLED);
+        responseRepository.findByReplacementRequestId(requestId)
+                .forEach(response -> response.setResponseStatus(ResponseStatus.DECLINED));
+
+        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
+        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+        publishStatusChanged(request, groupCourse, schedule, "Заявка на замену была отменена преподавателем.");
+        return enrich(request);
+    }
+
+    @Scheduled(fixedDelay = 300000)
+    @Transactional
+    public void expireStaleRequests() {
+        for (ReplacementRequest request : repository.findByStatus(Status.PENDING)) {
+            ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
+            if (!lessonAlreadyEnded(request.getLessonDate(), schedule.getEndTime())) {
+                continue;
+            }
+            request.setStatus(Status.EXPIRED);
+            responseRepository.findByReplacementRequestId(request.getId())
+                    .forEach(response -> response.setResponseStatus(ResponseStatus.DECLINED));
+            GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+            publishStatusChanged(request, groupCourse, schedule, "Время занятия прошло, заявка автоматически помечена как просроченная.");
+        }
+    }
+
     private List<TeacherBaseInfoRequest> findCandidateTeachers(ReplacementRequest request,
                                                                ScheduleBaseDtoRequest schedule,
                                                                GroupCourseBaseInfoRequest groupCourse) {
@@ -163,6 +233,27 @@ public class ReplacementRequestService {
                 .filter(teacher -> !teacher.getId().equals(request.getTeacherRequested()))
                 .filter(teacher -> hasRequiredSpecialization(teacher, groupCourse.getCategoryId()))
                 .toList();
+    }
+
+    private ReplacementRequest getPendingRequest(Long requestId) {
+        ReplacementRequest request = repository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Replacement request not found"));
+        if (request.getStatus() != Status.PENDING) {
+            throw new IllegalStateException("Replacement request is already closed");
+        }
+        return request;
+    }
+
+    private void autoCloseIfNoPendingCandidates(ReplacementRequest request) {
+        boolean hasPending = responseRepository.findByReplacementRequestId(request.getId()).stream()
+                .anyMatch(response -> response.getResponseStatus() == ResponseStatus.PENDING);
+        if (hasPending) {
+            return;
+        }
+        request.setStatus(Status.AUTO_CLOSED);
+        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
+        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+        publishStatusChanged(request, groupCourse, schedule, "Все приглашенные преподаватели отказались или не подтвердили замену.");
     }
 
     private boolean isTeacherAvailableForSchedule(ScheduleBaseDtoRequest schedule,
@@ -182,7 +273,21 @@ public class ReplacementRequestService {
                 .anyMatch(categoryId::equals);
     }
 
-    private WeekDays weekdayFromLessonDate(java.time.LocalDate lessonDate) {
+    private void validateLessonDate(LocalDate lessonDate, LocalTime endTime) {
+        if (lessonDate == null) {
+            throw new IllegalArgumentException("Lesson date is required");
+        }
+        if (lessonAlreadyEnded(lessonDate, endTime)) {
+            throw new IllegalArgumentException("Replacement cannot be created for a past lesson");
+        }
+    }
+
+    private boolean lessonAlreadyEnded(LocalDate lessonDate, LocalTime endTime) {
+        LocalDateTime lessonEnd = LocalDateTime.of(lessonDate, endTime == null ? LocalTime.MAX : endTime);
+        return lessonEnd.isBefore(LocalDateTime.now());
+    }
+
+    private WeekDays weekdayFromLessonDate(LocalDate lessonDate) {
         DayOfWeek day = lessonDate.getDayOfWeek();
         return switch (day) {
             case MONDAY -> WeekDays.MON;
@@ -195,8 +300,26 @@ public class ReplacementRequestService {
         };
     }
 
+    private void publishStatusChanged(ReplacementRequest request,
+                                      GroupCourseBaseInfoRequest groupCourse,
+                                      ScheduleBaseDtoRequest schedule,
+                                      String message) {
+        eventProducer.publishReplacementStatusChanged(new ReplacementStatusChangedEvent(
+                request.getId(),
+                request.getTeacherRequested(),
+                request.getStatus().name(),
+                groupCourse.getCourseName(),
+                groupCourse.getGroupName(),
+                request.getLessonDate(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                message
+        ));
+    }
+
     private ReplacementRequestBaseDto enrich(ReplacementRequest replacementRequest) {
         ReplacementRequestBaseDto result = ReplacementMapper.mapToBaseDto(replacementRequest);
+        List<ReplacementResponse> responses = responseRepository.findByReplacementRequestId(replacementRequest.getId());
 
         TeacherBaseInfoRequest requested = userClient.getTeacher(replacementRequest.getTeacherRequested());
         TeacherBaseInfoRequest approved = null;
@@ -210,6 +333,9 @@ public class ReplacementRequestService {
         result.setApprovedByTeacherBaseInfoRequest(approved);
         result.setScheduleBaseDtoRequest(scheduleRequest);
         result.setGroupCourseBaseInfoRequest(groupCourseBaseInfoRequest);
+        result.setPendingInvitationsCount((int) responses.stream()
+                .filter(response -> response.getResponseStatus() == ResponseStatus.PENDING)
+                .count());
 
         return result;
     }

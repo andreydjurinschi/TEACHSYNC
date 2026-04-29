@@ -150,6 +150,7 @@ export class NotificationsComponent implements OnInit {
       TEACHER_ASSIGNED: 'Назначение преподавателя',
       REPLACEMENT_REQUESTED: 'Запрос замены',
       REPLACEMENT_APPROVED: 'Замена найдена',
+      REPLACEMENT_STATUS_CHANGED: 'Изменение статуса замены',
       USER_CREATED: 'Создание пользователя',
       USER_DELETED: 'Удаление пользователя',
       USER_ROLE_CHANGED: 'Смена роли',

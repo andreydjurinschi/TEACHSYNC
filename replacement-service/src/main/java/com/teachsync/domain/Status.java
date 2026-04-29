@@ -1,5 +1,5 @@
 package com.teachsync.domain;
 
 public enum Status {
-    APPROVED, PENDING, DECLINED
+    APPROVED, PENDING, DECLINED, EXPIRED, CANCELLED, AUTO_CLOSED
 }

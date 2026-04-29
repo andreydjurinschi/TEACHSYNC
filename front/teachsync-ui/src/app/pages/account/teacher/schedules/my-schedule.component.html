@@ -41,8 +41,10 @@
                       [class.bg-emerald-100]="replacement.status === 'APPROVED'"
                       [class.text-emerald-700]="replacement.status === 'APPROVED'"
                       [class.bg-amber-100]="replacement.status === 'PENDING'"
-                      [class.text-amber-700]="replacement.status === 'PENDING'">
-                  {{ replacement.status === 'APPROVED' ? 'Подтверждена' : 'Поиск' }}
+                      [class.text-amber-700]="replacement.status === 'PENDING'"
+                      [class.bg-slate-100]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'"
+                      [class.text-slate-700]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'">
+                  {{ replacementStatusLabel(replacement.status) }}
                 </span>
               </div>
               <p class="text-slate-600 dark:text-slate-300">

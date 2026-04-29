@@ -135,4 +135,16 @@ setDay(day: WeekDay | 'all'): void {
     if (!teacher) return '—';
     return teacher.fullName || `${teacher.name ?? ''} ${teacher.surname ?? ''}`.trim();
   }
+
+  replacementStatusLabel(status: ReplacementRequest['status']): string {
+    const map: Record<ReplacementRequest['status'], string> = {
+      PENDING: 'Поиск',
+      APPROVED: 'Подтверждена',
+      DECLINED: 'Отклонена',
+      EXPIRED: 'Просрочена',
+      CANCELLED: 'Отменена',
+      AUTO_CLOSED: 'Автозакрыта'
+    };
+    return map[status];
+  }
 }

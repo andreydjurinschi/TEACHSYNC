@@ -85,6 +85,7 @@
           </svg>
           <span class="text-sm font-medium">Статистика</span>
         </a>
+
       }
 
       @if (role === 'MANAGER') {
@@ -127,6 +128,13 @@
           </svg>
           <span class="text-sm font-medium">Статистика</span>
         </a>
+
+        <a routerLink="/manager/replacements" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h3m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span class="text-sm font-medium">Проблемные замены</span>
+        </a>
       }
 
       @if (role === 'TEACHER') {
@@ -159,6 +167,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
           <span class="text-sm font-medium">Мое расписание</span>
+        </a>
+
+        <a routerLink="/profile/replacements" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h5m-9 8h14a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="text-sm font-medium">Замены</span>
         </a>
 
         <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface ReplacementResponseRepository extends JpaRepository<ReplacementResponse, Long> {
     Optional<ReplacementResponse> findByReplacementRequestIdAndTeacherResponse(Long replacementRequestId, Long teacherResponse);
     List<ReplacementResponse> findByReplacementRequestId(Long replacementRequestId);
+    List<ReplacementResponse> findByTeacherResponse(Long teacherResponse);
 }

@@ -18,6 +18,7 @@ public class ActionTypes {
     // replacements
     public static final String REPLACEMENT_REQUESTED = "REPLACEMENT_REQUESTED";
     public static final String REPLACEMENT_APPROVED = "REPLACEMENT_APPROVED";
+    public static final String REPLACEMENT_STATUS_CHANGED = "REPLACEMENT_STATUS_CHANGED";
 
     // users
     public static final String USER_ROLE_CHANGED = "USER_ROLE_CHANGED";

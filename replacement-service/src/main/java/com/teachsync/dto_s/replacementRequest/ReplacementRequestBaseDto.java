@@ -20,6 +20,7 @@ public class ReplacementRequestBaseDto {
     private TeacherBaseInfoRequest approvedByTeacherBaseInfoRequest;
     private String reason;
     private Status status;
+    private int pendingInvitationsCount;
 
     public ReplacementRequestBaseDto(ScheduleBaseDtoRequest scheduleBaseDtoRequest, TeacherBaseInfoRequest teacherBaseInfoRequest, GroupCourseBaseInfoRequest groupCourseBaseInfoRequest, LocalDateTime requestedAt, LocalDate lessonDate, TeacherBaseInfoRequest approvedByTeacherBaseInfoRequest, String reason, Status status) {
         this.scheduleBaseDtoRequest = scheduleBaseDtoRequest;
@@ -102,5 +103,13 @@ public class ReplacementRequestBaseDto {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public int getPendingInvitationsCount() {
+        return pendingInvitationsCount;
+    }
+
+    public void setPendingInvitationsCount(int pendingInvitationsCount) {
+        this.pendingInvitationsCount = pendingInvitationsCount;
     }
 }

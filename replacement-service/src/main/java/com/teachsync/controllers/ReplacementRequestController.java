@@ -40,8 +40,23 @@ public class ReplacementRequestController {
         return ResponseEntity.ok(service.approve(id, teacherId));
     }
 
+    @PutMapping("/{id}/decline/{teacherId}")
+    public ResponseEntity<ReplacementRequestBaseDto> decline(@PathVariable Long id, @PathVariable Long teacherId) {
+        return ResponseEntity.ok(service.decline(id, teacherId));
+    }
+
+    @PutMapping("/{id}/cancel/{teacherId}")
+    public ResponseEntity<ReplacementRequestBaseDto> cancel(@PathVariable Long id, @PathVariable Long teacherId) {
+        return ResponseEntity.ok(service.cancel(id, teacherId));
+    }
+
     @GetMapping("/teacher/{teacherId}")
     public ResponseEntity<List<ReplacementRequestBaseDto>> getForTeacher(@PathVariable Long teacherId) {
         return ResponseEntity.ok(service.getForTeacher(teacherId));
+    }
+
+    @GetMapping("/problematic")
+    public ResponseEntity<List<ReplacementRequestBaseDto>> getProblematicRequests() {
+        return ResponseEntity.ok(service.getProblematicRequests());
     }
 }

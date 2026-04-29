@@ -24,6 +24,8 @@ import { ScheduleCreateComponent } from './pages/schedules/schedule-create/sched
 import { MyCoursesComponent } from './pages/account/teacher/courses/my-courses.component';
 import { TeacherScheduleComponent } from './pages/account/teacher/schedules/my-schedule.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { ReplacementsComponent } from './pages/replacements/replacements.component';
+import { ManagerReplacementsComponent } from './pages/replacements/manager-replacements.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -57,6 +59,8 @@ export const routes: Routes = [
 
       { path: 'profile/courses', component: MyCoursesComponent },
       { path: 'profile/schedules', component: TeacherScheduleComponent},
+      { path: 'profile/replacements', component: ReplacementsComponent },
+      { path: 'manager/replacements', component: ManagerReplacementsComponent },
       { path: 'notifications', component: NotificationsComponent }
     ]
   },

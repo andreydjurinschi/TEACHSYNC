@@ -3,6 +3,7 @@ package com.teachsync.interaction.kafka;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementRequestedEvent;
+import com.teachsync.teachsyncevents.replacements.ReplacementStatusChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -32,6 +33,15 @@ public class ReplacementEventProducer {
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish ReplacementApprovedEvent: {}", ex.getMessage());
+                    }
+                });
+    }
+
+    public void publishReplacementStatusChanged(ReplacementStatusChangedEvent event) {
+        kafkaTemplate.send(KafkaTopics.REPLACEMENT_EVENTS, event.getReplacementRequestId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish ReplacementStatusChangedEvent: {}", ex.getMessage());
                     }
                 });
     }

@@ -25,7 +25,8 @@ export interface ReplacementRequest {
   lessonDate: string;
   approvedByTeacherBaseInfoRequest?: TeacherBaseInfo;
   reason: string;
-  status: 'APPROVED' | 'PENDING' | 'DECLINED';
+  status: 'APPROVED' | 'PENDING' | 'DECLINED' | 'EXPIRED' | 'CANCELLED' | 'AUTO_CLOSED';
+  pendingInvitationsCount: number;
 }
 
 export interface ReplacementCreate {

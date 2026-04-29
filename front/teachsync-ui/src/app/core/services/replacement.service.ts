@@ -21,7 +21,19 @@ export class ReplacementService {
     return this.http.put<ReplacementRequest>(`${this.api}/${requestId}/approve/${teacherId}`, {}, { headers: this.getHeaders() });
   }
 
+  decline(requestId: number, teacherId: number) {
+    return this.http.put<ReplacementRequest>(`${this.api}/${requestId}/decline/${teacherId}`, {}, { headers: this.getHeaders() });
+  }
+
+  cancel(requestId: number, teacherId: number) {
+    return this.http.put<ReplacementRequest>(`${this.api}/${requestId}/cancel/${teacherId}`, {}, { headers: this.getHeaders() });
+  }
+
   getForTeacher(teacherId: number) {
     return this.http.get<ReplacementRequest[]>(`${this.api}/teacher/${teacherId}`, { headers: this.getHeaders() });
+  }
+
+  getProblematic() {
+    return this.http.get<ReplacementRequest[]>(`${this.api}/problematic`, { headers: this.getHeaders() });
   }
 }

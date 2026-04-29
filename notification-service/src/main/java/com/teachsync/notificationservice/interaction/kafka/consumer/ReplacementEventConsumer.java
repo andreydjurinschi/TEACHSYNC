@@ -7,6 +7,7 @@ import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementRequestedEvent;
+import com.teachsync.teachsyncevents.replacements.ReplacementStatusChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -37,6 +38,7 @@ public class ReplacementEventConsumer {
             switch (eventType) {
                 case ActionTypes.REPLACEMENT_REQUESTED -> handleRequested(objectMapper.readValue(rawMessage, ReplacementRequestedEvent.class));
                 case ActionTypes.REPLACEMENT_APPROVED -> handleApproved(objectMapper.readValue(rawMessage, ReplacementApprovedEvent.class));
+                case ActionTypes.REPLACEMENT_STATUS_CHANGED -> handleStatusChanged(objectMapper.readValue(rawMessage, ReplacementStatusChangedEvent.class));
                 default -> log.info("Unsupported replacement event type: {}", eventType);
             }
         } catch (Exception e) {
@@ -82,5 +84,18 @@ public class ReplacementEventConsumer {
                 "/profile/schedules"
         );
         log.info("Saved REPLACEMENT_APPROVED notifications for request {}", event.getReplacementRequestId());
+    }
+
+    private void handleStatusChanged(ReplacementStatusChangedEvent event) {
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.REPLACEMENT_STATUS_CHANGED,
+                event.getTeacherRequestedId(),
+                "Статус замены изменен",
+                event.getMessage(),
+                "/profile/replacements"
+        );
+        log.info("Saved REPLACEMENT_STATUS_CHANGED notification for request {}", event.getReplacementRequestId());
     }
 }
