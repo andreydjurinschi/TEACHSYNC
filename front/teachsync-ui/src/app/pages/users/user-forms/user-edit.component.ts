@@ -20,6 +20,8 @@ export class UserEdit implements OnInit {
   user        = signal<User | null>(null);
   loading     = signal(false);
   saving      = signal(false);
+  previewUrl  = signal<string | null>(null);
+  imageError  = signal<string | null>(null);
   categories  = signal<CategoryBase[]>([]);
   currentSpecIds = signal<Set<number>>(new Set());
   selectedSpecIds = signal<Set<number>>(new Set());
@@ -40,6 +42,7 @@ export class UserEdit implements OnInit {
       name:    ['', Validators.required],
       surname: ['', Validators.required],
       email:   ['', [Validators.required, Validators.email]],
+      profilePicture: [''],
       role:    ['TEACHER' as UserRole, Validators.required],
     });
   }
@@ -59,8 +62,10 @@ export class UserEdit implements OnInit {
           name:    user.name    ?? '',
           surname: user.surname ?? '',
           email:   user.email   ?? '',
+          profilePicture: user.profilePicture ?? '',
           role:    user.role    ?? 'TEACHER',
         });
+        this.previewUrl.set(user.profilePicture ?? null);
         if (user.role === 'TEACHER') {
           this.teacherService.getSpecializations(id).subscribe(specs => {
             const ids = new Set<number>(specs.map((s: any) => s.id));
@@ -140,5 +145,38 @@ export class UserEdit implements OnInit {
         },
       });
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError.set('Можно загружать только изображения.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.imageError.set('Максимальный размер изображения — 2 МБ.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      this.form.patchValue({ profilePicture: result });
+      this.previewUrl.set(result || null);
+      this.imageError.set(null);
+    };
+    reader.onerror = () => this.imageError.set('Не удалось прочитать изображение.');
+    reader.readAsDataURL(file);
+  }
+
+  clearProfilePicture(): void {
+    this.form.patchValue({ profilePicture: '' });
+    this.previewUrl.set(null);
+    this.imageError.set(null);
   }
 }

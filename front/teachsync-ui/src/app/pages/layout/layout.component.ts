@@ -52,6 +52,7 @@ export class LayoutComponent implements OnInit {
   unreadCount = signal(0);
   theme = this.themeService.theme;
   coursesOpen = false;
+  sidebarOpen = signal(false);
 
   constructor(private auth: AuthService, private router: Router) {}
 
@@ -72,6 +73,14 @@ export class LayoutComponent implements OnInit {
 
   toggleCourses() {
     this.coursesOpen = !this.coursesOpen;
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update(value => !value);
+  }
+
+  closeSidebar() {
+    this.sidebarOpen.set(false);
   }
 
   private startNotificationPolling(): void {

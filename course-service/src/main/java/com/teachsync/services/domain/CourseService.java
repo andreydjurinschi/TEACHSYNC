@@ -77,6 +77,7 @@ public class CourseService {
     @Transactional
     public void createCourse(CourseCreateDto dto){
         Course course = CourseMapper.mapToEntity(dto);
+        course.setPhotoUrl(normalizePhoto(dto.getPhotoUrl()));
         if (dto.getCategoryId() != null) {
             Category category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new NoSuchElementException("Category not found"));
@@ -101,8 +102,8 @@ public class CourseService {
         if(StringUtils.hasText(dto.getDescription())){
             course.setDescription(dto.getDescription());
         }
-        if(StringUtils.hasText(dto.getPhotoUrl())){
-            course.setPhotoUrl(dto.getPhotoUrl());
+        if(dto.getPhotoUrl() != null){
+            course.setPhotoUrl(normalizePhoto(dto.getPhotoUrl()));
         }
         if (dto.getCategoryId() != null) {
             Category category = categoryRepository.findById(dto.getCategoryId())
@@ -312,6 +313,13 @@ public class CourseService {
                         reason
                 )
         );
+    }
+
+    private String normalizePhoto(String photoUrl) {
+        if (!StringUtils.hasText(photoUrl)) {
+            return null;
+        }
+        return photoUrl.trim();
     }
 
 }

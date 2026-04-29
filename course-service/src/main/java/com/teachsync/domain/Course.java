@@ -18,7 +18,8 @@ public class Course {
     @Column(nullable = false, name = "course_description")
     private String description;
 
-    @Column(name = "photo_url")
+    @Lob
+    @Column(name = "photo_url", columnDefinition = "TEXT")
     private String photoUrl;
 
     @Column(name = "teacher_id")

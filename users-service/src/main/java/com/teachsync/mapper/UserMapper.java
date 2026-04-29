@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class UserMapper {
     public static UserBaseDto mapToBaseDto(User user){
         return new UserBaseDto(
-               user.getId(), user.getName(), user.getSurname(), user.getEmail(),
+               user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getProfilePicture(),
                 user.getRegisteredAt(),
                 user.getRole(),
 

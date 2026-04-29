@@ -16,6 +16,8 @@ export class CourseCreate implements OnInit {
   form!: FormGroup;
   loading = signal(false);
   categories = signal<CategoryBase[]>([]);
+  previewUrl = signal<string | null>(null);
+  imageError = signal<string | null>(null);
 
   private platformId = inject(PLATFORM_ID);
   private fb = inject(FormBuilder);
@@ -28,6 +30,7 @@ export class CourseCreate implements OnInit {
       name:        ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       categoryId:  [null],
+      photoUrl:    [null],
     });
 
     if (isPlatformBrowser(this.platformId)) {
@@ -44,5 +47,40 @@ export class CourseCreate implements OnInit {
       next: () => this.router.navigate(['/courses']),
       error: () => this.loading.set(false),
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError.set('Можно загружать только изображения.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.imageError.set('Максимальный размер изображения — 2 МБ.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      this.form.patchValue({ photoUrl: result });
+      this.previewUrl.set(result);
+      this.imageError.set(null);
+    };
+    reader.onerror = () => {
+      this.imageError.set('Не удалось прочитать изображение.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearPhoto(): void {
+    this.form.patchValue({ photoUrl: null });
+    this.previewUrl.set(null);
+    this.imageError.set(null);
   }
 }

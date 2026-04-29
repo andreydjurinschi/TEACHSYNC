@@ -9,9 +9,13 @@
     <div *ngIf="userWithCourses()" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
 
       <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
-          {{ userWithCourses()?.name?.charAt(0) }}
-        </div>
+        @if (user()?.profilePicture) {
+          <img [src]="user()!.profilePicture!" [alt]="userWithCourses()?.name" class="h-12 w-12 rounded-full object-cover" />
+        } @else {
+          <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+            {{ userWithCourses()?.name?.charAt(0) }}
+          </div>
+        }
         <div>
           <h2 class="text-xl font-bold text-slate-900 dark:text-white">
             {{ userWithCourses()?.name }} {{ userWithCourses()?.surname }}

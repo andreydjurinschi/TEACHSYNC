@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { UserService } from "../../../core/services/user.service";
 import { Router, RouterModule } from "@angular/router";
@@ -14,6 +14,8 @@ import { CommonModule } from "@angular/common";
 export class UserCreate {
 
     loading = false;
+    previewUrl = signal<string | null>(null);
+    imageError = signal<string | null>(null);
     form;
 
     constructor(
@@ -26,6 +28,7 @@ export class UserCreate {
             surname: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(40)]],
             password: ['', [Validators.required, Validators.minLength(6)]],
             email: ['', [Validators.required, Validators.email, Validators.minLength(8), Validators.maxLength(40)]],
+            profilePicture: [''],
             role: ['TEACHER' as UserRole, Validators.required]
         });
 
@@ -59,5 +62,38 @@ export class UserCreate {
                 control.markAsTouched()
             }
         })
+    }
+
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            this.imageError.set('Можно загружать только изображения.');
+            input.value = '';
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            this.imageError.set('Максимальный размер изображения — 2 МБ.');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = typeof reader.result === 'string' ? reader.result : '';
+            this.form.patchValue({ profilePicture: result });
+            this.previewUrl.set(result || null);
+            this.imageError.set(null);
+        };
+        reader.onerror = () => this.imageError.set('Не удалось прочитать изображение.');
+        reader.readAsDataURL(file);
+    }
+
+    clearProfilePicture(): void {
+        this.form.patchValue({ profilePicture: '' });
+        this.previewUrl.set(null);
+        this.imageError.set(null);
     }
 }

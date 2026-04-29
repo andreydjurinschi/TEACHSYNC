@@ -39,9 +39,38 @@
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Email</label>
             <input formControlName="email" type="email"
                    class="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600
-                          rounded-lg px-4 py-2.5 text-slate-900 dark:text-white
-                          focus:outline-none focus:border-indigo-500 transition"/>
+                           rounded-lg px-4 py-2.5 text-slate-900 dark:text-white
+                           focus:outline-none focus:border-indigo-500 transition"/>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Фото профиля</label>
+            <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 dark:border-slate-600 dark:bg-slate-900/40">
+              @if (previewUrl()) {
+                <img [src]="previewUrl()!" alt="Фото пользователя" class="mb-3 h-32 w-32 rounded-lg object-cover" />
+              } @else {
+                <div class="mb-3 flex h-32 w-32 items-center justify-center rounded-lg bg-slate-200 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  Нет фото
+                </div>
+              }
+              <input type="file" accept="image/*" (change)="onFileSelected($event)"
+                     class="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0
+                            file:bg-slate-200 file:px-4 file:py-2 file:text-sm file:font-medium
+                            file:text-slate-700 hover:file:bg-slate-300 dark:text-slate-300
+                            dark:file:bg-slate-700 dark:file:text-slate-200 dark:hover:file:bg-slate-600" />
+              @if (imageError()) {
+                <p class="mt-2 text-xs text-red-500">{{ imageError() }}</p>
+              }
+              @if (previewUrl()) {
+                <button type="button" (click)="clearProfilePicture()"
+                        class="mt-3 text-sm font-medium text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
+                  Удалить фото
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Роль</label>
             <select formControlName="role"

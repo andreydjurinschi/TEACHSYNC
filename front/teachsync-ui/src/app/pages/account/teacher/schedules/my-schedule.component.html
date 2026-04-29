@@ -14,6 +14,58 @@
       <div class="app-alert-error mb-4">{{ actionError() }}</div>
     }
 
+    @if (selectedSchedule() && selectedReplacementDay()) {
+      <div class="app-panel mb-6">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Запрос замены</h2>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {{ selectedSchedule()!.groupCourseDto.courseName }} · {{ selectedSchedule()!.groupCourseDto.groupName }}
+            </p>
+          </div>
+          <button type="button" (click)="closeReplacementRequest()" class="app-btn-secondary px-3">Закрыть</button>
+        </div>
+
+        <div class="mt-5 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+          <div>
+            <label class="app-label mb-2 block">Причина отсутствия</label>
+            <textarea
+              [(ngModel)]="replacementReason"
+              rows="4"
+              class="app-input resize-none"
+              placeholder="Например: болезнь, командировка, семейные обстоятельства"></textarea>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="app-label mb-2 block">На сколько недель</label>
+              <select [(ngModel)]="replacementWeeks" class="app-input">
+                @for (weeks of [1, 2, 3, 4, 5, 6, 7, 8]; track weeks) {
+                  <option [ngValue]="weeks">{{ weeks }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="app-panel-muted">
+              <p class="app-label">Даты замены</p>
+              <div class="mt-2 flex flex-wrap gap-2">
+                @for (date of replacementPreviewDates(); track date) {
+                  <span class="app-status bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">{{ date }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-end gap-3">
+          <button type="button" (click)="closeReplacementRequest()" class="app-btn-secondary">Отмена</button>
+          <button type="button" (click)="requestReplacement()" [disabled]="submittingReplacement()" class="app-btn-primary">
+            {{ submittingReplacement() ? 'Создание...' : 'Создать заявки на замену' }}
+          </button>
+        </div>
+      </div>
+    }
+
     @if (loading()) {
       <div class="space-y-3">
         @for (_ of [1,2,3,4,5]; track $index) {
@@ -87,10 +139,10 @@
         }
       </div>
 
-      @if (activeDay() === 'all') {
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-7">
-          @for (day of DAY_ORDER; track day) {
-            <div class="app-panel p-4">
+      <div class="grid grid-cols-1 gap-4 xl:grid-cols-7">
+        @for (day of DAY_ORDER; track day) {
+          <div class="app-panel p-4"
+               [class.opacity-50]="activeDay() !== 'all' && activeDay() !== day">
               <div class="mb-3 border-b border-slate-200 pb-2 text-center text-xs font-semibold uppercase tracking-widest text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 {{ DAY_LABELS[day] }}
               </div>
@@ -121,65 +173,15 @@
                         }
                       </p>
                     }
-                    <button type="button" (click)="requestReplacement(s)" class="app-btn-secondary mt-3 w-full">
-                      Нужна замена на {{ nextLessonDateLabel(s) }}
+                    <button type="button" (click)="openReplacementRequest(s, day)" class="app-btn-secondary mt-3 w-full">
+                      Нужна замена на {{ nextLessonDateLabel(s, day) }}
                     </button>
                   </div>
                 }
               </div>
-            </div>
-          }
-        </div>
-      }
-
-      @if (activeDay() !== 'all') {
-        @if (slotsForDay(activeDay()).length === 0) {
-          <div class="app-panel py-16 text-center text-sm text-slate-400 dark:text-slate-500">
-            В этот день занятий нет
           </div>
         }
-
-        @if (slotsForDay(activeDay()).length > 0) {
-          <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 dark:bg-slate-950">
-                <tr class="border-b border-slate-200 dark:border-slate-800">
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Время</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Группа / Курс</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Аудитория</th>
-                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Замена</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (s of slotsForDay(activeDay()); track s.id) {
-                  <tr class="border-b border-slate-200 last:border-b-0 dark:border-slate-800">
-                    <td class="px-4 py-3">
-                      <span class="font-mono font-medium text-slate-900 dark:text-white">
-                        {{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <p class="font-medium text-slate-900 dark:text-white">{{ s.groupCourseDto.groupName }}</p>
-                      <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ s.groupCourseDto.courseName }}</p>
-                    </td>
-                    <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
-                      {{ s.classRoomBaseDto.name }}
-                      @if (s.classRoomBaseDto.capacity) {
-                        <span class="ml-1 text-xs text-slate-500 dark:text-slate-400">({{ s.classRoomBaseDto.capacity }} мест)</span>
-                      }
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                      <button type="button" (click)="requestReplacement(s)" class="app-btn-secondary">
-                        Нужна замена на {{ nextLessonDateLabel(s) }}
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      }
+      </div>
     }
   </div>
 </section>

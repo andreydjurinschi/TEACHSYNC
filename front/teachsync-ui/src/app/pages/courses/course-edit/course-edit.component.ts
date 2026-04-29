@@ -26,6 +26,8 @@ export class CourseEdit implements OnInit {
   categories  = signal<CategoryBase[]>([]);
   teachers    = signal<TeacherDto[]>([]);
   loading     = signal(false);
+  previewUrl  = signal<string | null>(null);
+  imageError  = signal<string | null>(null);
   teacherMode = signal<TeacherFilter>('none');
   selectedTeacherId = signal<number | null>(null);
 
@@ -60,6 +62,7 @@ export class CourseEdit implements OnInit {
       name:        ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       categoryId:  [null],
+      photoUrl:    [null],
     });
 
     if (!isPlatformBrowser(this.platformId)) return;
@@ -81,7 +84,9 @@ export class CourseEdit implements OnInit {
           name:        course.name,
           description: course.description,
           categoryId:  course.categoryId ?? null,
+          photoUrl:    course.photoUrl ?? null,
         });
+        this.previewUrl.set(course.photoUrl ?? null);
         this.selectedTeacherId.set(course.teacher ?? null);
         if (course.teacher) this.teacherMode.set('all');
       },
@@ -146,5 +151,40 @@ export class CourseEdit implements OnInit {
     return this.ruleService.isTeacher()
       ? '/profile/courses'
       : `/courses/${this.route.snapshot.paramMap.get('id')}`;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError.set('Можно загружать только изображения.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.imageError.set('Максимальный размер изображения — 2 МБ.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      this.form.patchValue({ photoUrl: result });
+      this.previewUrl.set(result);
+      this.imageError.set(null);
+    };
+    reader.onerror = () => {
+      this.imageError.set('Не удалось прочитать изображение.');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearPhoto(): void {
+    this.form.patchValue({ photoUrl: '' });
+    this.previewUrl.set(null);
+    this.imageError.set(null);
   }
 }

@@ -235,9 +235,11 @@ public class ReplacementRequestService {
         Set<Long> freeTeacherIds = new HashSet<>(
                 scheduleClient.getAvailableTeachers(schedule.getId(), weekdayFromLessonDate(request.getLessonDate()))
         );
-        return userClient.getAllByRole("TEACHER")
+        if (freeTeacherIds.isEmpty()) {
+            return List.of();
+        }
+        return userClient.getByIds(List.copyOf(freeTeacherIds))
                 .stream()
-                .filter(teacher -> freeTeacherIds.contains(teacher.getId()))
                 .filter(teacher -> !teacher.getId().equals(request.getTeacherRequested()))
                 .filter(teacher -> hasRequiredSpecialization(teacher, groupCourse.getCategoryId()))
                 .toList();

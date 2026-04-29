@@ -4,6 +4,8 @@ import com.teachsync.interaction.requests.nested.TeacherBaseInfoRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -18,4 +20,7 @@ public interface UserClient {
 
     @GetMapping("/all/by-role")
     List<TeacherBaseInfoRequest> getAllByRole(@RequestParam String role);
+
+    @PostMapping("/batch")
+    List<TeacherBaseInfoRequest> getByIds(@RequestBody List<Long> ids);
 }
