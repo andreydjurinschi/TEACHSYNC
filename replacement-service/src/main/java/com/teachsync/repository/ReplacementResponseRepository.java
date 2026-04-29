@@ -12,4 +12,5 @@ public interface ReplacementResponseRepository extends JpaRepository<Replacement
     Optional<ReplacementResponse> findByReplacementRequestIdAndTeacherResponse(Long replacementRequestId, Long teacherResponse);
     List<ReplacementResponse> findByReplacementRequestId(Long replacementRequestId);
     List<ReplacementResponse> findByTeacherResponse(Long teacherResponse);
+    void deleteByReplacementRequestId(Long replacementRequestId);
 }

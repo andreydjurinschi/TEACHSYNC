@@ -15,6 +15,8 @@ export class ManagerReplacementsComponent implements OnInit {
   replacements = signal<ReplacementRequest[]>([]);
   loading = signal(true);
   loadError = signal<string | null>(null);
+  actionMessage = signal<string | null>(null);
+  actionError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.load();
@@ -31,6 +33,20 @@ export class ManagerReplacementsComponent implements OnInit {
       error: () => {
         this.loadError.set('Не удалось загрузить проблемные заявки на замену.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  deleteRequest(requestId: number): void {
+    this.actionMessage.set(null);
+    this.actionError.set(null);
+    this.replacementService.delete(requestId).subscribe({
+      next: () => {
+        this.replacements.update(list => list.filter(item => item.id !== requestId));
+        this.actionMessage.set('Заявка на замену удалена.');
+      },
+      error: err => {
+        this.actionError.set(err?.error?.message ?? 'Не удалось удалить заявку на замену.');
       }
     });
   }

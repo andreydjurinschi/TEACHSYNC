@@ -135,6 +135,14 @@ public class ReplacementRequestService {
     }
 
     @Transactional
+    public void deleteRequest(Long requestId) {
+        ReplacementRequest request = repository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Replacement request not found"));
+        responseRepository.deleteByReplacementRequestId(request.getId());
+        repository.delete(request);
+    }
+
+    @Transactional
     public ReplacementRequestBaseDto approve(Long requestId, Long teacherId) {
         ReplacementRequest request = getPendingRequest(requestId);
         ReplacementResponse response = responseRepository

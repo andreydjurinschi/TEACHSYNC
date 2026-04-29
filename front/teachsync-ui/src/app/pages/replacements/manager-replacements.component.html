@@ -11,6 +11,14 @@
       <div class="app-alert-error mb-4">{{ loadError() }}</div>
     }
 
+    @if (actionMessage()) {
+      <div class="app-alert-success mb-4">{{ actionMessage() }}</div>
+    }
+
+    @if (actionError()) {
+      <div class="app-alert-error mb-4">{{ actionError() }}</div>
+    }
+
     @if (loading()) {
       <div class="space-y-3">
         @for (_ of [1, 2, 3, 4]; track $index) {
@@ -67,6 +75,12 @@
             <div class="app-panel-muted mt-4">
               <p class="app-label">Причина</p>
               <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">{{ item.reason || 'Не указана' }}</p>
+            </div>
+
+            <div class="mt-4 flex justify-end">
+              <button type="button" (click)="deleteRequest(item.id)" class="app-btn-danger">
+                Удалить заявку
+              </button>
             </div>
           </article>
         }
