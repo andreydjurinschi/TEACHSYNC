@@ -126,4 +126,8 @@ export class CourseDetailed implements OnInit {
       }
     });
   }
+
+  backLink(): string {
+    return this.ruleSevice.isTeacher() ? '/profile/courses' : '/courses';
+  }
 }

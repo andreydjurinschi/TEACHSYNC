@@ -141,4 +141,10 @@ export class CourseEdit implements OnInit {
       error: () => this.loading.set(false),
     });
   }
+
+  cancelLink(): string {
+    return this.ruleService.isTeacher()
+      ? '/profile/courses'
+      : `/courses/${this.route.snapshot.paramMap.get('id')}`;
+  }
 }

@@ -23,8 +23,20 @@ export class NotificationsComponent implements OnInit {
   role = signal<string | null>(null);
   userId = signal<number | null>(null);
   error = signal<string | null>(null);
+  filter = signal<'all' | 'unread' | 'read'>('all');
 
   unreadCount = computed(() => this.notifications().filter(item => !item.read).length);
+  readCount = computed(() => this.notifications().filter(item => item.read).length);
+  filteredNotifications = computed(() => {
+    switch (this.filter()) {
+      case 'unread':
+        return this.notifications().filter(item => !item.read);
+      case 'read':
+        return this.notifications().filter(item => item.read);
+      default:
+        return this.notifications();
+    }
+  });
 
   ngOnInit(): void {
     this.role.set(this.ruleService.getRole());
@@ -121,60 +133,6 @@ export class NotificationsComponent implements OnInit {
 
   trackById(_: number, item: NotificationItem): number {
     return item.id;
-  }
-
-  getRoleTitle(): string {
-    switch (this.role()) {
-      case 'ADMIN':
-        return 'Уведомления администратора';
-      case 'MANAGER':
-        return 'Уведомления менеджера';
-      case 'TEACHER':
-        return 'Уведомления преподавателя';
-      default:
-        return 'Уведомления';
-    }
-  }
-
-  getSubjectLabel(subject: string): string {
-    const map: Record<string, string> = {
-      COURSE_CREATED: 'Создание курса',
-      COURSE_UPDATED: 'Изменение курса',
-      COURSE_GROUP_ENROLLED: 'Привязка группы',
-      COURSE_GROUP_REMOVED: 'Удаление связи курса и группы',
-      COURSE_TOPIC_ADDED: 'Добавление темы',
-      COURSE_TOPIC_REMOVED: 'Удаление темы',
-      COURSE_TEACHER_UNASSIGNED: 'Курс без преподавателя',
-      TEACHER_ASSIGNMENT_REQUESTED: 'Запрос преподавателю',
-      SCHEDULE_CREATED: 'Создание расписания',
-      TEACHER_ASSIGNED: 'Назначение преподавателя',
-      REPLACEMENT_REQUESTED: 'Запрос замены',
-      REPLACEMENT_APPROVED: 'Замена найдена',
-      REPLACEMENT_STATUS_CHANGED: 'Изменение статуса замены',
-      USER_CREATED: 'Создание пользователя',
-      USER_DELETED: 'Удаление пользователя',
-      USER_ROLE_CHANGED: 'Смена роли',
-      USER_SPECIALIZATION_ADDED: 'Добавление специализации',
-      USER_SPECIALIZATION_REMOVED: 'Удаление специализации'
-    };
-
-    return map[subject] ?? subject;
-  }
-
-  getSourceLabel(sourceService: string): string {
-    switch (sourceService) {
-      case 'course-service':
-        return 'Course Service';
-      case 'schedule-service':
-        return 'Schedule Service';
-      case 'replacement-service':
-        return 'Replacement Service';
-      case 'users-service':
-      case 'user-service':
-        return 'Users Service';
-      default:
-        return sourceService;
-    }
   }
 
   getActionPath(actionUrl: string): string {

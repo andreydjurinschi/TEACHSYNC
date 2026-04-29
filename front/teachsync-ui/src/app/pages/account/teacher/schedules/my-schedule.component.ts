@@ -88,9 +88,12 @@ setDay(day: WeekDay | 'all'): void {
   requestReplacement(schedule: ScheduleBase): void {
     const teacherId = this.ruleService.getId();
     if (teacherId == null) return;
-    const lessonDate = window.prompt('Дата пары для замены в формате YYYY-MM-DD');
-    if (!lessonDate) return;
-    const reason = window.prompt('Причина замены') ?? 'Причина не указана';
+    const lessonDate = this.nextLessonDate(schedule);
+    if (!lessonDate) {
+      this.actionError.set('Не удалось определить ближайшую дату занятия для замены.');
+      return;
+    }
+    const reason = 'Запрос замены создан преподавателем.';
     this.actionMessage.set(null);
     this.actionError.set(null);
     this.replacementService.create({
@@ -100,11 +103,43 @@ setDay(day: WeekDay | 'all'): void {
       reason
     }).subscribe({
       next: request => {
-        this.actionMessage.set('Запрос замены создан. Свободные преподаватели с подходящей специализацией получили уведомления.');
+        this.actionMessage.set(`Запрос замены создан на ${lessonDate}. Свободные преподаватели с подходящей специализацией получили уведомления.`);
         this.replacements.update(list => [request, ...list]);
       },
       error: err => this.actionError.set(err?.error?.message ?? 'Не удалось создать запрос замены.')
     });
+  }
+
+  nextLessonDate(schedule: ScheduleBase): string | null {
+    const now = new Date();
+
+    for (let offset = 0; offset < 14; offset += 1) {
+      const candidate = new Date(now);
+      candidate.setHours(0, 0, 0, 0);
+      candidate.setDate(now.getDate() + offset);
+
+      const weekdayKey = DAY_ORDER[(candidate.getDay() + 6) % 7] as WeekDay;
+      if (!schedule.weekDays.includes(weekdayKey)) {
+        continue;
+      }
+
+      const lessonEnd = new Date(candidate);
+      lessonEnd.setHours(schedule.endTime[0] ?? 23, schedule.endTime[1] ?? 59, 0, 0);
+      if (lessonEnd <= now) {
+        continue;
+      }
+
+      return candidate.toISOString().slice(0, 10);
+    }
+
+    return null;
+  }
+
+  nextLessonDateLabel(schedule: ScheduleBase): string {
+    const lessonDate = this.nextLessonDate(schedule);
+    if (!lessonDate) return 'ближайшую пару';
+    const [year, month, day] = lessonDate.split('-');
+    return `${day}.${month}.${year}`;
   }
 
   approveReplacement(requestId: number): void {
