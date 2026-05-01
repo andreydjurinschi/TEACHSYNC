@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { CategoryBase } from '../../../core/models/category/category.model';
+import { ImageBase64Service } from '../../../core/services/image-base64.service';
 
 @Component({
   selector: 'app-course-create',
@@ -22,12 +23,14 @@ export class CourseCreate implements OnInit {
   private router = inject(Router);
   private courseService = inject(CourseService);
   private categoryService = inject(CategoryService);
+  private imageBase64Service = inject(ImageBase64Service);
 
   ngOnInit(): void {
     this.form = this.fb.group({
       name:        ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       categoryId:  [null],
+      photoUrl:    [''],
     });
 
     if (isPlatformBrowser(this.platformId)) {
@@ -35,6 +38,19 @@ export class CourseCreate implements OnInit {
         next: data => this.categories.set(data),
       });
     }
+  }
+
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      return;
+    }
+    this.imageBase64Service.toDataUrl(file).then(dataUrl => {
+      this.form.patchValue({ photoUrl: dataUrl });
+    });
   }
 
   submit(): void {

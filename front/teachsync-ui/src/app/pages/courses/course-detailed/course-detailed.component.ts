@@ -21,7 +21,6 @@ export class CourseDetailed implements OnInit {
   withTeacher = signal<CourseWithTeacher | null>(null);
   teachers = signal<TeacherDto[]>([]);
   selectedTeacherId = signal<number | null>(null);
-  currentTeacherSpecializationIds = signal<number[]>([]);
   assignmentRequestMode = signal(false);
   pending = signal(false);
   actionMessage = signal<string | null>(null);
@@ -40,11 +39,21 @@ export class CourseDetailed implements OnInit {
     if (!course || !this.assignmentRequestMode() || !this.ruleSevice.isTeacher() || course.teacher != null) {
       return false;
     }
-    if (course.categoryId == null) {
-      return true;
-    }
-    return this.currentTeacherSpecializationIds().includes(course.categoryId);
+    return true;
   });
+
+  canManageCourse = computed(() => {
+    if (this.ruleSevice.isManager() || this.ruleSevice.isAdmin()) return true;
+    if (!this.ruleSevice.isTeacher()) return false;
+    const teacherId = this.ruleSevice.getId();
+    if (teacherId == null) return false;
+    return this.course()?.teacher === teacherId
+      || this.withTeacher()?.teacherRequest?.id === teacherId;
+  });
+
+  canManageGroups = computed(() =>
+    this.ruleSevice.isManager() || this.ruleSevice.isAdmin()
+  );
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
@@ -69,15 +78,6 @@ export class CourseDetailed implements OnInit {
           next: data => this.teachers.set(data),
           error: () => this.teachers.set([])
         });
-      }
-      if (this.ruleSevice.isTeacher()) {
-        const teacherId = this.ruleSevice.getId();
-        if (teacherId != null) {
-          this.teacherService.getSpecializations(teacherId).subscribe({
-            next: specs => this.currentTeacherSpecializationIds.set(specs.map(spec => spec.id)),
-            error: () => this.currentTeacherSpecializationIds.set([])
-          });
-        }
       }
     }
   }
@@ -128,6 +128,6 @@ export class CourseDetailed implements OnInit {
   }
 
   backLink(): string {
-    return this.ruleSevice.isTeacher() ? '/profile/courses' : '/courses';
+    return '/courses';
   }
 }

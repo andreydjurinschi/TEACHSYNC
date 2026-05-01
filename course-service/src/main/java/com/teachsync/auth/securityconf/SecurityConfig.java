@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     auth.requestMatchers("/internal/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/teachsync/courses/teacher/my", "/teachsync/courses/my").hasRole("TEACHER");
                     auth.requestMatchers("/teachsync/courses/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
                     auth.requestMatchers("/teachsync/groups/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");
                     auth.requestMatchers("/teachsync/categories/**").hasAnyRole("ADMIN", "MANAGER", "TEACHER");

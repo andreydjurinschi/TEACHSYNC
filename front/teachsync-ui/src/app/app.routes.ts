@@ -58,6 +58,7 @@ export const routes: Routes = [
       { path: 'schedules/create', component: ScheduleCreateComponent },
 
       { path: 'profile/courses', component: MyCoursesComponent },
+      { path: 'profile/course-requests/:id', component: CourseDetailed },
       { path: 'profile/schedules', component: TeacherScheduleComponent},
       { path: 'profile/replacements', component: ReplacementsComponent },
       { path: 'manager/replacements', component: ManagerReplacementsComponent },

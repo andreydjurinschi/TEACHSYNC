@@ -1,10 +1,11 @@
 import { CommonModule, isPlatformBrowser } from "@angular/common";
 import { Component, inject, OnInit, PLATFORM_ID, signal } from "@angular/core";
-import { ActivatedRoute, RouterLink } from "@angular/router";
+import { ActivatedRoute, Router, RouterLink } from "@angular/router";
 import { CourseService } from "../../../core/services/course.service";
 import { GroupService } from "../../../core/services/group.service";
 import { CourseBase } from "../../../core/models/courses/course.model";
 import { GroupBase } from "../../../core/models/groups/group.model";
+import { RuleService } from "../../../core/services/role.rule.service";
 
 @Component({
   standalone: true,
@@ -21,12 +22,18 @@ export class CourseGroups implements OnInit {
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private courseService = inject(CourseService);
   private groupService = inject(GroupService);
+  private ruleService = inject(RuleService);
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.courseId = Number(this.route.snapshot.paramMap.get('id'));
+      if (!(this.ruleService.isAdmin() || this.ruleService.isManager())) {
+        this.router.navigate(['/courses', this.courseId]);
+        return;
+      }
       this.loadData();
     }
   }

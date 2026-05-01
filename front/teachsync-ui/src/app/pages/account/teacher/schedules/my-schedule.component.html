@@ -3,7 +3,7 @@
     <div class="app-page-header">
       <div>
         <h1 class="app-page-title">Моё расписание</h1>
-        <p class="app-page-subtitle">Текущее расписание и статус заявок на замену.</p>
+        <p class="app-page-subtitle">Выберите дату в календаре, затем пару, для которой нужна замена.</p>
       </div>
     </div>
 
@@ -15,17 +15,16 @@
     }
 
     @if (loading()) {
-      <div class="space-y-3">
-        @for (_ of [1,2,3,4,5]; track $index) {
-          <div class="h-16 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800"></div>
-        }
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+        <div class="h-[520px] animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800"></div>
+        <div class="h-[520px] animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800"></div>
       </div>
     }
 
     @if (!loading()) {
       @if (replacementSummary().length) {
         <div class="app-panel mb-6">
-          <h2 class="app-label mb-4">Замены</h2>
+          <h2 class="app-label mb-4">Мои заявки на замену</h2>
           <div class="grid gap-3 md:grid-cols-2">
             @for (replacement of replacementSummary(); track replacement.id) {
               <div class="app-panel-muted">
@@ -33,11 +32,12 @@
                   <span class="font-semibold text-slate-900 dark:text-white">
                     {{ replacement.groupCourseBaseInfoRequest.courseName }}
                   </span>
-                  <span class="app-status"
-                    [class.bg-slate-900]="replacement.status === 'APPROVED'"
+                  <span
+                    class="app-status"
+                    [class.bg-emerald-700]="replacement.status === 'APPROVED'"
                     [class.text-white]="replacement.status === 'APPROVED'"
-                    [class.bg-slate-200]="replacement.status === 'PENDING'"
-                    [class.text-slate-700]="replacement.status === 'PENDING'"
+                    [class.bg-blue-50]="replacement.status === 'PENDING'"
+                    [class.text-blue-700]="replacement.status === 'PENDING'"
                     [class.bg-slate-100]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'"
                     [class.text-slate-600]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'"
                     [class.dark:bg-slate-800]="replacement.status !== 'APPROVED'"
@@ -46,17 +46,15 @@
                   </span>
                 </div>
                 <p class="text-sm text-slate-600 dark:text-slate-300">
-                  {{ replacement.lessonDate }} · {{ replacement.groupCourseBaseInfoRequest.groupName }}
+                  {{ formatDateLabel(replacement.lessonDate) }} · {{ replacement.groupCourseBaseInfoRequest.groupName }}
                 </p>
-                @if (replacement.approvedByTeacherBaseInfoRequest?.id === replacement.teacherBaseInfoRequest.id) {
-                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Замена не требуется</p>
-                } @else if (replacement.approvedByTeacherBaseInfoRequest) {
+                @if (replacement.approvedByTeacherBaseInfoRequest) {
                   <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
                     Заменяет: {{ teacherName(replacement.approvedByTeacherBaseInfoRequest) }}
                   </p>
                 } @else {
                   <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Кандидаты получили уведомления.
+                    Ожидается ответ приглашённых преподавателей.
                   </p>
                 }
               </div>
@@ -65,121 +63,229 @@
         </div>
       }
 
-      <div class="mb-6 flex flex-wrap gap-2">
-        <button
-          (click)="setDay('all')"
-          [class.bg-slate-900]="activeDay() === 'all'"
-          [class.text-white]="activeDay() === 'all'"
-          [class.border-slate-900]="activeDay() === 'all'"
-          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
-          Все дни
-        </button>
-        @for (day of DAY_ORDER; track day) {
-          <button
-            (click)="setDay(day)"
-            [class.bg-slate-900]="activeDay() === day"
-            [class.text-white]="activeDay() === day"
-            [class.border-slate-900]="activeDay() === day"
-            [class.font-semibold]="day === todayKey || activeDay() === day"
-            class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
-            {{ DAY_LABELS[day] }}
-          </button>
-        }
-      </div>
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+        <div class="app-panel">
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ monthTitle() }}</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Пары отмечены точкой и количеством занятий.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="app-btn-secondary px-3" (click)="previousMonth()">‹</button>
+              <button type="button" class="app-btn-secondary" (click)="goToToday()">Сегодня</button>
+              <button type="button" class="app-btn-secondary px-3" (click)="nextMonth()">›</button>
+            </div>
+          </div>
 
-      @if (activeDay() === 'all') {
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-7">
-          @for (day of DAY_ORDER; track day) {
-            <div class="app-panel p-4">
-              <div class="mb-3 border-b border-slate-200 pb-2 text-center text-xs font-semibold uppercase tracking-widest text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                {{ DAY_LABELS[day] }}
-              </div>
+          <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            @for (day of DAY_ORDER; track day) {
+              <div class="py-2">{{ DAY_LABELS[day] }}</div>
+            }
+          </div>
 
-              @if (slotsForDay(day).length === 0) {
-                <div class="flex min-h-[72px] items-center justify-center rounded-lg border border-dashed border-slate-200 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
-                  Нет занятий
+          <div class="grid grid-cols-7 gap-2">
+            @for (day of calendarDays(); track day.dateKey) {
+              <button
+                type="button"
+                (click)="selectDate(day.dateKey)"
+                class="min-h-[82px] rounded-lg border p-2 text-left transition"
+                [class.border-blue-700]="selectedDate() === day.dateKey"
+                [class.bg-blue-700]="selectedDate() === day.dateKey"
+                [class.text-white]="selectedDate() === day.dateKey"
+                [class.border-slate-200]="selectedDate() !== day.dateKey"
+                [class.bg-white]="selectedDate() !== day.dateKey"
+                [class.text-slate-900]="selectedDate() !== day.dateKey"
+                [class.opacity-45]="!day.inCurrentMonth"
+                [class.dark:border-slate-700]="selectedDate() !== day.dateKey"
+                [class.dark:bg-slate-900]="selectedDate() !== day.dateKey"
+                [class.dark:text-white]="selectedDate() !== day.dateKey"
+                [class.hover:border-blue-300]="selectedDate() !== day.dateKey"
+                [class.dark:hover:border-blue-700]="selectedDate() !== day.dateKey">
+                <div class="flex items-center justify-between gap-1">
+                  <span
+                    class="flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold"
+                    [class.bg-blue-50]="day.isToday && selectedDate() !== day.dateKey"
+                    [class.text-blue-700]="day.isToday && selectedDate() !== day.dateKey"
+                    [class.dark:bg-blue-950]="day.isToday && selectedDate() !== day.dateKey"
+                    [class.dark:text-blue-300]="day.isToday && selectedDate() !== day.dateKey">
+                    {{ day.dayNumber }}
+                  </span>
+                  @if (day.lessonsCount + day.temporaryLessonsCount > 0) {
+                    <span
+                      class="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                      [class.bg-white]="selectedDate() === day.dateKey"
+                      [class.text-slate-900]="selectedDate() === day.dateKey"
+                      [class.bg-blue-50]="selectedDate() !== day.dateKey"
+                      [class.text-blue-700]="selectedDate() !== day.dateKey"
+                      [class.dark:bg-slate-800]="selectedDate() !== day.dateKey"
+                      [class.dark:text-slate-300]="selectedDate() !== day.dateKey">
+                      {{ day.lessonsCount + day.temporaryLessonsCount }}
+                    </span>
+                  }
                 </div>
-              }
 
-              <div class="space-y-3">
-                @for (s of slotsForDay(day); track s.id) {
-                  <div class="app-panel-muted">
-                    <p class="font-mono text-xs font-medium text-slate-500 dark:text-slate-400">
-                      {{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}
-                    </p>
-                    <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
-                      {{ s.groupCourseDto.groupName }}
-                    </p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
-                      {{ s.groupCourseDto.courseName }}
-                    </p>
-                    @if (s.classRoomBaseDto.name) {
-                      <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        Аудитория: {{ s.classRoomBaseDto.name }}
-                        @if (s.classRoomBaseDto.capacity) {
-                          · {{ s.classRoomBaseDto.capacity }} мест
-                        }
-                      </p>
+                @if (day.lessonsCount + day.temporaryLessonsCount > 0) {
+                  <div class="mt-4 flex items-center gap-1">
+                    @for (_ of lessonMarkers(day.lessonsCount); track $index) {
+                      <span
+                        class="h-1.5 w-1.5 rounded-full"
+                        [class.bg-white]="selectedDate() === day.dateKey"
+                        [class.bg-blue-700]="selectedDate() !== day.dateKey && !day.hasPastLessonsOnly"
+                        [class.bg-slate-400]="selectedDate() !== day.dateKey && day.hasPastLessonsOnly">
+                      </span>
                     }
-                    <button type="button" (click)="requestReplacement(s)" class="app-btn-secondary mt-3 w-full">
-                      Нужна замена на {{ nextLessonDateLabel(s) }}
-                    </button>
+                    @for (_ of lessonMarkers(day.temporaryLessonsCount); track $index) {
+                      <span
+                        class="h-1.5 w-3 rounded-full"
+                        [class.bg-white]="selectedDate() === day.dateKey"
+                        [class.bg-emerald-600]="selectedDate() !== day.dateKey">
+                      </span>
+                    }
                   </div>
                 }
-              </div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <aside class="app-panel">
+          <div class="mb-5">
+            <p class="app-label">Выбранный день</p>
+            <h2 class="mt-1 text-xl font-semibold text-slate-900 dark:text-white">{{ selectedDateLabel() }}</h2>
+          </div>
+
+          @if (selectedLessons().length === 0 && selectedTemporaryReplacements().length === 0) {
+            <div class="flex min-h-[220px] items-center justify-center rounded-lg border border-dashed border-slate-200 text-center text-sm text-slate-400 dark:border-slate-800 dark:text-slate-500">
+              В этот день занятий нет.
             </div>
           }
-        </div>
-      }
 
-      @if (activeDay() !== 'all') {
-        @if (slotsForDay(activeDay()).length === 0) {
-          <div class="app-panel py-16 text-center text-sm text-slate-400 dark:text-slate-500">
-            В этот день занятий нет
-          </div>
-        }
+          @if (selectedTemporaryReplacements().length > 0) {
+            <div class="mb-5 space-y-3">
+              <p class="app-label">Временные пары</p>
+              @for (replacement of selectedTemporaryReplacements(); track replacement.id) {
+                <div class="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-left dark:border-emerald-900/60 dark:bg-emerald-950/20">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p class="font-mono text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ formatTime(replacement.scheduleBaseDtoRequest.startTime) }} - {{ formatTime(replacement.scheduleBaseDtoRequest.endTime) }}
+                      </p>
+                      <p class="mt-2 font-semibold text-slate-900 dark:text-white">
+                        {{ replacement.groupCourseBaseInfoRequest.groupName }}
+                      </p>
+                      <p class="text-sm text-slate-600 dark:text-slate-300">
+                        {{ replacement.groupCourseBaseInfoRequest.courseName }}
+                      </p>
+                    </div>
+                    <span class="app-status bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                      {{ temporaryReplacementLabel(replacement) }}
+                    </span>
+                  </div>
 
-        @if (slotsForDay(activeDay()).length > 0) {
-          <div class="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <table class="w-full text-sm">
-              <thead class="bg-slate-50 dark:bg-slate-950">
-                <tr class="border-b border-slate-200 dark:border-slate-800">
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Время</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Группа / Курс</th>
-                  <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Аудитория</th>
-                  <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Замена</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (s of slotsForDay(activeDay()); track s.id) {
-                  <tr class="border-b border-slate-200 last:border-b-0 dark:border-slate-800">
-                    <td class="px-4 py-3">
-                      <span class="font-mono font-medium text-slate-900 dark:text-white">
-                        {{ formatTime(s.startTime) }} - {{ formatTime(s.endTime) }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-3">
-                      <p class="font-medium text-slate-900 dark:text-white">{{ s.groupCourseDto.groupName }}</p>
-                      <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ s.groupCourseDto.courseName }}</p>
-                    </td>
-                    <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
-                      {{ s.classRoomBaseDto.name }}
-                      @if (s.classRoomBaseDto.capacity) {
-                        <span class="ml-1 text-xs text-slate-500 dark:text-slate-400">({{ s.classRoomBaseDto.capacity }} мест)</span>
-                      }
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                      <button type="button" (click)="requestReplacement(s)" class="app-btn-secondary">
-                        Нужна замена на {{ nextLessonDateLabel(s) }}
+                  <p class="mt-3 text-xs text-slate-600 dark:text-slate-300">
+                    Автор заявки: {{ teacherName(replacement.teacherBaseInfoRequest) }}
+                  </p>
+                  @if (replacement.reason) {
+                    <p class="mt-2 text-sm text-slate-700 dark:text-slate-200">{{ replacement.reason }}</p>
+                  }
+
+                  @if (canRespondToTemporaryReplacement(replacement)) {
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                      <button type="button" class="app-btn-primary" (click)="approveReplacement(replacement.id)">
+                        Подтвердить
                       </button>
-                    </td>
-                  </tr>
+                      <button type="button" class="app-btn-secondary" (click)="declineReplacement(replacement.id)">
+                        Отказаться
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          @if (selectedLessons().length > 0) {
+            <div class="space-y-3">
+              @for (schedule of selectedLessons(); track schedule.id) {
+                @let existingReplacement = replacementFor(schedule, selectedDate());
+                <button
+                  type="button"
+                  (click)="selectLesson(schedule)"
+                  class="w-full rounded-lg border p-4 text-left transition"
+                  [class.border-blue-700]="selectedScheduleId() === schedule.id"
+                  [class.bg-blue-50]="selectedScheduleId() === schedule.id"
+                  [class.border-slate-200]="selectedScheduleId() !== schedule.id"
+                  [class.bg-white]="selectedScheduleId() !== schedule.id"
+                  [class.dark:border-slate-700]="selectedScheduleId() !== schedule.id"
+                  [class.dark:bg-slate-900]="selectedScheduleId() !== schedule.id"
+                  [class.dark:bg-slate-950]="selectedScheduleId() === schedule.id">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <p class="font-mono text-sm font-semibold text-slate-900 dark:text-white">
+                        {{ formatTime(schedule.startTime) }} - {{ formatTime(schedule.endTime) }}
+                      </p>
+                      <p class="mt-2 font-semibold text-slate-900 dark:text-white">
+                        {{ schedule.groupCourseDto.groupName }}
+                      </p>
+                      <p class="text-sm text-slate-500 dark:text-slate-400">
+                        {{ schedule.groupCourseDto.courseName }}
+                      </p>
+                    </div>
+                    @if (existingReplacement) {
+                      <span class="app-status bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        {{ replacementStatusLabel(existingReplacement.status) }}
+                      </span>
+                    }
+                  </div>
+
+                  @if (schedule.classRoomBaseDto.name) {
+                    <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                      Аудитория: {{ schedule.classRoomBaseDto.name }}
+                      @if (schedule.classRoomBaseDto.capacity) {
+                        · {{ schedule.classRoomBaseDto.capacity }} мест
+                      }
+                    </p>
+                  }
+                </button>
+
+                @if (selectedScheduleId() === schedule.id) {
+                  <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                    <label class="app-label" for="replacement-reason-{{ schedule.id }}">Причина</label>
+                    <textarea
+                      id="replacement-reason-{{ schedule.id }}"
+                      class="mt-2 min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                      [ngModel]="replacementReason()"
+                      (ngModelChange)="replacementReason.set($event)">
+                    </textarea>
+
+                    @if (!isLessonAvailableForReplacement(schedule, selectedDate())) {
+                      <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                        Эта пара уже прошла, заявку на замену создать нельзя.
+                      </p>
+                    } @else if (!canRequestReplacement(schedule, selectedDate())) {
+                      <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">
+                        Для этой пары уже есть активная заявка на замену.
+                      </p>
+                    } @else {
+                      <button
+                        type="button"
+                        class="app-btn-primary mt-3 w-full"
+                        (click)="requestReplacement(schedule)"
+                        [disabled]="submittingScheduleId() === schedule.id">
+                        @if (submittingScheduleId() === schedule.id) {
+                          Отправка...
+                        } @else {
+                          Отправить запрос на замену
+                        }
+                      </button>
+                    }
+                  </div>
                 }
-              </tbody>
-            </table>
-          </div>
-        }
-      }
+              }
+            </div>
+          }
+        </aside>
+      </div>
     }
   </div>
 </section>

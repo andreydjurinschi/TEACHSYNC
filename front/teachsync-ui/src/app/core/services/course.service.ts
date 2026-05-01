@@ -115,7 +115,7 @@ unassignTeacher(courseId: number) {
   // my 
   getMyCoursesDetailed(): Observable<CourseDetailedMy[]> {
   return this.http.get<CourseDetailedMy[]>(
-    `${this.apiUrl}/my`,
+    `${this.apiUrl}/teacher/my`,
     { headers: this.getHeaders() }
   );
 }

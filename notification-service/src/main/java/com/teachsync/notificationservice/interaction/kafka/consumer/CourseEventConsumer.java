@@ -85,6 +85,13 @@ public class CourseEventConsumer {
 
     private void handleCourseTeacherAssignmentRequested(CourseTeacherAssignmentRequestedEvent event) {
         String category = event.getCategoryName() == null ? "категория не указана" : "категория: \"" + event.getCategoryName() + "\"";
+        log.info(
+                "COURSE_TEACHER_ASSIGNMENT_REQUESTED notification target: teacherId={}, courseId={}, categoryId={}, categoryName={}",
+                event.getTeacherId(),
+                event.getCourseId(),
+                event.getCategoryId(),
+                event.getCategoryName() == null ? "without category" : event.getCategoryName()
+        );
         notificationService.saveForUser(
                 event.getUuid(),
                 event.getServiceName(),
@@ -92,9 +99,14 @@ public class CourseEventConsumer {
                 event.getTeacherId(),
                 "Запрос на ведение курса",
                 "Вам предложено вести курс \"" + event.getCourseName() + "\" (" + category + "). Подтвердите запрос, если готовы взять группу.",
-                "/courses/" + event.getCourseId() + "?assignmentRequest=true"
+                "/profile/course-requests/" + event.getCourseId() + "?assignmentRequest=true"
         );
-        log.info("Saved COURSE_TEACHER_ASSIGNMENT_REQUESTED notification for teacher {}", event.getTeacherId());
+        log.info(
+                "Saved COURSE_TEACHER_ASSIGNMENT_REQUESTED notification for teacher {} matched by category {} ({})",
+                event.getTeacherId(),
+                event.getCategoryName() == null ? "without category" : event.getCategoryName(),
+                event.getCategoryId()
+        );
     }
 
     private void handleCourseTeacherUnassigned(CourseTeacherUnassignedEvent event) {
@@ -113,14 +125,19 @@ public class CourseEventConsumer {
     }
 
     private void handleCourseUpdated(CourseUpdatedEvent event) {
-        String message = "Курс с идентификатором " + event.getCourseId() + " был обновлен.";
+        String courseName = event.getCourseName() == null || event.getCourseName().isBlank()
+                ? "курс"
+                : "\"" + event.getCourseName() + "\"";
+        String message = "Курс " + courseName + " был обновлен.";
+        String actionUrl = "/courses/" + event.getCourseId();
         notificationService.saveForRole(
                 event.getUuid(),
                 event.getServiceName(),
                 TargetSubject.COURSE_UPDATED,
                 TargetRole.MANAGER,
                 "Курс обновлен",
-                message
+                message,
+                actionUrl
         );
         Long teacherId = extractTeacherId(event.getNewState());
         if (teacherId != null) {
@@ -130,7 +147,8 @@ public class CourseEventConsumer {
                     TargetSubject.COURSE_UPDATED,
                     teacherId,
                     "Курс обновлен",
-                    message
+                    message,
+                    actionUrl
             );
         }
         log.info("Saved COURSE_EDITED notifications for managers and teacher {}", teacherId);

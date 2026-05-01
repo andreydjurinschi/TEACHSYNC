@@ -31,6 +31,7 @@ import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -74,6 +75,24 @@ public class CourseService {
         return CourseMapper.mapToBaseDto(course);
     }
 
+    public void assertCanManageCourse(Long courseId, Long userId, String role) {
+        if ("ADMIN".equals(role) || "MANAGER".equals(role)) {
+            return;
+        }
+        Course course = getCourse(courseId);
+        if ("TEACHER".equals(role) && userId != null && userId.equals(course.getTeacherId())) {
+            return;
+        }
+        throw new AccessDeniedException("teacher can manage only assigned courses");
+    }
+
+    public void assertCanManageCourseGroups(String role) {
+        if ("ADMIN".equals(role) || "MANAGER".equals(role)) {
+            return;
+        }
+        throw new AccessDeniedException("only managers and admins can manage course groups");
+    }
+
     @Transactional
     public void createCourse(CourseCreateDto dto){
         Course course = CourseMapper.mapToEntity(dto);
@@ -112,7 +131,7 @@ public class CourseService {
         String newState =  course.toString();
 
         courseEventProducer.publishCourseEdited(new CourseUpdatedEvent(
-                course.getId(), previousState, newState
+                course.getId(), course.getName(), previousState, newState
         ));
     }
 
@@ -270,6 +289,7 @@ public class CourseService {
                 .stream().map(CourseMapper::mapToBaseDto).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<CourseDetailedDto> getCoursesFullDataForTeacher(Long teacherId) {
         List<Course> courses = repository.getAllByTeacher(teacherId);
         String joined = courses.stream().map(Course::toString).collect(Collectors.joining("\n"));

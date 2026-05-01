@@ -30,7 +30,7 @@
           }
           <div class="space-y-3">
             @for (item of pendingForMe(); track item.id) {
-              <article class="app-panel-muted">
+              <article class="app-panel-muted border-l-4 border-l-blue-700">
                 <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
                 <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
                 <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -57,16 +57,16 @@
           }
           <div class="space-y-3">
             @for (item of requestedByMe(); track item.id) {
-              <article class="app-panel-muted">
+              <article class="app-panel-muted border-l-4 border-l-blue-700">
                 <div class="flex items-start justify-between gap-3">
                   <div>
                     <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
                   </div>
                   <span class="app-status"
-                    [class.bg-slate-200]="item.status === 'PENDING'"
-                    [class.text-slate-700]="item.status === 'PENDING'"
-                    [class.bg-slate-900]="item.status === 'APPROVED'"
+                    [class.bg-blue-50]="item.status === 'PENDING'"
+                    [class.text-blue-700]="item.status === 'PENDING'"
+                    [class.bg-emerald-700]="item.status === 'APPROVED'"
                     [class.text-white]="item.status === 'APPROVED'"
                     [class.bg-slate-100]="item.status !== 'PENDING' && item.status !== 'APPROVED'"
                     [class.text-slate-600]="item.status !== 'PENDING' && item.status !== 'APPROVED'"
@@ -102,7 +102,7 @@
           }
           <div class="space-y-3">
             @for (item of acceptedByMe(); track item.id) {
-              <article class="app-panel-muted">
+              <article class="app-panel-muted border-l-4 border-l-emerald-700">
                 <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
                 <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
                 <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -120,7 +120,7 @@
           }
           <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             @for (item of closedRequests(); track item.id) {
-              <article class="app-panel-muted">
+              <article class="app-panel-muted border-l-4 border-l-slate-300 dark:border-l-slate-700">
                 <div class="flex items-start justify-between gap-3">
                   <div>
                     <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>

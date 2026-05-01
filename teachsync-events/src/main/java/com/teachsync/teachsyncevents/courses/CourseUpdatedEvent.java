@@ -6,15 +6,17 @@ import com.teachsync.teachsyncevents.constants.ActionTypes;
 public class CourseUpdatedEvent extends BaseEvent {
 
     private Long courseId;
+    private String courseName;
     private String oldState;
     private String newState;
 
     public CourseUpdatedEvent() {
     }
 
-    public CourseUpdatedEvent(Long courseId, String oldState, String newState) {
+    public CourseUpdatedEvent(Long courseId, String courseName, String oldState, String newState) {
         super("course-service", ActionTypes.COURSE_EDITED);
         this.courseId = courseId;
+        this.courseName = courseName;
         this.oldState = oldState;
         this.newState = newState;
     }
@@ -25,6 +27,14 @@ public class CourseUpdatedEvent extends BaseEvent {
 
     public void setCourseId(Long courseId) {
         this.courseId = courseId;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
     }
 
     public String getOldState() {
@@ -46,6 +56,7 @@ public class CourseUpdatedEvent extends BaseEvent {
     @Override
     public String toString() {
         return "courseId=" + courseId +
+                ", courseName='" + courseName + '\'' +
                 ", oldState='" + oldState + '\'' +
                 ", newState='" + newState + '\'' +
                 '}';

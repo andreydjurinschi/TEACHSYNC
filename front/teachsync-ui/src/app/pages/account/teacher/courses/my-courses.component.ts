@@ -2,8 +2,6 @@ import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CourseService } from '../../../../core/services/course.service';
-import { CategoryService } from '../../../../core/services/category.service';
-import { CategoryBase } from '../../../../core/models/category/category.model';
 import { CourseDetailedMy, TopicTag } from '../../../../core/models/courses/course-detailed-my-model';
 
 @Component({
@@ -14,10 +12,8 @@ import { CourseDetailedMy, TopicTag } from '../../../../core/models/courses/cour
 })
 export class MyCoursesComponent implements OnInit {
   private courseService   = inject(CourseService);
-  private categoryService = inject(CategoryService);
 
   courses    = signal<CourseDetailedMy[]>([]);
-  categories = signal<CategoryBase[]>([]);
   loading    = signal(true);
   selected   = signal<CourseDetailedMy | null>(null);
 
@@ -53,7 +49,6 @@ export class MyCoursesComponent implements OnInit {
       },
       error: () => this.loading.set(false)
     });
-    this.categoryService.getAll().subscribe(d => this.categories.set(d));
   }
 
   selectCourse(course: CourseDetailedMy): void {
@@ -69,6 +64,25 @@ export class MyCoursesComponent implements OnInit {
   }
 
   getTagConfig(tag: TopicTag) {
-    return this.tagConfig[tag] ?? { label: tag, classes: 'bg-slate-100 text-slate-600 border-slate-200' };
+    const labels: Record<TopicTag, string> = {
+      IT: 'IT',
+      DESIGN: 'Design',
+      MATH: 'Math',
+      LANGUAGE: 'Language',
+      BUSINESS: 'Business',
+      SCIENCE: 'Science',
+    };
+    const classes: Record<TopicTag, string> = {
+      IT: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-900',
+      DESIGN: 'bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+      MATH: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-900',
+      LANGUAGE: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900',
+      BUSINESS: 'bg-slate-50 text-slate-700 dark:bg-slate-900 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+      SCIENCE: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900',
+    };
+    return {
+      label: labels[tag] ?? tag,
+      classes: classes[tag] ?? 'bg-slate-50 text-slate-700 border-slate-200'
+    };
   }
 }

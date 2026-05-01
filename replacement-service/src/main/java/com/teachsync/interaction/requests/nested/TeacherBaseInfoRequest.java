@@ -1,14 +1,20 @@
 package com.teachsync.interaction.requests.nested;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TeacherBaseInfoRequest {
     private Long id;
     private String name;
     private String surname;
     private String fullName;
     private String email;
+    private LocalDate registeredAt;
+    private String role;
     private Set<SpecializationsBaseDto> specializations = new HashSet<>();
 
     public TeacherBaseInfoRequest(Long id, String fullName, String email, Set<SpecializationsBaseDto> specializations) {
@@ -59,6 +65,22 @@ public class TeacherBaseInfoRequest {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public LocalDate getRegisteredAt() {
+        return registeredAt;
+    }
+
+    public void setRegisteredAt(LocalDate registeredAt) {
+        this.registeredAt = registeredAt;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Set<SpecializationsBaseDto> getSpecializations() {

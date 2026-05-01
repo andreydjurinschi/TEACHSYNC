@@ -26,9 +26,13 @@
 
   <div class="max-w-5xl mx-auto space-y-8">
 
-    <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200
-                dark:border-slate-700 p-6">
-      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+    <div class="overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-slate-200
+                dark:border-slate-700">
+      @if (form.value.photoUrl) {
+        <img [src]="form.value.photoUrl" alt="Course photo preview"
+             class="h-56 w-full object-cover" />
+      }
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5 p-6">
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400
@@ -72,6 +76,16 @@
               <option [ngValue]="cat.id">{{ cat.name }}</option>
             }
           </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400
+                        uppercase tracking-widest mb-2">&#1060;&#1086;&#1090;&#1086; &#1082;&#1091;&#1088;&#1089;&#1072;</label>
+          <input type="file" accept="image/*" (change)="onPhotoSelected($event)"
+                 class="w-full text-sm text-slate-600 dark:text-slate-300
+                        file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-600
+                        file:px-4 file:py-2 file:text-sm file:font-medium file:text-white
+                        hover:file:bg-indigo-700" />
         </div>
 
         @if (ruleService.isAdmin() || ruleService.isManager()) {
@@ -207,6 +221,7 @@
         }
 
         <div class="flex gap-3 pt-2">
+          @if (canEditCourse()) {
           <button type="submit"
                   [disabled]="form.invalid || loading()"
                   class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700
@@ -221,6 +236,7 @@
             }
             {{ loading() ? 'Сохранение...' : 'Сохранить' }}
           </button>
+          }
           <a [routerLink]="cancelLink()"
              class="flex-1 py-2.5 text-center bg-slate-200 dark:bg-slate-700
                     hover:bg-slate-300 dark:hover:bg-slate-600

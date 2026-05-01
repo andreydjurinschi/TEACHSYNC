@@ -146,6 +146,9 @@ public class ScheduleService {
     public List<Long> findAvailableTeachers(Long scheduleId, WeekDays weekDays) {
 
         Schedule schedule = scheduleRepository.findById(scheduleId).orElseThrow();
+        if (!schedule.getWeekDays().contains(weekDays)) {
+            throw new IllegalArgumentException("Selected lesson date does not belong to this schedule");
+        }
 
         LocalTime start = schedule.getStartTime();
         LocalTime end = schedule.getEndTime();

@@ -53,9 +53,7 @@ public class ReplacementEventConsumer {
                 TargetSubject.REPLACEMENT_REQUESTED,
                 event.getCandidateTeacherId(),
                 "Можно помочь с заменой",
-                "Коллеге нужна замена по курсу \"" + event.getCourseName() + "\" для группы \"" + event.getGroupName()
-                        + "\" " + event.getLessonDate() + " с " + event.getStartTime() + " до " + event.getEndTime()
-                        + ". Аудитория: \"" + event.getClassRoomName() + "\". Причина: " + event.getReason(),
+                buildRequestedMessage(event),
                 "/profile/schedules?replacementRequestId=" + event.getReplacementRequestId()
         );
         log.info("Saved REPLACEMENT_REQUESTED notification for teacher {}", event.getCandidateTeacherId());
@@ -87,15 +85,50 @@ public class ReplacementEventConsumer {
     }
 
     private void handleStatusChanged(ReplacementStatusChangedEvent event) {
+        Long targetTeacherId = event.getTargetTeacherId() != null
+                ? event.getTargetTeacherId()
+                : event.getTeacherRequestedId();
+
         notificationService.saveForUser(
                 event.getUuid(),
                 event.getServiceName(),
                 TargetSubject.REPLACEMENT_STATUS_CHANGED,
-                event.getTeacherRequestedId(),
-                "Статус замены изменен",
+                targetTeacherId,
+                event.getTitle() == null || event.getTitle().isBlank()
+                        ? "Статус замены изменен"
+                        : event.getTitle(),
                 event.getMessage(),
-                "/profile/replacements"
+                event.getActionUrl() == null || event.getActionUrl().isBlank()
+                        ? "/profile/replacements"
+                        : event.getActionUrl()
         );
-        log.info("Saved REPLACEMENT_STATUS_CHANGED notification for request {}", event.getReplacementRequestId());
+        log.info(
+                "Saved REPLACEMENT_STATUS_CHANGED notification for request {} and teacher {}",
+                event.getReplacementRequestId(),
+                targetTeacherId
+        );
+    }
+
+    private String buildRequestedMessage(ReplacementRequestedEvent event) {
+        StringBuilder builder = new StringBuilder()
+                .append("Коллеге нужна замена по курсу \"")
+                .append(event.getCourseName())
+                .append("\" для группы \"")
+                .append(event.getGroupName())
+                .append("\" ")
+                .append(event.getLessonDate())
+                .append(" с ")
+                .append(event.getStartTime())
+                .append(" до ")
+                .append(event.getEndTime());
+
+        if (event.getClassRoomName() != null && !event.getClassRoomName().isBlank()) {
+            builder.append(". Аудитория: \"").append(event.getClassRoomName()).append("\"");
+        }
+        if (event.getReason() != null && !event.getReason().isBlank()) {
+            builder.append(". Причина: ").append(event.getReason());
+        }
+
+        return builder.toString();
     }
 }

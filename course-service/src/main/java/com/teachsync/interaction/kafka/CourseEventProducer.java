@@ -73,8 +73,13 @@ public class CourseEventProducer {
             if (ex != null) {
                 log.error("Failed publish event for teacher assignment request in course service: {}", ex.getMessage());
             } else {
-                log.info("CourseTeacherAssignmentRequestedEvent published successfully... courseId: {}, teacherId: {}",
-                        event.getCourseId(), event.getTeacherId());
+                log.info(
+                        "CourseTeacherAssignmentRequestedEvent published successfully... courseId: {}, teacherId: {}, notificationCategoryId: {}, notificationCategoryName: {}",
+                        event.getCourseId(),
+                        event.getTeacherId(),
+                        event.getCategoryId(),
+                        event.getCategoryName() == null ? "without category" : event.getCategoryName()
+                );
             }
         });
     }

@@ -1,5 +1,6 @@
 package com.teachsync.interaction.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.teachsync.interaction.requests.nested.ClassRoomBaseDto;
 import com.teachsync.interaction.requests.nested.GroupCourseBaseInfoRequest;
 import com.teachsync.interaction.requests.nested.TeacherBaseInfoRequest;
@@ -7,6 +8,7 @@ import com.teachsync.interaction.requests.nested.TeacherBaseInfoRequest;
 import java.time.LocalTime;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ScheduleBaseDtoRequest {
     private Long id;
     private LocalTime startTime;
@@ -24,6 +26,9 @@ public class ScheduleBaseDtoRequest {
         this.groupCourseDto = groupCourseDto;
         this.teacherDto = teacherDto;
         this.classRoomBaseDto = classRoomBaseDto;
+    }
+
+    public ScheduleBaseDtoRequest() {
     }
 
     public Long getId() {

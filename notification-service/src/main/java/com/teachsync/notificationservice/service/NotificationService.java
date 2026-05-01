@@ -37,6 +37,17 @@ public class NotificationService {
                             TargetRole targetRole,
                             String title,
                             String message) {
+        saveForRole(eventId, sourceService, targetSubject, targetRole, title, message, null);
+    }
+
+    @Transactional
+    public void saveForRole(String eventId,
+                            String sourceService,
+                            TargetSubject targetSubject,
+                            TargetRole targetRole,
+                            String title,
+                            String message,
+                            String actionUrl) {
         if (notificationRepository.existsByEventIdAndTargetRoleAndTargetUserId(eventId, targetRole, null)) {
             return;
         }
@@ -48,6 +59,7 @@ public class NotificationService {
         notification.setTargetRole(targetRole);
         notification.setTitle(title);
         notification.setMessage(message);
+        notification.setActionUrl(actionUrl);
         notificationRepository.save(notification);
     }
 

@@ -36,6 +36,11 @@ public class JwtService {
                 .parseClaimsJws(token).getBody();
     }
     public Long extractUserId(String token) {
-        return extractClaimsFromToken(token).get("userId", Long.class);
+        Number userId = extractClaimsFromToken(token).get("userId", Number.class);
+        return userId == null ? null : userId.longValue();
+    }
+
+    public String extractRole(String token) {
+        return extractClaimsFromToken(token).get("roles").toString();
     }
 }
