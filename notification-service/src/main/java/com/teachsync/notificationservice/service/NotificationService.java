@@ -9,6 +9,7 @@ import com.teachsync.notificationservice.repository.NotificationReadRepository;
 import com.teachsync.notificationservice.repository.NotificationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 import java.util.Set;
@@ -19,15 +20,26 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationReadRepository readRepository;
+    private final NotificationPreferenceService preferenceService;
+    private final NotificationSseService sseService;
 
     public NotificationService(NotificationRepository notificationRepository,
-                               NotificationReadRepository readRepository) {
+                               NotificationReadRepository readRepository,
+                               NotificationPreferenceService preferenceService,
+                               NotificationSseService sseService) {
         this.notificationRepository = notificationRepository;
         this.readRepository = readRepository;
+        this.preferenceService = preferenceService;
+        this.sseService = sseService;
     }
 
     public void save(Notification notification) {
         notificationRepository.save(notification);
+    }
+
+    public SseEmitter subscribe(Long userId, TargetRole role) {
+        preferenceService.getForUser(userId);
+        return sseService.subscribe(userId, role);
     }
 
     @Transactional
@@ -60,7 +72,8 @@ public class NotificationService {
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setActionUrl(actionUrl);
-        notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        sseService.sendToRole(targetRole, toDto(saved, false), preferenceService);
     }
 
     @Transactional
@@ -93,7 +106,10 @@ public class NotificationService {
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setActionUrl(actionUrl);
-        notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        if (preferenceService.shouldPushToUser(userId, saved)) {
+            sseService.sendToUser(userId, toDto(saved, false));
+        }
     }
 
     public List<NotificationDto> getForRole(TargetRole role, Long userId) {
@@ -106,6 +122,7 @@ public class NotificationService {
                 .collect(Collectors.toSet());
 
         return notifications.stream()
+                .filter(n -> preferenceService.shouldShowToUser(userId, n))
                 .map(n -> toDto(n, readIds.contains(n.getId())))
                 .toList();
     }
@@ -120,6 +137,7 @@ public class NotificationService {
                 .collect(Collectors.toSet());
 
         return notifications.stream()
+                .filter(n -> preferenceService.shouldShowToUser(userId, n))
                 .map(n -> toDto(n, readIds.contains(n.getId())))
                 .toList();
     }

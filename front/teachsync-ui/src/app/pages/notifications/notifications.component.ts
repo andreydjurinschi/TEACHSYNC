@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
-import { NotificationItem } from '../../core/models/notifications/notification.model';
+import { NotificationItem, NotificationPreference } from '../../core/models/notifications/notification.model';
 import { NotificationService } from '../../core/services/notification.service';
 import { RuleService } from '../../core/services/role.rule.service';
 
@@ -16,6 +17,7 @@ import { RuleService } from '../../core/services/role.rule.service';
 export class NotificationsComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private ruleService = inject(RuleService);
+  private destroyRef = inject(DestroyRef);
 
   notifications = signal<NotificationItem[]>([]);
   loading = signal(true);
@@ -24,6 +26,8 @@ export class NotificationsComponent implements OnInit {
   userId = signal<number | null>(null);
   error = signal<string | null>(null);
   filter = signal<'all' | 'unread' | 'read'>('all');
+  preferences = signal<NotificationPreference | null>(null);
+  preferencesSaving = signal(false);
 
   unreadCount = computed(() => this.notifications().filter(item => !item.read).length);
   readCount = computed(() => this.notifications().filter(item => item.read).length);
@@ -42,6 +46,8 @@ export class NotificationsComponent implements OnInit {
     this.role.set(this.ruleService.getRole());
     this.userId.set(this.ruleService.getId());
     this.loadNotifications();
+    this.loadPreferences();
+    this.listenRealtime();
   }
 
   loadNotifications(): void {
@@ -71,6 +77,54 @@ export class NotificationsComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  loadPreferences(): void {
+    const userId = this.userId();
+    if (userId == null) return;
+
+    this.notificationService.getPreferences(userId).subscribe({
+      next: preferences => this.preferences.set(preferences),
+      error: () => this.error.set('Не удалось загрузить настройки уведомлений.')
+    });
+  }
+
+  updatePreference(key: keyof Omit<NotificationPreference, 'userId'>, event: Event): void {
+    const current = this.preferences();
+    const userId = this.userId();
+    if (!current || userId == null) return;
+
+    const checked = (event.target as HTMLInputElement).checked;
+    const updated = { ...current, [key]: checked };
+
+    this.preferences.set(updated);
+    this.preferencesSaving.set(true);
+    this.notificationService.updatePreferences(userId, updated).subscribe({
+      next: preferences => {
+        this.preferences.set(preferences);
+        this.preferencesSaving.set(false);
+        this.notificationService.triggerRefresh();
+        this.loadNotifications();
+      },
+      error: () => {
+        this.preferences.set(current);
+        this.preferencesSaving.set(false);
+        this.error.set('Не удалось сохранить настройки уведомлений.');
+      }
+    });
+  }
+
+  private listenRealtime(): void {
+    this.notificationService.realtime$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(notification => {
+        this.notifications.update(list => {
+          if (list.some(item => item.id === notification.id)) {
+            return list;
+          }
+          return [{ ...notification, read: false }, ...list];
+        });
+      });
   }
 
   markAsRead(item: NotificationItem): void {

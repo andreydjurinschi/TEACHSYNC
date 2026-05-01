@@ -10,3 +10,13 @@ export interface NotificationItem {
   read: boolean;
   createdAt: string;
 }
+
+export interface NotificationPreference {
+  userId: number;
+  scheduleEnabled: boolean;
+  replacementEnabled: boolean;
+  courseEnabled: boolean;
+  systemEnabled: boolean;
+  realtimeEnabled: boolean;
+  importantOnly: boolean;
+}

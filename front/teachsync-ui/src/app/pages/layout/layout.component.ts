@@ -63,6 +63,7 @@ export class LayoutComponent implements OnInit {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.role = payload.roles;
         this.startNotificationPolling();
+        this.startNotificationStream();
       }
     }
   }
@@ -109,9 +110,21 @@ export class LayoutComponent implements OnInit {
     });
   }
 
+  private startNotificationStream(): void {
+    const role = this.ruleService.getRole();
+    const userId = this.ruleService.getId();
+
+    if (!role || userId == null || typeof EventSource === 'undefined') {
+      return;
+    }
+
+    this.notificationService.connectRealtime(userId, role);
+  }
+
   logout() {
     this.auth.logout();
     this.unreadCount.set(0);
+    this.notificationService.disconnectRealtime();
     this.router.navigate(['/login']);
   }
 }
