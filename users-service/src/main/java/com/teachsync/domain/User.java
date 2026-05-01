@@ -29,6 +29,8 @@ public class User {
     @Column(nullable = false)
     private LocalDate registeredAt;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String profilePicture;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -129,4 +131,3 @@ public class User {
         this.specializations = specializations;
     }
 }
-

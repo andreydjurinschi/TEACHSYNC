@@ -3,5 +3,5 @@ export interface EditAccount{
     surname: string
     password: string
     email: string
-    profilePicture: string
+    profilePicture: string | null
 }

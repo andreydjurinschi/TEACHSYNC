@@ -4,6 +4,7 @@ export interface User {
     name: string;
     surname: string;
     email: string;
+    profilePicture?: string;
     registeredAt: string;
     role: 'ADMIN' | 'MANAGER' | 'TEACHER';
 }

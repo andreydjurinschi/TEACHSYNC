@@ -85,6 +85,7 @@ public class UserService {
     @Transactional
     public void createUser(UserCreateDto dto) {
         User user = UserMapper.mapToUser(dto);
+        user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         user.setRegisteredAt(LocalDate.now());
         user.setPassword(PasswordUtils.hash(user.getPassword()));
         repository.save(user);
@@ -100,6 +101,7 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
+        if (dto.getProfilePicture() != null) user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         if (dto.getRole() != null) {
             Role role = user.getRole();
             user.setRole(dto.getRole());
@@ -115,7 +117,7 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
-        if (StringUtils.hasText(dto.getProfilePicture())) user.setProfilePicture(dto.getProfilePicture());
+        if (dto.getProfilePicture() != null) user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         if (StringUtils.hasText(dto.getPassword())) {
             String hashedPassword = PasswordUtils.hash(dto.getPassword());
             user.setPassword(hashedPassword);
@@ -217,5 +219,12 @@ public class UserService {
     public List<UserBaseDto> findAllByIds(List<Long> ids) {
         return repository.findAllById(ids)
                 .stream().map(UserMapper::mapToBaseDto).toList();
+    }
+
+    private String normalizeProfilePicture(String profilePicture) {
+        if (!StringUtils.hasText(profilePicture)) {
+            return null;
+        }
+        return profilePicture.trim();
     }
 }

@@ -26,7 +26,18 @@
       <tr *ngFor="let user of users()"
           class="hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
           [routerLink]="['/users', user.id]">
-          <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.name }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              @if (user.profilePicture) {
+                <img [src]="user.profilePicture" [alt]="user.name" class="h-10 w-10 rounded-full object-cover" />
+              } @else {
+                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                  {{ user.name[0] }}{{ user.surname[0] }}
+                </div>
+              }
+              <span class="text-slate-900 dark:text-white font-medium">{{ user.name }}</span>
+            </div>
+          </td>
           <td class="px-6 py-4 text-slate-900 dark:text-white font-medium">{{ user.surname }}</td>
           <td class="px-6 py-4 text-slate-900 dark:text-white text-sm">{{ user.email }}</td>
             <td class="px-6 py-4">

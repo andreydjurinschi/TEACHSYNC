@@ -19,6 +19,8 @@ export class AccountInfo implements OnInit {
   saving = signal(false);
   dropdownOpen = signal(false);
   editMode = signal(false);
+  previewUrl = signal<string | null>(null);
+  imageError = signal<string | null>(null);
   editForm!: FormGroup;
 
   private route = inject(ActivatedRoute);
@@ -72,6 +74,8 @@ toggleEdit(): void {
       password:       [''],
       profilePicture: [u.profilePicture ?? ''],
     });
+    this.previewUrl.set(u.profilePicture ?? null);
+    this.imageError.set(null);
   }
   this.editMode.update(v => !v);
 }
@@ -86,7 +90,7 @@ toggleEdit(): void {
       name: raw.name,
       surname: raw.surname,
       email: raw.email,
-      profilePicture: raw.profilePicture || undefined,
+      profilePicture: raw.profilePicture ?? null,
     };
     if (raw.password?.trim()) payload.password = raw.password;
 
@@ -118,5 +122,38 @@ toggleEdit(): void {
       ADMIN: 'Administrator', MANAGER: 'Manager', TEACHER: 'Teacher'
     };
     return map[role] ?? role;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.imageError.set('Можно загружать только изображения.');
+      input.value = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.imageError.set('Максимальный размер изображения — 2 МБ.');
+      input.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : null;
+      this.editForm.patchValue({ profilePicture: result });
+      this.previewUrl.set(result);
+      this.imageError.set(null);
+    };
+    reader.onerror = () => this.imageError.set('Не удалось прочитать изображение.');
+    reader.readAsDataURL(file);
+  }
+
+  clearProfilePicture(): void {
+    this.editForm.patchValue({ profilePicture: '' });
+    this.previewUrl.set(null);
+    this.imageError.set(null);
   }
 }
