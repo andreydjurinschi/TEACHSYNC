@@ -110,11 +110,11 @@ toggleEdit(): void {
 
   getRoleBadge(role: string): string {
     const map: Record<string, string> = {
-      ADMIN:   'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
-      MANAGER: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400',
-      TEACHER: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
+      ADMIN:   'app-status-blue',
+      MANAGER: 'app-status',
+      TEACHER: 'app-status-green',
     };
-    return map[role] ?? 'bg-slate-100 text-slate-500';
+    return map[role] ?? 'app-status';
   }
 
   getRoleLabel(role: string): string {

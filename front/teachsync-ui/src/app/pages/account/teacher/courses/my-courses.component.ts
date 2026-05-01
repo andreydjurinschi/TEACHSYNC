@@ -29,11 +29,11 @@ export class MyCoursesComponent implements OnInit {
 
   readonly tagConfig: Record<TopicTag, { label: string; classes: string }> = {
     IT:       { label: 'IT',          classes: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
-    DESIGN:   { label: 'Дизайн',     classes: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800' },
-    MATH:     { label: 'Математика', classes: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800' },
-    LANGUAGE: { label: 'Языки',      classes: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800' },
-    BUSINESS: { label: 'Бизнес',     classes: 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800' },
-    SCIENCE:  { label: 'Наука',      classes: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 border-teal-200 dark:border-teal-800' },
+    DESIGN:   { label: 'Дизайн',     classes: 'bg-blue-50 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-900/70' },
+    MATH:     { label: 'Математика', classes: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/70' },
+    LANGUAGE: { label: 'Языки',      classes: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/70' },
+    BUSINESS: { label: 'Бизнес',     classes: 'bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700' },
+    SCIENCE:  { label: 'Наука',      classes: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/70' },
   };
 
   ngOnInit(): void {

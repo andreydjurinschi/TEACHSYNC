@@ -11,6 +11,7 @@
   </div>
 
   <div class="max-w-lg mx-auto">
+<<<<<<< HEAD
     <div class="overflow-hidden bg-white dark:bg-slate-800 rounded-xl border border-slate-200
                 dark:border-slate-700">
       @if (form.value.photoUrl) {
@@ -18,6 +19,11 @@
              class="h-44 w-full object-cover" />
       }
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5 p-6">
+=======
+    <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-200
+                dark:border-slate-700 p-6">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-5">
+>>>>>>> 2e7ca43 (ui classes refactored)
 
         <div>
           <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400
@@ -25,7 +31,7 @@
           <input type="text" formControlName="name"
                  class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200
                         dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900
-                        dark:text-white focus:outline-none focus:border-indigo-500 transition"/>
+                        dark:text-white focus:outline-none focus:border-blue-500 transition"/>
           @if (form.controls['name'].touched && form.controls['name'].errors) {
             <p class="text-red-400 text-xs mt-1">
               {{ form.controls['name'].errors['required'] ? 'Обязательное поле' : 'Минимум 3 символа' }}
@@ -39,7 +45,7 @@
           <textarea formControlName="description" rows="3"
                     class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200
                            dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900
-                           dark:text-white focus:outline-none focus:border-indigo-500
+                           dark:text-white focus:outline-none focus:border-blue-500
                            transition resize-none"></textarea>
           @if (form.controls['description'].touched && form.controls['description'].errors) {
             <p class="text-red-400 text-xs mt-1">Обязательное поле</p>
@@ -55,7 +61,7 @@
           <select formControlName="categoryId"
                   class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200
                          dark:border-slate-600 rounded-lg px-4 py-2.5 text-slate-900
-                         dark:text-white focus:outline-none focus:border-indigo-500 transition">
+                         dark:text-white focus:outline-none focus:border-blue-500 transition">
             <option [ngValue]="null">— Без категории —</option>
             @for (cat of categories(); track cat.id) {
               <option [ngValue]="cat.id">{{ cat.name }}</option>
@@ -75,7 +81,7 @@
 
         <div class="flex gap-3 pt-2">
           <button type="submit" [disabled]="form.invalid || loading()"
-                  class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50
+                  class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50
                          disabled:cursor-not-allowed text-white font-medium rounded-lg transition
                          flex items-center justify-center gap-2">
             @if (loading()) {

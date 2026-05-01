@@ -93,12 +93,12 @@ loadData(): void {
 
   getTagColor(tag: TopicTag | null): string {
     const colors: Record<string, string> = {
-      IT:       'bg-indigo-500/20 text-indigo-400',
-      DESIGN:   'bg-pink-500/20 text-pink-400',
-      MATH:     'bg-amber-500/20 text-amber-400',
+      IT:       'bg-blue-500/20 text-blue-400',
+      DESIGN:   'bg-blue-500/20 text-blue-400',
+      MATH:     'bg-emerald-500/20 text-emerald-400',
       LANGUAGE: 'bg-emerald-500/20 text-emerald-400',
       BUSINESS: 'bg-blue-500/20 text-blue-400',
-      SCIENCE:  'bg-purple-500/20 text-purple-400',
+      SCIENCE:  'bg-blue-500/20 text-blue-400',
       OTHER:    'bg-slate-500/20 text-slate-400',
     };
     return tag ? (colors[tag] ?? 'bg-slate-500/20 text-slate-400') : 'bg-slate-500/20 text-slate-400';
