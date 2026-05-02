@@ -6,6 +6,9 @@ import com.teachsync.domain.ResponseStatus;
 import com.teachsync.domain.Status;
 import com.teachsync.dto_s.replacementRequest.ReplacementRequestBaseDto;
 import com.teachsync.dto_s.replacementRequest.ReplacementRequestCreateDto;
+import com.teachsync.dto_s.statistics.ReplacementStatisticsDto;
+import com.teachsync.dto_s.statistics.TeacherHelpMetricDto;
+import com.teachsync.dto_s.statistics.TeacherReplacementStatisticsDto;
 import com.teachsync.interaction.feign.clients.groupCourse.GroupCourseClient;
 import com.teachsync.interaction.feign.clients.schedule.ScheduleClient;
 import com.teachsync.interaction.feign.clients.users.UserClient;
@@ -30,9 +33,13 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ReplacementRequestService {
@@ -140,6 +147,28 @@ public class ReplacementRequestService {
                 .stream()
                 .map(this::enrich)
                 .toList();
+    }
+
+    public ReplacementStatisticsDto getStatistics() {
+        return new ReplacementStatisticsDto(
+                repository.count(),
+                repository.countByStatus(Status.PENDING),
+                repository.countByStatus(Status.APPROVED),
+                repository.countByStatus(Status.DECLINED),
+                repository.countByStatus(Status.EXPIRED),
+                repository.countByStatus(Status.CANCELLED),
+                repository.countByStatus(Status.AUTO_CLOSED),
+                getTopHelpers()
+        );
+    }
+
+    public TeacherReplacementStatisticsDto getTeacherStatistics(Long teacherId) {
+        return new TeacherReplacementStatisticsDto(
+                repository.countByTeacherRequested(teacherId),
+                repository.countByApprovedById(teacherId),
+                responseRepository.countByTeacherResponseAndResponseStatus(teacherId, ResponseStatus.PENDING),
+                responseRepository.countByTeacherResponseAndResponseStatus(teacherId, ResponseStatus.DECLINED)
+        );
     }
 
     @Transactional
@@ -459,5 +488,38 @@ public class ReplacementRequestService {
                 .count());
 
         return result;
+    }
+
+    private List<TeacherHelpMetricDto> getTopHelpers() {
+        Map<Long, Long> approvedByTeacher = repository.findAll().stream()
+                .filter(request -> request.getApprovedById() != null)
+                .collect(Collectors.groupingBy(ReplacementRequest::getApprovedById, Collectors.counting()));
+
+        if (approvedByTeacher.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> teacherIds = approvedByTeacher.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        Map<Long, TeacherBaseInfoRequest> teachers = userClient.getByIds(teacherIds).stream()
+                .collect(Collectors.toMap(TeacherBaseInfoRequest::getId, Function.identity()));
+
+        return teacherIds.stream()
+                .map(teacherId -> {
+                    TeacherBaseInfoRequest teacher = teachers.get(teacherId);
+                    return new TeacherHelpMetricDto(
+                            teacherId,
+                            teacher == null ? "Преподаватель #" + teacherId : teacher.displayName(),
+                            approvedByTeacher.getOrDefault(teacherId, 0L),
+                            responseRepository.countByTeacherResponseAndResponseStatus(teacherId, ResponseStatus.DECLINED),
+                            responseRepository.countByTeacherResponseAndResponseStatus(teacherId, ResponseStatus.PENDING)
+                    );
+                })
+                .sorted(Comparator.comparingLong(TeacherHelpMetricDto::approvedReplacements).reversed())
+                .toList();
     }
 }

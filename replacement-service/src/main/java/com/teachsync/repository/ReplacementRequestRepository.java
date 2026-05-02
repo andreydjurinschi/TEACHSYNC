@@ -28,6 +28,12 @@ public interface ReplacementRequestRepository extends JpaRepository<ReplacementR
 
     List<ReplacementRequest> findByStatus(Status status);
 
+    long countByStatus(Status status);
+
+    long countByTeacherRequested(Long teacherRequested);
+
+    long countByApprovedById(Long approvedById);
+
     @Query("""
             select rr
             from ReplacementRequest rr

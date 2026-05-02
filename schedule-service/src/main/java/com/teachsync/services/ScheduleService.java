@@ -8,6 +8,8 @@ import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
+import com.teachsync.dto_s.domain.statistics.ScheduleStatisticsDto;
+import com.teachsync.dto_s.domain.statistics.TeacherWorkloadStatisticsDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.exceptions.InvalidTimeRangeException;
 import com.teachsync.exceptions.ScheduleConflictException;
@@ -27,6 +29,7 @@ import com.teachsync.validator.CustomTimeValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.logging.Logger;
@@ -114,6 +117,41 @@ public class ScheduleService {
 
     public  List<GroupCourseBaseInfoRequest> getAllGroupCourses(){
         return groupCourseClient.getAllGroupCourses();
+    }
+
+    public ScheduleStatisticsDto getStatistics() {
+        long totalGroupCourses = groupCourseClient.getAllGroupCourses().size();
+        long scheduledGroupCourses = scheduleRepository.countScheduledGroupCourses();
+        return new ScheduleStatisticsDto(
+                scheduleRepository.count(),
+                scheduledGroupCourses,
+                Math.max(0, totalGroupCourses - scheduledGroupCourses),
+                totalGroupCourses,
+                classRoomRepository.count()
+        );
+    }
+
+    public TeacherWorkloadStatisticsDto getTeacherWorkload(Long teacherId) {
+        List<Schedule> schedules = scheduleRepository.findAllForTeacher(teacherId);
+        long weeklyLessons = schedules.stream()
+                .mapToLong(schedule -> schedule.getWeekDays() == null ? 0 : schedule.getWeekDays().size())
+                .sum();
+        long weeklyMinutes = schedules.stream()
+                .mapToLong(schedule -> Duration.between(schedule.getStartTime(), schedule.getEndTime()).toMinutes()
+                        * (schedule.getWeekDays() == null ? 0 : schedule.getWeekDays().size()))
+                .sum();
+        long scheduledGroupCourses = schedules.stream()
+                .map(Schedule::getGroupCourseId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .count();
+
+        return new TeacherWorkloadStatisticsDto(
+                weeklyLessons,
+                Math.round(weeklyMinutes / 60.0),
+                scheduledGroupCourses,
+                scheduledGroupCourses
+        );
     }
 
     public ScheduleBaseDto getById(Long id){

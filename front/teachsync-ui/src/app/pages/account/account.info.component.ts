@@ -9,6 +9,12 @@ import { EditAccount } from "../../core/models/profile/pofile-editor.model";
 import { NotificationService } from "../../core/services/notification.service";
 import { UserActivity } from "../../core/models/notifications/notification.model";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { ProfileStatisticsService } from "../../core/services/profile-statistics.service";
+import {
+  ReplacementStatistics,
+  TeacherReplacementStatistics,
+  TeacherWorkloadStatistics
+} from "../../core/models/statistics/profile-statistics.model";
 
 @Component({
   selector: 'app-account',
@@ -19,8 +25,13 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 export class AccountInfo implements OnInit {
   user = signal<ProfileInfo | null>(null);
   activities = signal<UserActivity[]>([]);
+  adminStats = signal<any | null>(null);
+  managerStats = signal<ReplacementStatistics | null>(null);
+  teacherWorkloadStats = signal<TeacherWorkloadStatistics | null>(null);
+  teacherReplacementStats = signal<TeacherReplacementStatistics | null>(null);
   loading = signal(false);
   activityLoading = signal(false);
+  statsLoading = signal(false);
   saving = signal(false);
   dropdownOpen = signal(false);
   editMode = signal(false);
@@ -32,6 +43,7 @@ export class AccountInfo implements OnInit {
   private profileService = inject(ProfileService);
   private userService = inject(UserService);
   private notificationService = inject(NotificationService);
+  private profileStatisticsService = inject(ProfileStatisticsService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
 
@@ -68,12 +80,66 @@ export class AccountInfo implements OnInit {
         this.user.set(data);
         this.loading.set(false);
         this.loadActivities(data.id, data.role);
+        this.loadStatistics(data);
       },
       error: err => {
         console.error(err);
         this.loading.set(false);
       }
     });
+  }
+
+  loadStatistics(user: ProfileInfo): void {
+    this.statsLoading.set(true);
+    this.adminStats.set(null);
+    this.managerStats.set(null);
+    this.teacherWorkloadStats.set(null);
+    this.teacherReplacementStats.set(null);
+
+    if (user.role === 'ADMIN') {
+      this.profileStatisticsService.getAdminStatistics().subscribe({
+        next: stats => {
+          this.adminStats.set(stats);
+          this.statsLoading.set(false);
+        },
+        error: err => {
+          console.error(err);
+          this.statsLoading.set(false);
+        }
+      });
+      return;
+    }
+
+    if (user.role === 'MANAGER') {
+      this.profileStatisticsService.getManagerStatistics().subscribe({
+        next: stats => {
+          this.managerStats.set(stats);
+          this.statsLoading.set(false);
+        },
+        error: err => {
+          console.error(err);
+          this.statsLoading.set(false);
+        }
+      });
+      return;
+    }
+
+    if (user.role === 'TEACHER') {
+      this.profileStatisticsService.getTeacherStatistics(user.id).subscribe({
+        next: stats => {
+          this.teacherWorkloadStats.set(stats.workload);
+          this.teacherReplacementStats.set(stats.replacements);
+          this.statsLoading.set(false);
+        },
+        error: err => {
+          console.error(err);
+          this.statsLoading.set(false);
+        }
+      });
+      return;
+    }
+
+    this.statsLoading.set(false);
   }
 
   loadActivities(userId: number, role: string): void {

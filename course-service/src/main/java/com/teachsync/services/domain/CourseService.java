@@ -9,6 +9,7 @@ import com.teachsync.domain.Topic;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
+import com.teachsync.dto_s.statistics.CourseStatisticsDto;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
 import com.teachsync.interaction.kafka.CourseEventProducer;
@@ -68,6 +69,15 @@ public class CourseService {
     public List<CourseBaseDto> findAll(){
         List<Course> courses = repository.findAll();
         return courses.stream().map(CourseMapper::mapToBaseDto).collect(Collectors.toList());
+    }
+
+    public CourseStatisticsDto getStatistics() {
+        return new CourseStatisticsDto(
+                repository.count(),
+                repository.countWithTeacher(),
+                repository.countWithoutTeacher(),
+                repository.countGroupCourseRelations()
+        );
     }
 
     public CourseBaseDto findById(Long id){

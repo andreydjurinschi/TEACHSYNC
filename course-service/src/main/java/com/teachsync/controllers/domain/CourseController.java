@@ -8,6 +8,7 @@ import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
+import com.teachsync.dto_s.statistics.CourseStatisticsDto;
 import com.teachsync.services.domain.CourseService;
 import feign.Response;
 import jakarta.validation.Valid;
@@ -42,6 +43,11 @@ public class CourseController {
     @GetMapping("/all")
     public ResponseEntity<List<CourseBaseDto>> findAll() {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.findAll());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<CourseStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(courseService.getStatistics());
     }
 
     @GetMapping("/my")

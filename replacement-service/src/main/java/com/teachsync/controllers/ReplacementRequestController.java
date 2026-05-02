@@ -2,6 +2,8 @@ package com.teachsync.controllers;
 
 import com.teachsync.dto_s.replacementRequest.ReplacementRequestBaseDto;
 import com.teachsync.dto_s.replacementRequest.ReplacementRequestCreateDto;
+import com.teachsync.dto_s.statistics.ReplacementStatisticsDto;
+import com.teachsync.dto_s.statistics.TeacherReplacementStatisticsDto;
 import com.teachsync.service.ReplacementRequestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +61,16 @@ public class ReplacementRequestController {
     @GetMapping("/problematic")
     public ResponseEntity<List<ReplacementRequestBaseDto>> getProblematicRequests() {
         return ResponseEntity.ok(service.getProblematicRequests());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<ReplacementStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(service.getStatistics());
+    }
+
+    @GetMapping("/statistics/teacher/{teacherId}")
+    public ResponseEntity<TeacherReplacementStatisticsDto> getTeacherStatistics(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(service.getTeacherStatistics(teacherId));
     }
 
     @DeleteMapping("/{id}")

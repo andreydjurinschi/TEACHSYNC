@@ -131,6 +131,125 @@
 
         <div class="app-panel">
           <div class="mb-4">
+            <h3 class="app-label">Статистика</h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Метрики, сформированные на основе данных сервисов.
+            </p>
+          </div>
+
+          @if (statsLoading()) {
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="h-24 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"></div>
+              <div class="h-24 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"></div>
+              <div class="h-24 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"></div>
+              <div class="h-24 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800"></div>
+            </div>
+          } @else if (u.role === 'ADMIN' && adminStats(); as stats) {
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="app-panel-muted">
+                <p class="app-label">Пользователи</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ stats.users.totalUsers }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {{ stats.users.teacherCount }} преподавателей, {{ stats.users.managerCount }} менеджеров
+                </p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Курсы</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ stats.courses.totalCourses }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {{ stats.courses.coursesWithoutTeacher }} без преподавателя
+                </p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Расписание</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ stats.schedules.totalSchedules }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {{ stats.schedules.unscheduledGroupCourses }} курс-групп без расписания
+                </p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Замены</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ stats.replacements.totalRequests }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {{ stats.replacements.pendingRequests }} ожидают решения
+                </p>
+              </div>
+            </div>
+          } @else if (u.role === 'MANAGER' && managerStats(); as stats) {
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="app-panel-muted">
+                <p class="app-label">Всего заявок</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ stats.totalRequests }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Ожидают</p>
+                <p class="mt-2 text-2xl font-semibold text-amber-600 dark:text-amber-300">{{ stats.pendingRequests }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Подтверждены</p>
+                <p class="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-300">{{ stats.approvedRequests }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Проблемные</p>
+                <p class="mt-2 text-2xl font-semibold text-red-600 dark:text-red-300">
+                  {{ stats.expiredRequests + stats.autoClosedRequests }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-4 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div class="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">Кто чаще помогал с заменами</p>
+              </div>
+              @if (stats.topHelpers.length) {
+                <div class="divide-y divide-slate-200 dark:divide-slate-800">
+                  @for (helper of stats.topHelpers; track helper.teacherId) {
+                    <div class="flex items-center justify-between gap-3 px-4 py-3">
+                      <div>
+                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ helper.teacherName }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                          {{ helper.declinedReplacements }} отказов, {{ helper.pendingInvitations }} ожидающих приглашений
+                        </p>
+                      </div>
+                      <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
+                        {{ helper.approvedReplacements }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="px-4 py-5 text-sm text-slate-500 dark:text-slate-400">Пока нет подтвержденных замен.</p>
+              }
+            </div>
+          } @else if (u.role === 'TEACHER' && teacherWorkloadStats() && teacherReplacementStats()) {
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="app-panel-muted">
+                <p class="app-label">Занятий в неделю</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ teacherWorkloadStats()!.weeklyLessons }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Часов в неделю</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ teacherWorkloadStats()!.weeklyHours }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Помогал с заменой</p>
+                <p class="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-300">{{ teacherReplacementStats()!.helpedReplacements }}</p>
+              </div>
+              <div class="app-panel-muted">
+                <p class="app-label">Просил замену</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-white">{{ teacherReplacementStats()!.requestedReplacements }}</p>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+              Сейчас ожидают ответа: {{ teacherReplacementStats()!.pendingInvitations }} приглашений, отказов: {{ teacherReplacementStats()!.declinedInvitations }}.
+            </p>
+          } @else {
+            <p class="text-sm text-slate-500 dark:text-slate-400">Статистика появится после накопления данных.</p>
+          }
+        </div>
+
+        <div class="app-panel">
+          <div class="mb-4">
             <h3 class="app-label">Последние активные действия</h3>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
               Краткая история событий, зафиксированных системой.

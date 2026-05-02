@@ -85,6 +85,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 """)
     List<Schedule> findAllForTeacher(@Param("teacherId") Long teacherId);
 
+    @Query("select count(distinct s.groupCourseId) from Schedule s")
+    long countScheduledGroupCourses();
+
     //todo
 /*    @Query("""
                     select distinct s from Schedule s
@@ -101,5 +104,4 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("groupCourseId") Long groupCourseId
     );*/
 }
-
 

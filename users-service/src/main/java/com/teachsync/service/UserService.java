@@ -18,6 +18,7 @@ import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
+import com.teachsync.dto.statistics.UserStatisticsDto;
 import com.teachsync.teachsyncevents.users.UserCreatedEvent;
 import com.teachsync.teachsyncevents.users.UserDeletedEvent;
 import com.teachsync.teachsyncevents.users.UserRoleChangedEvent;
@@ -219,6 +220,15 @@ public class UserService {
     public List<UserBaseDto> findAllByIds(List<Long> ids) {
         return repository.findAllById(ids)
                 .stream().map(UserMapper::mapToBaseDto).toList();
+    }
+
+    public UserStatisticsDto getStatistics() {
+        return new UserStatisticsDto(
+                repository.count(),
+                repository.countByRole(Role.ADMIN),
+                repository.countByRole(Role.MANAGER),
+                repository.countByRole(Role.TEACHER)
+        );
     }
 
     private String normalizeProfilePicture(String profilePicture) {

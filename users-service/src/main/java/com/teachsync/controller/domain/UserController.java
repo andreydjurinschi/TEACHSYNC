@@ -6,6 +6,7 @@ import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.dto.statistics.UserStatisticsDto;
 import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
 import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.service.UserService;
@@ -31,6 +32,11 @@ public class UserController {
     @GetMapping("/all")
     public ResponseEntity<List<UserBaseDto>> getAll(){
         return ResponseEntity.ok(service.findAll());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<UserStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(service.getStatistics());
     }
 
     @GetMapping("/{id}")

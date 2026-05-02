@@ -6,6 +6,8 @@ import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
+import com.teachsync.dto_s.domain.statistics.ScheduleStatisticsDto;
+import com.teachsync.dto_s.domain.statistics.TeacherWorkloadStatisticsDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
@@ -59,6 +61,16 @@ public class ScheduleController {
     @GetMapping("/all")
     public ResponseEntity<List<ScheduleBaseDto>> getAll(){
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<ScheduleStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(service.getStatistics());
+    }
+
+    @GetMapping("/statistics/teacher/{teacherId}")
+    public ResponseEntity<TeacherWorkloadStatisticsDto> getTeacherWorkload(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(service.getTeacherWorkload(teacherId));
     }
 
     @GetMapping("/available-teachers/{id}")

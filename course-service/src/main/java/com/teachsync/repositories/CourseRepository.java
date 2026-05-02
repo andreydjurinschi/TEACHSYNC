@@ -59,4 +59,13 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             nativeQuery = true, value = "select * from group_courses where id = :id"
     )
     GroupCourse getGroupCourseById(@Param("id") Long id);
+
+    @Query("select count(c) from Course c where c.teacherId is not null")
+    long countWithTeacher();
+
+    @Query("select count(c) from Course c where c.teacherId is null")
+    long countWithoutTeacher();
+
+    @Query(nativeQuery = true, value = "select count(*) from group_courses")
+    long countGroupCourseRelations();
 }
