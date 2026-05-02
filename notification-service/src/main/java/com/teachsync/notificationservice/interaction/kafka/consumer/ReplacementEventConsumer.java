@@ -3,6 +3,7 @@ package com.teachsync.notificationservice.interaction.kafka.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.service.NotificationService;
+import com.teachsync.notificationservice.service.UserActivityService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
@@ -19,10 +20,14 @@ public class ReplacementEventConsumer {
     private static final Logger log = LoggerFactory.getLogger(ReplacementEventConsumer.class);
 
     private final NotificationService notificationService;
+    private final UserActivityService activityService;
     private final ObjectMapper objectMapper;
 
-    public ReplacementEventConsumer(NotificationService notificationService, ObjectMapper objectMapper) {
+    public ReplacementEventConsumer(NotificationService notificationService,
+                                    UserActivityService activityService,
+                                    ObjectMapper objectMapper) {
         this.notificationService = notificationService;
+        this.activityService = activityService;
         this.objectMapper = objectMapper;
     }
 
@@ -56,6 +61,18 @@ public class ReplacementEventConsumer {
                 buildRequestedMessage(event),
                 "/profile/schedules?replacementRequestId=" + event.getReplacementRequestId()
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.REPLACEMENT_REQUESTED,
+                event.getCandidateTeacherId(),
+                event.getTeacherRequestedId(),
+                "Replacement-service",
+                "Получен запрос на замену",
+                "Можно заменить занятие по курсу \"" + event.getCourseName() + "\".",
+                buildRequestedMessage(event),
+                "/profile/schedules?replacementRequestId=" + event.getReplacementRequestId()
+        );
         log.info("Saved REPLACEMENT_REQUESTED notification for teacher {}", event.getCandidateTeacherId());
     }
 
@@ -71,6 +88,19 @@ public class ReplacementEventConsumer {
                         + event.getApprovedTeacherName() + " (" + event.getApprovedTeacherEmail() + ").",
                 "/profile/schedules"
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.REPLACEMENT_APPROVED,
+                event.getTeacherRequestedId(),
+                event.getApprovedTeacherId(),
+                event.getApprovedTeacherName(),
+                "Замена найдена",
+                "Занятие по курсу \"" + event.getCourseName() + "\" заменит " + event.getApprovedTeacherName() + ".",
+                "Группа: " + event.getGroupName() + ". Дата: " + event.getLessonDate()
+                        + ". Время: " + event.getStartTime() + "-" + event.getEndTime() + ".",
+                "/profile/schedules"
+        );
         notificationService.saveForUser(
                 event.getUuid(),
                 event.getServiceName(),
@@ -79,6 +109,20 @@ public class ReplacementEventConsumer {
                 "Вы подтвердили замену",
                 "Вы заменяете коллегу по курсу \"" + event.getCourseName() + "\" для группы \"" + event.getGroupName()
                         + "\" " + event.getLessonDate() + " с " + event.getStartTime() + " до " + event.getEndTime() + ".",
+                "/profile/schedules"
+        );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.REPLACEMENT_APPROVED,
+                event.getApprovedTeacherId(),
+                event.getApprovedTeacherId(),
+                event.getApprovedTeacherName(),
+                "Вы подтвердили замену",
+                "Вы заменяете коллегу по курсу \"" + event.getCourseName() + "\".",
+                "Группа: " + event.getGroupName() + ". Дата: " + event.getLessonDate()
+                        + ". Время: " + event.getStartTime() + "-" + event.getEndTime()
+                        + ". Аудитория: " + event.getClassRoomName() + ".",
                 "/profile/schedules"
         );
         log.info("Saved REPLACEMENT_APPROVED notifications for request {}", event.getReplacementRequestId());
@@ -98,6 +142,25 @@ public class ReplacementEventConsumer {
                         ? "Статус замены изменен"
                         : event.getTitle(),
                 event.getMessage(),
+                event.getActionUrl() == null || event.getActionUrl().isBlank()
+                        ? "/profile/replacements"
+                        : event.getActionUrl()
+        );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.REPLACEMENT_STATUS_CHANGED,
+                targetTeacherId,
+                null,
+                "Replacement-service",
+                event.getTitle() == null || event.getTitle().isBlank()
+                        ? "Статус замены изменен"
+                        : event.getTitle(),
+                event.getMessage(),
+                "Статус: " + event.getStatus() + ". Курс: " + event.getCourseName()
+                        + ". Группа: " + event.getGroupName()
+                        + ". Дата: " + event.getLessonDate()
+                        + ". Время: " + event.getStartTime() + "-" + event.getEndTime() + ".",
                 event.getActionUrl() == null || event.getActionUrl().isBlank()
                         ? "/profile/replacements"
                         : event.getActionUrl()

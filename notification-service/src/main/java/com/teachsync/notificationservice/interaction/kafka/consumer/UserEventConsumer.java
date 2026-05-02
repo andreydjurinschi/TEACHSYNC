@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.enums.TargetRole;
 import com.teachsync.notificationservice.service.NotificationService;
+import com.teachsync.notificationservice.service.UserActivityService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.users.UserCreatedEvent;
@@ -22,10 +23,14 @@ public class UserEventConsumer {
     private static final Logger log = LoggerFactory.getLogger(UserEventConsumer.class);
 
     private final NotificationService notificationService;
+    private final UserActivityService activityService;
     private final ObjectMapper objectMapper;
 
-    public UserEventConsumer(NotificationService notificationService, ObjectMapper objectMapper) {
+    public UserEventConsumer(NotificationService notificationService,
+                             UserActivityService activityService,
+                             ObjectMapper objectMapper) {
         this.notificationService = notificationService;
+        this.activityService = activityService;
         this.objectMapper = objectMapper;
     }
 
@@ -60,6 +65,18 @@ public class UserEventConsumer {
                 "Роль учетной записи изменена",
                 "Ваша роль изменена с \"" + event.getPreviousRole() + "\" на \"" + event.getNewRole() + "\"."
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_ROLE_CHANGED,
+                event.getUserId(),
+                null,
+                "Users-service",
+                "Роль учетной записи изменена",
+                "Ваша роль изменена с \"" + event.getPreviousRole() + "\" на \"" + event.getNewRole() + "\".",
+                "Предыдущая роль: " + event.getPreviousRole() + ". Новая роль: " + event.getNewRole() + ".",
+                "/profile"
+        );
         log.info("Saved USER_ROLE_CHANGED notification for user {}", event.getUserId());
     }
 
@@ -71,6 +88,18 @@ public class UserEventConsumer {
                 TargetRole.ADMIN,
                 "Создан новый пользователь",
                 "Создан пользователь " + event.getFirstName() + " " + event.getLastName() + " с ролью " + event.getUserRole() + "."
+        );
+        activityService.recordForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_CREATED,
+                TargetRole.ADMIN,
+                event.getUserId(),
+                event.getFirstName() + " " + event.getLastName(),
+                "Создан пользователь",
+                "Создан пользователь " + event.getFirstName() + " " + event.getLastName() + ".",
+                "Email: " + event.getUserEmail() + ". Роль: " + event.getUserRole() + ".",
+                "/users"
         );
         log.info("Saved USER_CREATED notification for admins: {}", event.getUserId());
     }
@@ -85,6 +114,18 @@ public class UserEventConsumer {
                 "Пользователь удален",
                 message
         );
+        activityService.recordForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_DELETED,
+                TargetRole.ADMIN,
+                event.getUserId(),
+                event.getFirstName() + " " + event.getLastName(),
+                "Пользователь удален",
+                message,
+                "Email: " + event.getEmail() + ". Роль: " + event.getRole() + ".",
+                "/users"
+        );
         notificationService.saveForRole(
                 event.getUuid(),
                 event.getServiceName(),
@@ -92,6 +133,18 @@ public class UserEventConsumer {
                 TargetRole.MANAGER,
                 "Пользователь удален",
                 message
+        );
+        activityService.recordForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_DELETED,
+                TargetRole.MANAGER,
+                event.getUserId(),
+                event.getFirstName() + " " + event.getLastName(),
+                "Пользователь удален",
+                message,
+                "Email: " + event.getEmail() + ". Роль: " + event.getRole() + ".",
+                "/users"
         );
         log.info("Saved USER_DELETED notifications for admins and managers: {}", event.getUserId());
     }
@@ -105,6 +158,18 @@ public class UserEventConsumer {
                 "Добавлена специализация",
                 "Вам добавлена специализация \"" + event.getSpecializationName() + "\"."
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_SPEC_ADDED,
+                event.getUserId(),
+                null,
+                "Users-service",
+                "Добавлена специализация",
+                "Вам добавлена специализация \"" + event.getSpecializationName() + "\".",
+                "Специализация используется при подборе преподавателей для курсов и замен.",
+                "/profile"
+        );
         log.info("Saved USER_SPEC_ADDED notification for teacher {}", event.getUserId());
     }
 
@@ -116,6 +181,18 @@ public class UserEventConsumer {
                 event.getUserId(),
                 "Специализация удалена",
                 "У вас удалена специализация \"" + event.getCategoryName() + "\"."
+        );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.USER_SPEC_DELETED,
+                event.getUserId(),
+                null,
+                "Users-service",
+                "Специализация удалена",
+                "У вас удалена специализация \"" + event.getCategoryName() + "\".",
+                "Удаленная специализация больше не учитывается при подборе преподавателей.",
+                "/profile"
         );
         log.info("Saved USER_SPEC_DELETED notification for teacher {}", event.getUserId());
     }

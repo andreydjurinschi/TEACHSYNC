@@ -20,3 +20,19 @@ export interface NotificationPreference {
   realtimeEnabled: boolean;
   importantOnly: boolean;
 }
+
+export interface UserActivity {
+  id: number;
+  eventId: string;
+  sourceService: string;
+  actionType: string;
+  targetUserId?: number;
+  targetRole?: string;
+  actorUserId?: number;
+  actorName?: string;
+  title: string;
+  summary: string;
+  details?: string;
+  actionUrl?: string;
+  createdAt: string;
+}

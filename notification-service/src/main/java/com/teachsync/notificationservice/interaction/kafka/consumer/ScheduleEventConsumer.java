@@ -3,6 +3,7 @@ package com.teachsync.notificationservice.interaction.kafka.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teachsync.notificationservice.domain.TargetSubject;
 import com.teachsync.notificationservice.service.NotificationService;
+import com.teachsync.notificationservice.service.UserActivityService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
@@ -18,10 +19,14 @@ public class ScheduleEventConsumer {
     private static final Logger log = LoggerFactory.getLogger(ScheduleEventConsumer.class);
 
     private final NotificationService notificationService;
+    private final UserActivityService activityService;
     private final ObjectMapper objectMapper;
 
-    public ScheduleEventConsumer(NotificationService notificationService, ObjectMapper objectMapper) {
+    public ScheduleEventConsumer(NotificationService notificationService,
+                                 UserActivityService activityService,
+                                 ObjectMapper objectMapper) {
         this.notificationService = notificationService;
+        this.activityService = activityService;
         this.objectMapper = objectMapper;
     }
 
@@ -57,6 +62,19 @@ public class ScheduleEventConsumer {
                         + event.getStartTime() + "-" + event.getEndTime()
                         + ", аудитория \"" + event.getClassRoomName() + "\"."
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.SCHEDULE_CREATED,
+                event.getTeacherId(),
+                null,
+                "Schedule-service",
+                "Создано расписание",
+                "Создано занятие по курсу \"" + event.getCourseName() + "\" для группы \"" + event.getGroupName() + "\".",
+                "Время: " + days + ", " + event.getStartTime() + "-" + event.getEndTime()
+                        + ". Аудитория: " + event.getClassRoomName() + ".",
+                "/profile/schedules"
+        );
         log.info("Saved SCHEDULE_CREATED notification for teacher {}", event.getTeacherId());
     }
 
@@ -79,6 +97,20 @@ public class ScheduleEventConsumer {
                 message,
                 "/profile/schedules"
         );
+        activityService.recordForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.SCHEDULE_UPDATED,
+                event.getTeacherId(),
+                event.getChangedByUserId(),
+                event.getChangedByName(),
+                "Расписание изменено",
+                "Расписание по курсу \"" + event.getCourseName() + "\" изменено.",
+                "Изменил: " + event.getChangedByName()
+                        + ". Новое расписание: " + days + ", " + event.getStartTime() + "-" + event.getEndTime()
+                        + ", аудитория \"" + event.getClassRoomName() + "\". Что изменилось: " + event.getChangeSummary(),
+                "/profile/schedules"
+        );
 
         if (event.getPreviousTeacherId() != null && !event.getPreviousTeacherId().equals(event.getTeacherId())) {
             notificationService.saveForUser(
@@ -90,6 +122,20 @@ public class ScheduleEventConsumer {
                     "Вы больше не назначены на занятие по курсу \"" + event.getCourseName()
                             + "\" для группы \"" + event.getGroupName()
                             + "\". Изменил: " + event.getChangedByName()
+                            + ". Что изменилось: " + event.getChangeSummary(),
+                    "/profile/schedules"
+            );
+            activityService.recordForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    ActionTypes.SCHEDULE_UPDATED,
+                    event.getPreviousTeacherId(),
+                    event.getChangedByUserId(),
+                    event.getChangedByName(),
+                    "Расписание изменено",
+                    "Вы больше не назначены на занятие по курсу \"" + event.getCourseName() + "\".",
+                    "Изменил: " + event.getChangedByName()
+                            + ". Группа: " + event.getGroupName()
                             + ". Что изменилось: " + event.getChangeSummary(),
                     "/profile/schedules"
             );

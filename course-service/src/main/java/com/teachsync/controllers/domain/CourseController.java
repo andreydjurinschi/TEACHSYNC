@@ -73,7 +73,7 @@ public class CourseController {
                                        @Valid @RequestBody CourseUpdateDto dto,
                                        @RequestHeader("Authorization") String authHeader) {
         courseService.assertCanManageCourse(id, currentUserId(authHeader), currentRole(authHeader));
-        courseService.updateCourse(id, dto);
+        courseService.updateCourse(id, dto, currentUserId(authHeader), currentRole(authHeader));
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 

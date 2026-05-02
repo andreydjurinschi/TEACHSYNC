@@ -113,6 +113,11 @@ public class CourseService {
 
     @Transactional
     public void updateCourse(Long id, CourseUpdateDto dto) {
+        updateCourse(id, dto, null, null);
+    }
+
+    @Transactional
+    public void updateCourse(Long id, CourseUpdateDto dto, Long changedByUserId, String changedByRole) {
        Course course = getCourse(id);
        String previousState = course.toString();
         if(StringUtils.hasText(dto.getName())){
@@ -132,7 +137,13 @@ public class CourseService {
         String newState =  course.toString();
 
         courseEventProducer.publishCourseEdited(new CourseUpdatedEvent(
-                course.getId(), course.getName(), previousState, newState
+                course.getId(),
+                course.getName(),
+                previousState,
+                newState,
+                changedByUserId,
+                resolveUserName(changedByUserId),
+                changedByRole
         ));
     }
 
@@ -319,6 +330,23 @@ public class CourseService {
         if (!hasRequiredCategory) {
             throw new IllegalArgumentException("teacher does not have required course category");
         }
+    }
+
+    private String resolveUserName(Long userId) {
+        if (userId == null) {
+            return "Course-service";
+        }
+        try {
+            TeacherRequest user = userClient.getTeacher(userId);
+            String fullName = (safe(user.name()) + " " + safe(user.surname())).trim();
+            return fullName.isBlank() ? "Пользователь #" + userId : fullName;
+        } catch (Exception e) {
+            return "Пользователь #" + userId;
+        }
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
     }
 
     private void publishCourseTeacherUnassigned(Course course, Long previousTeacherId, String reason) {

@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
-import { NotificationItem, NotificationPreference } from '../models/notifications/notification.model';
+import { NotificationItem, NotificationPreference, UserActivity } from '../models/notifications/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -51,6 +51,10 @@ export class NotificationService {
 
   updatePreferences(userId: number, preferences: NotificationPreference) {
     return this.http.put<NotificationPreference>(`${this.api}/preferences/${userId}`, preferences, { headers: this.getHeaders() });
+  }
+
+  getActivities(userId: number, role: string, limit = 10) {
+    return this.http.get<UserActivity[]>(`${this.api}/activities/user/${userId}?role=${role}&limit=${limit}`, { headers: this.getHeaders() });
   }
 
   connectRealtime(userId: number, role: string): void {
