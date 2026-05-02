@@ -12,7 +12,7 @@ import java.util.List;
 
 // todo consul discovery
 
-@FeignClient(name = "course-service", url = "http://localhost:8081/internal/courses")
+@FeignClient(name = "course-service", url = "${teachsync.services.courses.url:http://localhost:8081/internal/courses}")
 public interface GroupCourseClient {
     @GetMapping("/group/{groupCourseId}")
     GroupCourseBaseInfoRequest groupCourseBaseInfoRequest(@PathVariable("groupCourseId")Long groupCourseId);

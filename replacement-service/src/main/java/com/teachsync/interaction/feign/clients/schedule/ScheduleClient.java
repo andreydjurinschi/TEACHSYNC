@@ -11,7 +11,7 @@ import java.util.List;
 
 @FeignClient(
         name = "schedule-service",
-        url = "http://localhost:8082/internal/schedules"
+        url = "${teachsync.services.schedules.url:http://localhost:8082/internal/schedules}"
 )
 public interface ScheduleClient {
 

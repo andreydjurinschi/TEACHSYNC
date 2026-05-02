@@ -12,7 +12,7 @@ import java.util.List;
 
 @FeignClient(
         name = "user-service",
-        url = "http://localhost:8083/internal/users"
+        url = "${teachsync.services.users.url:http://localhost:8083/internal/users}"
 )
 public interface UserClient {
     @GetMapping("/{id}")

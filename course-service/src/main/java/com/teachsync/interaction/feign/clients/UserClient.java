@@ -15,7 +15,7 @@ import java.util.List;
  */
 @FeignClient(
         name = "user-service",
-        url = "http://localhost:8083/internal/users",
+        url = "${teachsync.services.users.url:http://localhost:8083/internal/users}",
         fallback = UserClientFallback.class
 )
 public interface UserClient {
