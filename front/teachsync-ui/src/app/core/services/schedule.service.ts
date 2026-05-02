@@ -39,6 +39,10 @@ export class ScheduleService {
         return this.http.post<void>(`${this.base}/create`, dto, { headers: this.getHeaders() });
     }
 
+    update(id: number, dto: any): Observable<ScheduleBase> {
+        return this.http.put<ScheduleBase>(`${this.base}/${id}`, dto, { headers: this.getHeaders() });
+    }
+
     checkClassroomConflicts(
         days: string[], startTime: string, endTime: string
     ): Observable<number[]> {

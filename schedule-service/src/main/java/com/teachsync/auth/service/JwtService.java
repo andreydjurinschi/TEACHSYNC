@@ -33,6 +33,11 @@ public class JwtService {
         return extractClaimsFromToken(token).get("userId", Long.class);
     }
 
+    public String extractRole(String token) {
+        Object role = extractClaimsFromToken(token).get("roles");
+        return role == null ? null : role.toString();
+    }
+
     private Claims extractClaimsFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getKeySign())

@@ -5,6 +5,7 @@ import com.teachsync.domain.WeekDays;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
+import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
@@ -75,6 +76,20 @@ public class ScheduleController {
     public ResponseEntity<Void> createSchedule(@RequestBody ScheduleCreateDto dto) {
         service.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ScheduleBaseDto> updateSchedule(
+            @PathVariable Long id,
+            @RequestBody ScheduleUpdateDto dto,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String role = jwtService.extractRole(token);
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Long changedByUserId = jwtService.extractUserId(token);
+        return ResponseEntity.ok(service.update(id, dto, changedByUserId));
     }
 
     @GetMapping("/group-courses/group-without-mention-in-schedule")

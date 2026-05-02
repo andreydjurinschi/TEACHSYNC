@@ -6,6 +6,7 @@ import com.teachsync.notificationservice.service.NotificationService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
+import com.teachsync.teachsyncevents.schedules.ScheduleUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -35,6 +36,7 @@ public class ScheduleEventConsumer {
             String eventType = node.get("actionType").asText();
             switch (eventType) {
                 case ActionTypes.SCHEDULE_CREATED -> handleScheduleCreated(objectMapper.readValue(rawMessage, ScheduleCreatedEvent.class));
+                case ActionTypes.SCHEDULE_UPDATED -> handleScheduleUpdated(objectMapper.readValue(rawMessage, ScheduleUpdatedEvent.class));
                 default -> log.info("Unsupported schedule event type: {}", eventType);
             }
         } catch (Exception e) {
@@ -56,5 +58,43 @@ public class ScheduleEventConsumer {
                         + ", аудитория \"" + event.getClassRoomName() + "\"."
         );
         log.info("Saved SCHEDULE_CREATED notification for teacher {}", event.getTeacherId());
+    }
+
+    private void handleScheduleUpdated(ScheduleUpdatedEvent event) {
+        String days = event.getWeekDays() == null ? "" : String.join(", ", event.getWeekDays());
+        String message = "Расписание по курсу \"" + event.getCourseName()
+                + "\" для группы \"" + event.getGroupName()
+                + "\" изменено пользователем " + event.getChangedByName() + ".\n"
+                + "Новое расписание: " + days + ", "
+                + event.getStartTime() + "-" + event.getEndTime()
+                + ", аудитория \"" + event.getClassRoomName() + "\".\n"
+                + "Что изменилось: " + event.getChangeSummary();
+
+        notificationService.saveForUser(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.SCHEDULE_UPDATED,
+                event.getTeacherId(),
+                "Расписание изменено",
+                message,
+                "/profile/schedules"
+        );
+
+        if (event.getPreviousTeacherId() != null && !event.getPreviousTeacherId().equals(event.getTeacherId())) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.SCHEDULE_UPDATED,
+                    event.getPreviousTeacherId(),
+                    "Расписание изменено",
+                    "Вы больше не назначены на занятие по курсу \"" + event.getCourseName()
+                            + "\" для группы \"" + event.getGroupName()
+                            + "\". Изменил: " + event.getChangedByName()
+                            + ". Что изменилось: " + event.getChangeSummary(),
+                    "/profile/schedules"
+            );
+        }
+
+        log.info("Saved SCHEDULE_UPDATED notification for teacher {}", event.getTeacherId());
     }
 }

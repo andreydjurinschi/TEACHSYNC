@@ -52,7 +52,11 @@ public class NotificationSseService {
         if (emitters == null) {
             return;
         }
-        emitters.forEach(emitter -> send(emitter, notification));
+        emitters.forEach(emitter -> {
+            if (!send(emitter, notification)) {
+                removeEmitter(emitter);
+            }
+        });
     }
 
     public void sendToRole(TargetRole role, NotificationDto notification, NotificationPreferenceService preferenceService) {
@@ -62,19 +66,29 @@ public class NotificationSseService {
         }
         connections.forEach(connection -> {
             if (preferenceService.shouldPushToUser(connection.userId(), notification.getTargetSubject())) {
-                send(connection.emitter(), notification);
+                if (!send(connection.emitter(), notification)) {
+                    removeEmitter(connection.emitter());
+                }
             }
         });
     }
 
-    private void send(SseEmitter emitter, NotificationDto notification) {
+    private boolean send(SseEmitter emitter, NotificationDto notification) {
         try {
             emitter.send(SseEmitter.event()
                     .name("notification")
                     .data(notification));
-        } catch (IOException e) {
-            emitter.completeWithError(e);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
+    }
+
+    private void removeEmitter(SseEmitter emitter) {
+        userEmitters.values().forEach(emitters -> emitters.remove(emitter));
+        roleEmitters.values().forEach(connections ->
+                connections.removeIf(connection -> connection.emitter() == emitter)
+        );
     }
 
     private record ClientConnection(Long userId, SseEmitter emitter) {

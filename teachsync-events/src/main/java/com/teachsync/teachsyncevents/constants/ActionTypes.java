@@ -14,6 +14,7 @@ public class ActionTypes {
 
     // schedules
     public static final String SCHEDULE_CREATED = "SCHEDULE_CREATED";
+    public static final String SCHEDULE_UPDATED = "SCHEDULE_UPDATED";
 
     // replacements
     public static final String REPLACEMENT_REQUESTED = "REPLACEMENT_REQUESTED";

@@ -82,6 +82,7 @@ public class NotificationPreferenceService {
                  TEACHER_ASSIGNMENT_REQUESTED,
                  TEACHER_ASSIGNED,
                  SCHEDULE_CREATED,
+                 SCHEDULE_UPDATED,
                  USER_ROLE_CHANGED -> true;
             default -> false;
         };
@@ -89,7 +90,8 @@ public class NotificationPreferenceService {
 
     private NotificationCategory categoryOf(TargetSubject subject) {
         return switch (subject) {
-            case SCHEDULE_CREATED -> NotificationCategory.SCHEDULE;
+            case SCHEDULE_CREATED,
+                 SCHEDULE_UPDATED -> NotificationCategory.SCHEDULE;
             case REPLACEMENT_REQUESTED,
                  REPLACEMENT_APPROVED,
                  REPLACEMENT_STATUS_CHANGED -> NotificationCategory.REPLACEMENT;

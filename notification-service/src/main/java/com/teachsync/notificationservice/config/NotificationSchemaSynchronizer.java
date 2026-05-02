@@ -30,6 +30,7 @@ public class NotificationSchemaSynchronizer {
                         'TEACHER_ASSIGNMENT_REQUESTED',
                         'TEACHER_ASSIGNED',
                         'SCHEDULE_CREATED',
+                        'SCHEDULE_UPDATED',
                         'USER_CREATED',
                         'USER_DELETED',
                         'USER_ROLE_CHANGED',
