@@ -31,6 +31,8 @@ import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
+import com.teachsync.services.feign.ReferenceDataCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -52,16 +55,18 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final GroupRepository groupRepository;
     private final UserClient userClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
     private final CourseEventProducer courseEventProducer;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, CourseEventProducer courseEventProducer, JwtService jwtService, ObjectMapper objectMapper) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, ReferenceDataCacheService referenceDataCacheService, CourseEventProducer courseEventProducer, JwtService jwtService, ObjectMapper objectMapper) {
         this.repository = repository;
         this.topicRepository = topicRepository;
         this.categoryRepository = categoryRepository;
         this.groupRepository = groupRepository;
         this.userClient = userClient;
+        this.referenceDataCacheService = referenceDataCacheService;
         this.courseEventProducer = courseEventProducer;
         this.objectMapper = objectMapper;
     }
@@ -291,11 +296,15 @@ public class CourseService {
     public CourseWithTeacherRequest getCourseWithTeacher(Long id){
         Course course = getCourse(id);
         Long teacherId = course.getTeacherId();
-        TeacherCheckRequest response = userClient.isTeacher(teacherId);
+        TeacherCheckRequest response = requireDependency(
+                "Получение курса с преподавателем: проверка роли преподавателя",
+                "users-service",
+                () -> userClient.isTeacher(teacherId)
+        );
         if (response == null || !response.isTeacher()) {
             throw new IllegalArgumentException("this user is not a teacher");
         }
-        TeacherRequest teacherRequest = userClient.getTeacher(teacherId);
+        TeacherRequest teacherRequest = referenceDataCacheService.getTeacher(teacherId);
 
         return new CourseWithTeacherRequest(
                 course.getName(), course.getDescription(), teacherRequest
@@ -326,7 +335,11 @@ public class CourseService {
     }
 
     private void validateTeacherCanLeadCourse(Course course, Long teacherId) {
-        TeacherCheckRequest response = userClient.isTeacher(teacherId);
+        TeacherCheckRequest response = requireDependency(
+                "Назначение преподавателя на курс: проверка роли",
+                "users-service",
+                () -> userClient.isTeacher(teacherId)
+        );
         if (response == null || !response.isTeacher()) {
             throw new IllegalArgumentException("this user is not a teacher");
         }
@@ -334,7 +347,11 @@ public class CourseService {
         if (category == null) {
             return;
         }
-        TeacherRequest teacher = userClient.getTeacher(teacherId);
+        TeacherRequest teacher = requireDependency(
+                "Назначение преподавателя на курс: проверка специализации",
+                "users-service",
+                () -> userClient.getTeacher(teacherId)
+        );
         boolean hasRequiredCategory = teacher.specializations() != null
                 && teacher.specializations().stream().anyMatch(s -> category.getId().equals(s.getId()));
         if (!hasRequiredCategory) {
@@ -347,7 +364,7 @@ public class CourseService {
             return "Course-service";
         }
         try {
-            TeacherRequest user = userClient.getTeacher(userId);
+            TeacherRequest user = referenceDataCacheService.getTeacher(userId);
             String fullName = (safe(user.name()) + " " + safe(user.surname())).trim();
             return fullName.isBlank() ? "Пользователь #" + userId : fullName;
         } catch (Exception e) {
@@ -357,6 +374,22 @@ public class CourseService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private <T> T requireDependency(String operation, String dependency, Supplier<T> call) {
+        try {
+            return call.get();
+        } catch (RuntimeException e) {
+            courseEventProducer.publishSystemAlert(new SystemAlertEvent(
+                    "course-service",
+                    operation,
+                    dependency,
+                    "HIGH",
+                    "Операция не может быть безопасно выполнена без актуальных данных зависимого сервиса",
+                    e.getClass().getSimpleName() + ": " + safe(e.getMessage())
+            ));
+            throw e;
+        }
     }
 
     private void publishCourseTeacherUnassigned(Course course, Long previousTeacherId, String reason) {

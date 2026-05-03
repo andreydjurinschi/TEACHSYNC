@@ -3,6 +3,7 @@ package com.teachsync.interation.kafka;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
 import com.teachsync.teachsyncevents.schedules.ScheduleUpdatedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -48,5 +49,14 @@ public class ScheduleEventProducer {
                         event.getScheduleId(), event.getTeacherId(), event.getChangedByUserId());
             }
         });
+    }
+
+    public void publishSystemAlert(SystemAlertEvent event) {
+        kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getSourceServiceName(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish SystemAlertEvent from schedule service: {}", ex.getMessage());
+                    }
+                });
     }
 }

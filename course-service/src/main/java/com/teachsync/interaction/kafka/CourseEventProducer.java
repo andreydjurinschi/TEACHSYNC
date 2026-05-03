@@ -10,6 +10,7 @@ import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -160,6 +161,15 @@ public class CourseEventProducer {
                 log.info("CourseTopicRemovedEvent published successfully... courseId: {}, topicId: {}", event.getCourseId(), event.getTopicId());
             }
         });
+    }
+
+    public void publishSystemAlert(SystemAlertEvent event) {
+        kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getSourceServiceName(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish SystemAlertEvent from course service: {}", ex.getMessage());
+                    }
+                });
     }
 
 }

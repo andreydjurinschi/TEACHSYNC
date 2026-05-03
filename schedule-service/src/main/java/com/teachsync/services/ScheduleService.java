@@ -25,6 +25,7 @@ import com.teachsync.repositories.ScheduleDayRepository;
 import com.teachsync.repositories.ScheduleRepository;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
 import com.teachsync.teachsyncevents.schedules.ScheduleUpdatedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import com.teachsync.validator.CustomTimeValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -45,15 +47,17 @@ public class ScheduleService {
     private final CustomTimeValidator timeValidator;
     private final TeacherClient teacherClient;
     private final GroupCourseClient groupCourseClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
     private final ScheduleDayRepository scheduleDayRepository;
     private final ScheduleEventProducer scheduleEventProducer;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient, ScheduleDayRepository scheduleDayRepository, ScheduleEventProducer scheduleEventProducer) {
+    public ScheduleService(ScheduleRepository scheduleRepository, ClassRoomRepository classRoomRepository, CustomTimeValidator timeValidator, TeacherClient teacherClient, GroupCourseClient groupCourseClient, ReferenceDataCacheService referenceDataCacheService, ScheduleDayRepository scheduleDayRepository, ScheduleEventProducer scheduleEventProducer) {
         this.scheduleRepository = scheduleRepository;
         this.classRoomRepository = classRoomRepository;
         this.timeValidator = timeValidator;
         this.teacherClient = teacherClient;
         this.groupCourseClient = groupCourseClient;
+        this.referenceDataCacheService = referenceDataCacheService;
         this.scheduleDayRepository = scheduleDayRepository;
         this.scheduleEventProducer = scheduleEventProducer;
     }
@@ -64,12 +68,12 @@ public class ScheduleService {
         List<Long> teacherIds    = all.stream().map(Schedule::getTeacherId).distinct().toList();
         List<Long> groupCourseIds = all.stream().map(Schedule::getGroupCourseId).distinct().toList();
 
-        Map<Long, TeacherBaseInfoRequest> teacherMap = teacherClient
+        Map<Long, TeacherBaseInfoRequest> teacherMap = referenceDataCacheService
                 .getTeachersByIds(teacherIds)
                 .stream()
                 .collect(Collectors.toMap(TeacherBaseInfoRequest::getId, t -> t));
 
-        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = groupCourseClient
+        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = referenceDataCacheService
                 .getGroupCoursesByIds(groupCourseIds)
                 .stream()
                 .collect(Collectors.toMap(GroupCourseBaseInfoRequest::getId, g -> g));
@@ -92,7 +96,7 @@ public class ScheduleService {
                 .distinct()
                 .toList();
 
-        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = groupCourseClient
+        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = referenceDataCacheService
                 .getGroupCoursesByIds(groupCourseIds)
                 .stream()
                 .collect(Collectors.toMap(GroupCourseBaseInfoRequest::getId, g -> g));
@@ -112,15 +116,15 @@ public class ScheduleService {
     }
 
     public List<TeacherBaseInfoRequest> getAllTeachers(Role role){
-        return teacherClient.getAllTeachers(role);
+        return referenceDataCacheService.getAllTeachers(role);
     }
 
     public  List<GroupCourseBaseInfoRequest> getAllGroupCourses(){
-        return groupCourseClient.getAllGroupCourses();
+        return referenceDataCacheService.getAllGroupCourses();
     }
 
     public ScheduleStatisticsDto getStatistics() {
-        long totalGroupCourses = groupCourseClient.getAllGroupCourses().size();
+        long totalGroupCourses = referenceDataCacheService.getAllGroupCourses().size();
         long scheduledGroupCourses = scheduleRepository.countScheduledGroupCourses();
         return new ScheduleStatisticsDto(
                 scheduleRepository.count(),
@@ -158,13 +162,13 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("this schedule does not exist"));
         ScheduleBaseDto dto = ScheduleMapper.mapToBaseDto(schedule);
-        dto.setTeacherDto(teacherClient.requestForUserFromUserService(schedule.getTeacherId()));
-        dto.setGroupCourseDto(groupCourseClient.groupCourseBaseInfoRequest(schedule.getGroupCourseId()));
+        dto.setTeacherDto(referenceDataCacheService.getTeacher(schedule.getTeacherId()));
+        dto.setGroupCourseDto(referenceDataCacheService.getGroupCourse(schedule.getGroupCourseId()));
         return dto;
     }
 
     public List<GroupCourseBaseInfoRequest> getAllGroupCoursesWithoutSchedule(){
-        List<GroupCourseBaseInfoRequest> allGroupCourses = groupCourseClient.getAllGroupCourses();
+        List<GroupCourseBaseInfoRequest> allGroupCourses = referenceDataCacheService.getAllGroupCourses();
 
         log.info("allGroupCourses: [ " + allGroupCourses.stream().map(GroupCourseBaseInfoRequest::getId).toList() + " ]");
 
@@ -198,7 +202,7 @@ public class ScheduleService {
 
         Set<Long> busyTeachers = conflicts.stream().map(Schedule::getTeacherId).collect(Collectors.toSet());
 
-        List<TeacherBaseInfoRequest> allTeachers = teacherClient.getAllTeachers(Role.TEACHER);
+        List<TeacherBaseInfoRequest> allTeachers = referenceDataCacheService.getAllTeachers(Role.TEACHER);
         List<TeacherBaseInfoRequest> availableTeachers = allTeachers.stream().filter(t -> !busyTeachers.contains(t.getId())).toList();
 
         System.out.println("сообщение будет сгенерировано следующим учителям:");
@@ -232,12 +236,20 @@ public class ScheduleService {
 
         ClassRoom classRoom = classRoomRepository.findById(newClassRoomId)
                 .orElseThrow(() -> new NoSuchElementException("classroom does not exist"));
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(newGroupCourseId);
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Обновление расписания",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(newGroupCourseId)
+        );
         if (groupCourse.getTeacherId() == null) {
             throw new IllegalArgumentException("Нельзя назначить расписание на курс без преподавателя");
         }
 
-        GroupCourseDto groupSize = groupCourseClient.getGroupSizeInformation(newGroupCourseId);
+        GroupCourseDto groupSize = requireDependency(
+                "Проверка вместимости аудитории при обновлении расписания",
+                "course-service",
+                () -> groupCourseClient.getGroupSizeInformation(newGroupCourseId)
+        );
         if (classRoom.getCapacity() < groupSize.getCapacity()) {
             throw new IllegalArgumentException(
                     "Аудитория вмещает " + classRoom.getCapacity() +
@@ -288,7 +300,7 @@ public class ScheduleService {
         ));
 
         ScheduleBaseDto result = ScheduleMapper.mapToBaseDto(saved);
-        result.setTeacherDto(teacherClient.requestForUserFromUserService(saved.getTeacherId()));
+        result.setTeacherDto(referenceDataCacheService.getTeacher(saved.getTeacherId()));
         result.setGroupCourseDto(groupCourse);
         return result;
     }
@@ -297,14 +309,20 @@ public class ScheduleService {
         ClassRoom classRoom = classRoomRepository.findById(dto.getClassRoomId())
                 .orElseThrow();
 
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient
-                .groupCourseBaseInfoRequest(dto.getGroupCourseId());
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Создание расписания",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(dto.getGroupCourseId())
+        );
         if (groupCourse.getTeacherId() == null) {
             throw new IllegalArgumentException("Нельзя создать расписание для курса без преподавателя");
         }
 
-        GroupCourseDto groupSize = groupCourseClient
-                .getGroupSizeInformation(dto.getGroupCourseId());
+        GroupCourseDto groupSize = requireDependency(
+                "Проверка вместимости аудитории при создании расписания",
+                "course-service",
+                () -> groupCourseClient.getGroupSizeInformation(dto.getGroupCourseId())
+        );
         if (classRoom.getCapacity() < groupSize.getCapacity()) {
             throw new IllegalArgumentException(
                     "Аудитория вмещает " + classRoom.getCapacity() +
@@ -355,7 +373,7 @@ public class ScheduleService {
                 teacherId
         );
         if(!teacherConflicts.isEmpty()){
-            TeacherBaseInfoRequest teacherBaseInfoRequest = teacherClient.requestForUserFromUserService(teacherId);
+            TeacherBaseInfoRequest teacherBaseInfoRequest = referenceDataCacheService.getTeacher(teacherId);
             throw new ScheduleConflictException(
                     "Преподаватель «" + teacherBaseInfoRequest.getName() + " " + teacherBaseInfoRequest.getSurname() + "» уже занят в это время"
             );
@@ -374,7 +392,7 @@ public class ScheduleService {
                 teacherId
         ).stream().filter(item -> !item.getId().equals(scheduleId)).toList();
         if (!teacherConflicts.isEmpty()) {
-            TeacherBaseInfoRequest teacherBaseInfoRequest = teacherClient.requestForUserFromUserService(teacherId);
+            TeacherBaseInfoRequest teacherBaseInfoRequest = referenceDataCacheService.getTeacher(teacherId);
             throw new ScheduleConflictException(
                     "Преподаватель «" + teacherBaseInfoRequest.getName() + " " + teacherBaseInfoRequest.getSurname() + "» уже занят в это время"
             );
@@ -431,7 +449,11 @@ public class ScheduleService {
                 .map(Schedule::getGroupCourseId)
                 .distinct()
                 .toList();
-        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = groupCourseClient.getGroupCoursesByIds(groupCourseIds)
+        Map<Long, GroupCourseBaseInfoRequest> groupCourseMap = requireDependency(
+                "Проверка конфликта группы при обновлении расписания",
+                "course-service",
+                () -> groupCourseClient.getGroupCoursesByIds(groupCourseIds)
+        )
                 .stream()
                 .collect(Collectors.toMap(GroupCourseBaseInfoRequest::getId, item -> item));
 
@@ -460,7 +482,7 @@ public class ScheduleService {
             return null;
         }
         try {
-            return teacherClient.requestForUserFromUserService(userId);
+            return referenceDataCacheService.getTeacher(userId);
         } catch (Exception e) {
             log.warning("Could not resolve user " + userId + " for schedule update notification");
             return null;
@@ -513,6 +535,26 @@ public class ScheduleService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private <T> T requireDependency(String operation, String dependency, Supplier<T> call) {
+        try {
+            return call.get();
+        } catch (RuntimeException e) {
+            publishDependencyAlert(operation, dependency, e);
+            throw e;
+        }
+    }
+
+    private void publishDependencyAlert(String operation, String dependency, RuntimeException e) {
+        scheduleEventProducer.publishSystemAlert(new SystemAlertEvent(
+                "schedule-service",
+                operation,
+                dependency,
+                "HIGH",
+                "Операция не может быть безопасно выполнена без актуальных данных зависимого сервиса",
+                e.getClass().getSimpleName() + ": " + safe(e.getMessage())
+        ));
     }
 
     // todo

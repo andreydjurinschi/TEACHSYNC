@@ -38,7 +38,8 @@ public class NotificationSchemaSynchronizer {
                         'USER_SPECIALIZATION_REMOVED',
                         'REPLACEMENT_REQUESTED',
                         'REPLACEMENT_APPROVED',
-                        'REPLACEMENT_STATUS_CHANGED'
+                        'REPLACEMENT_STATUS_CHANGED',
+                        'SYSTEM_ALERT'
                     ))
                     """);
         };

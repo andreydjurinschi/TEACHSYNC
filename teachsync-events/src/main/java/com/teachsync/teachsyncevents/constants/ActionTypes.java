@@ -27,4 +27,7 @@ public class ActionTypes {
     public static final String USER_DELETED = "USER_DELETED";
     public static final String USER_SPEC_ADDED = "USER_SPECIALIZATION_ADDED";
     public static final String USER_SPEC_DELETED = "USER_SPECIALIZATION_DELETED";
+
+    // system
+    public static final String SYSTEM_ALERT = "SYSTEM_ALERT";
 }

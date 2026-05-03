@@ -5,7 +5,6 @@ import com.teachsync.domain.Role;
 import com.teachsync.domain.User;
 import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.interaction.KAFKA.producer.UserEventProducer;
-import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
 import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
@@ -37,13 +36,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepository repository;
-    private final CourseClient courseClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
     private final SpecializationsRepository specializationsRepository;
     private final UserEventProducer userEventProducer;
 
-    public UserService(UserRepository repository, CourseClient courseClient, SpecializationsRepository specializationsRepository, UserEventProducer userEventProducer) {
+    public UserService(UserRepository repository, ReferenceDataCacheService referenceDataCacheService, SpecializationsRepository specializationsRepository, UserEventProducer userEventProducer) {
         this.repository = repository;
-        this.courseClient = courseClient;
+        this.referenceDataCacheService = referenceDataCacheService;
         this.specializationsRepository = specializationsRepository;
         this.userEventProducer = userEventProducer;
     }
@@ -159,7 +158,7 @@ public class UserService {
         dto.setEmail(user.getEmail());
         List<CourseBaseDto> courses;
 
-        courses = courseClient.requestForCourseInfo(userId);
+        courses = referenceDataCacheService.getCoursesForTeacher(userId);
         dto.setCourseNames(courses);
         dto.setAvailable(true);
         return dto;

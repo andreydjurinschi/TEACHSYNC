@@ -83,7 +83,8 @@ public class NotificationPreferenceService {
                  TEACHER_ASSIGNED,
                  SCHEDULE_CREATED,
                  SCHEDULE_UPDATED,
-                 USER_ROLE_CHANGED -> true;
+                 USER_ROLE_CHANGED,
+                 SYSTEM_ALERT -> true;
             default -> false;
         };
     }
@@ -108,7 +109,8 @@ public class NotificationPreferenceService {
                  USER_DELETED,
                  USER_ROLE_CHANGED,
                  USER_SPECIALIZATION_ADDED,
-                 USER_SPECIALIZATION_REMOVED -> NotificationCategory.SYSTEM;
+                 USER_SPECIALIZATION_REMOVED,
+                 SYSTEM_ALERT -> NotificationCategory.SYSTEM;
         };
     }
 

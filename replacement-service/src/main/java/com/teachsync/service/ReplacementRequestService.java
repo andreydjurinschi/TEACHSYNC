@@ -24,6 +24,7 @@ import com.teachsync.repository.ReplacementResponseRepository;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementRequestedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementStatusChangedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,6 +55,7 @@ public class ReplacementRequestService {
     private final ScheduleClient scheduleClient;
     private final GroupCourseClient groupCourseClient;
     private final UserClient userClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
     private final ReplacementEventProducer eventProducer;
 
     public ReplacementRequestService(ReplacementRequestRepository repository,
@@ -60,19 +63,29 @@ public class ReplacementRequestService {
                                      ScheduleClient scheduleClient,
                                      GroupCourseClient groupCourseClient,
                                      UserClient userClient,
+                                     ReferenceDataCacheService referenceDataCacheService,
                                      ReplacementEventProducer eventProducer) {
         this.repository = repository;
         this.responseRepository = responseRepository;
         this.scheduleClient = scheduleClient;
         this.groupCourseClient = groupCourseClient;
         this.userClient = userClient;
+        this.referenceDataCacheService = referenceDataCacheService;
         this.eventProducer = eventProducer;
     }
 
     @Transactional
     public ReplacementRequestBaseDto create(ReplacementRequestCreateDto dto) {
-        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(dto.getScheduleId());
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(schedule.getGroupCourseDto().getId());
+        ScheduleBaseDtoRequest schedule = requireDependency(
+                "Создание заявки на замену: получение расписания",
+                "schedule-service",
+                () -> scheduleClient.getSchedule(dto.getScheduleId())
+        );
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Создание заявки на замену: получение курса и группы",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(schedule.getGroupCourseDto().getId())
+        );
         WeekDays lessonWeekDay = weekdayFromLessonDate(dto.getLessonDate());
         Long teacherRequested = dto.getTeacherRequested() != null
                 ? dto.getTeacherRequested()
@@ -186,9 +199,21 @@ public class ReplacementRequestService {
                 .findByReplacementRequestIdAndTeacherResponse(requestId, teacherId)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher was not invited to this replacement"));
 
-        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
-        TeacherBaseInfoRequest teacher = userClient.getTeacher(teacherId);
+        ScheduleBaseDtoRequest schedule = requireDependency(
+                "Подтверждение замены: получение расписания",
+                "schedule-service",
+                () -> scheduleClient.getSchedule(request.getScheduleId())
+        );
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Подтверждение замены: получение курса и группы",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId())
+        );
+        TeacherBaseInfoRequest teacher = requireDependency(
+                "Подтверждение замены: проверка преподавателя",
+                "users-service",
+                () -> userClient.getTeacher(teacherId)
+        );
 
         if (!isTeacherAvailableForSchedule(schedule, request, teacherId) || !hasRequiredSpecialization(teacher, groupCourse.getCategoryId())) {
             throw new IllegalStateException("Teacher is no longer available or does not match course category");
@@ -262,8 +287,16 @@ public class ReplacementRequestService {
         responseRepository.findByReplacementRequestId(requestId)
                 .forEach(item -> item.setResponseStatus(ResponseStatus.DECLINED));
 
-        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+        ScheduleBaseDtoRequest schedule = requireDependency(
+                "Отмена заявки на замену: получение расписания",
+                "schedule-service",
+                () -> scheduleClient.getSchedule(request.getScheduleId())
+        );
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Отмена заявки на замену: получение курса и группы",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId())
+        );
         publishStatusChangedToRequester(
                 request,
                 groupCourse,
@@ -288,7 +321,11 @@ public class ReplacementRequestService {
     @Transactional
     public void expireStaleRequests() {
         for (ReplacementRequest request : repository.findByStatus(Status.PENDING)) {
-            ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
+            ScheduleBaseDtoRequest schedule = requireDependency(
+                    "Автоматическое закрытие просроченных замен: получение расписания",
+                    "schedule-service",
+                    () -> scheduleClient.getSchedule(request.getScheduleId())
+            );
             if (!lessonAlreadyEnded(request.getLessonDate(), schedule.getEndTime())) {
                 continue;
             }
@@ -300,7 +337,11 @@ public class ReplacementRequestService {
             responseRepository.findByReplacementRequestId(request.getId())
                     .forEach(item -> item.setResponseStatus(ResponseStatus.DECLINED));
 
-            GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+            GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                    "Автоматическое закрытие просроченных замен: получение курса и группы",
+                    "course-service",
+                    () -> groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId())
+            );
             publishStatusChangedToRequester(
                     request,
                     groupCourse,
@@ -326,12 +367,20 @@ public class ReplacementRequestService {
                                                                GroupCourseBaseInfoRequest groupCourse,
                                                                WeekDays lessonWeekDay) {
         Set<Long> freeTeacherIds = new HashSet<>(
-                scheduleClient.getAvailableTeachers(schedule.getId(), lessonWeekDay)
+                requireDependency(
+                        "Поиск кандидатов на замену: получение свободных преподавателей",
+                        "schedule-service",
+                        () -> scheduleClient.getAvailableTeachers(schedule.getId(), lessonWeekDay)
+                )
         );
         if (freeTeacherIds.isEmpty()) {
             return List.of();
         }
-        return userClient.getByIds(List.copyOf(freeTeacherIds))
+        return requireDependency(
+                        "Поиск кандидатов на замену: получение данных преподавателей",
+                        "users-service",
+                        () -> userClient.getByIds(List.copyOf(freeTeacherIds))
+                )
                 .stream()
                 .filter(teacher -> !teacher.getId().equals(request.getTeacherRequested()))
                 .filter(teacher -> hasRequiredSpecialization(teacher, groupCourse.getCategoryId()))
@@ -355,8 +404,16 @@ public class ReplacementRequestService {
         }
 
         request.setStatus(Status.AUTO_CLOSED);
-        ScheduleBaseDtoRequest schedule = scheduleClient.getSchedule(request.getScheduleId());
-        GroupCourseBaseInfoRequest groupCourse = groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId());
+        ScheduleBaseDtoRequest schedule = requireDependency(
+                "Автозакрытие заявки на замену: получение расписания",
+                "schedule-service",
+                () -> scheduleClient.getSchedule(request.getScheduleId())
+        );
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Автозакрытие заявки на замену: получение курса и группы",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(request.getGroupCourseId())
+        );
         publishStatusChangedToRequester(
                 request,
                 groupCourse,
@@ -370,7 +427,11 @@ public class ReplacementRequestService {
     private boolean isTeacherAvailableForSchedule(ScheduleBaseDtoRequest schedule,
                                                   ReplacementRequest request,
                                                   Long teacherId) {
-        return scheduleClient.getAvailableTeachers(schedule.getId(), weekdayFromLessonDate(request.getLessonDate()))
+        return requireDependency(
+                "Подтверждение замены: повторная проверка доступности преподавателя",
+                "schedule-service",
+                () -> scheduleClient.getAvailableTeachers(schedule.getId(), weekdayFromLessonDate(request.getLessonDate()))
+        )
                 .contains(teacherId);
     }
 
@@ -471,13 +532,13 @@ public class ReplacementRequestService {
         ReplacementRequestBaseDto result = ReplacementMapper.mapToBaseDto(replacementRequest);
         List<ReplacementResponse> responses = responseRepository.findByReplacementRequestId(replacementRequest.getId());
 
-        TeacherBaseInfoRequest requested = userClient.getTeacher(replacementRequest.getTeacherRequested());
+        TeacherBaseInfoRequest requested = referenceDataCacheService.getTeacher(replacementRequest.getTeacherRequested());
         TeacherBaseInfoRequest approved = null;
         if (replacementRequest.getApprovedById() != null) {
-            approved = userClient.getTeacher(replacementRequest.getApprovedById());
+            approved = referenceDataCacheService.getTeacher(replacementRequest.getApprovedById());
         }
-        ScheduleBaseDtoRequest scheduleRequest = scheduleClient.getSchedule(replacementRequest.getScheduleId());
-        GroupCourseBaseInfoRequest groupCourseBaseInfoRequest = groupCourseClient.groupCourseBaseInfoRequest(replacementRequest.getGroupCourseId());
+        ScheduleBaseDtoRequest scheduleRequest = referenceDataCacheService.getSchedule(replacementRequest.getScheduleId());
+        GroupCourseBaseInfoRequest groupCourseBaseInfoRequest = referenceDataCacheService.getGroupCourse(replacementRequest.getGroupCourseId());
 
         result.setTeacherBaseInfoRequest(requested);
         result.setApprovedByTeacherBaseInfoRequest(approved);
@@ -505,7 +566,7 @@ public class ReplacementRequestService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        Map<Long, TeacherBaseInfoRequest> teachers = userClient.getByIds(teacherIds).stream()
+        Map<Long, TeacherBaseInfoRequest> teachers = referenceDataCacheService.getTeachersByIds(teacherIds).stream()
                 .collect(Collectors.toMap(TeacherBaseInfoRequest::getId, Function.identity()));
 
         return teacherIds.stream()
@@ -521,5 +582,25 @@ public class ReplacementRequestService {
                 })
                 .sorted(Comparator.comparingLong(TeacherHelpMetricDto::approvedReplacements).reversed())
                 .toList();
+    }
+
+    private <T> T requireDependency(String operation, String dependency, Supplier<T> call) {
+        try {
+            return call.get();
+        } catch (RuntimeException e) {
+            publishDependencyAlert(operation, dependency, e);
+            throw e;
+        }
+    }
+
+    private void publishDependencyAlert(String operation, String dependency, RuntimeException e) {
+        eventProducer.publishSystemAlert(new SystemAlertEvent(
+                "replacement-service",
+                operation,
+                dependency,
+                "HIGH",
+                "Операция не может быть безопасно выполнена без актуальных данных зависимого сервиса",
+                e.getClass().getSimpleName() + ": " + (e.getMessage() == null ? "" : e.getMessage())
+        ));
     }
 }
