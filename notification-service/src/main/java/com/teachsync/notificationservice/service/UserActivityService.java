@@ -55,12 +55,7 @@ public class UserActivityService {
         PageRequest page = PageRequest.of(0, safeLimit);
 
         List<UserActivity> personal = repository.findByTargetUserIdOrderByCreatedAtDesc(userId, page);
-        if (role == null) {
-            return personal.stream().map(this::toDto).toList();
-        }
-
-        List<UserActivity> roleActivities = repository.findByTargetRoleOrderByCreatedAtDesc(role, page);
-        return java.util.stream.Stream.concat(personal.stream(), roleActivities.stream())
+        return personal.stream()
                 .sorted(Comparator.comparing(UserActivity::getCreatedAt).reversed())
                 .limit(safeLimit)
                 .map(this::toDto)

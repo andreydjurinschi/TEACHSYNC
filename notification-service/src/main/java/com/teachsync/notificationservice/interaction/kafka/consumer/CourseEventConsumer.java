@@ -207,6 +207,20 @@ public class CourseEventConsumer {
                 "Было: " + event.getOldState() + "\nСтало: " + event.getNewState(),
                 actionUrl
         );
+        if (event.getChangedByUserId() != null) {
+            activityService.recordForUser(
+                    event.getUuid() + ":actor",
+                    event.getServiceName(),
+                    ActionTypes.COURSE_EDITED,
+                    event.getChangedByUserId(),
+                    event.getChangedByUserId(),
+                    actorName(event),
+                    "Вы обновили курс",
+                    "Вы обновили курс " + courseName + ".",
+                    "Было: " + event.getOldState() + "\nСтало: " + event.getNewState(),
+                    actionUrl
+            );
+        }
         Long teacherId = extractTeacherId(event.getNewState());
         if (teacherId != null) {
             notificationService.saveForUser(

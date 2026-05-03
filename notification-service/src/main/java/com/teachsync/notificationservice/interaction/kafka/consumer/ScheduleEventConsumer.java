@@ -112,6 +112,22 @@ public class ScheduleEventConsumer {
                 "/profile/schedules"
         );
 
+        if (event.getChangedByUserId() != null) {
+            activityService.recordForUser(
+                    event.getUuid() + ":actor",
+                    event.getServiceName(),
+                    ActionTypes.SCHEDULE_UPDATED,
+                    event.getChangedByUserId(),
+                    event.getChangedByUserId(),
+                    event.getChangedByName(),
+                    "Вы изменили расписание",
+                    "Вы обновили расписание по курсу \"" + event.getCourseName() + "\" для группы \"" + event.getGroupName() + "\".",
+                    "Новое расписание: " + days + ", " + event.getStartTime() + "-" + event.getEndTime()
+                            + ", аудитория \"" + event.getClassRoomName() + "\". Что изменилось: " + event.getChangeSummary(),
+                    "/schedules"
+            );
+        }
+
         if (event.getPreviousTeacherId() != null && !event.getPreviousTeacherId().equals(event.getTeacherId())) {
             notificationService.saveForUser(
                     event.getUuid(),

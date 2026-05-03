@@ -93,7 +93,7 @@ public class NotificationSseService {
                 connection.emitter().send(event);
             }
             return true;
-        } catch (IOException | IllegalStateException e) {
+        } catch (Exception e) {
             connection.active().set(false);
             return false;
         }

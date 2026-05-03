@@ -139,6 +139,15 @@ public class ReplacementRequestService {
             ));
         }
 
+        publishStatusChangedToRequester(
+                saved,
+                groupCourse,
+                schedule,
+                "Заявка на замену создана",
+                "Запрос на замену отправлен подходящим преподавателям.",
+                REPLACEMENTS_URL
+        );
+
         return enrich(saved);
     }
 
