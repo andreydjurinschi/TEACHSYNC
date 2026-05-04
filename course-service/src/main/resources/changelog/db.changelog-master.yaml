@@ -9,3 +9,7 @@ databaseChangeLog:
 #      file: changelog/changeset/004-insert-data-into-intermediate-tables.sql
 #  - include:
 #      file: changelog/changeset/005-update-course-table-set-teachers.sql
+  - include:
+      file: changelog/changeset/006-alter-course-photo-url-text.sql
+  - include:
+      file: changelog/changeset/007-ensure-course-photo-url-text.sql

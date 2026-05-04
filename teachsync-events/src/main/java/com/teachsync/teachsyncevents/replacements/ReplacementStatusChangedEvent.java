@@ -10,28 +10,34 @@ public class ReplacementStatusChangedEvent extends BaseEvent {
 
     private Long replacementRequestId;
     private Long teacherRequestedId;
+    private Long targetTeacherId;
     private String status;
     private String courseName;
     private String groupName;
     private LocalDate lessonDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private String title;
     private String message;
+    private String actionUrl;
 
     public ReplacementStatusChangedEvent(Long replacementRequestId, Long teacherRequestedId, String status,
                                          String courseName, String groupName,
                                          LocalDate lessonDate, LocalTime startTime, LocalTime endTime,
-                                         String message) {
+                                         Long targetTeacherId, String title, String message, String actionUrl) {
         super("replacement-service", ActionTypes.REPLACEMENT_STATUS_CHANGED);
         this.replacementRequestId = replacementRequestId;
         this.teacherRequestedId = teacherRequestedId;
+        this.targetTeacherId = targetTeacherId;
         this.status = status;
         this.courseName = courseName;
         this.groupName = groupName;
         this.lessonDate = lessonDate;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.title = title;
         this.message = message;
+        this.actionUrl = actionUrl;
     }
 
     public ReplacementStatusChangedEvent() {
@@ -51,6 +57,14 @@ public class ReplacementStatusChangedEvent extends BaseEvent {
 
     public void setTeacherRequestedId(Long teacherRequestedId) {
         this.teacherRequestedId = teacherRequestedId;
+    }
+
+    public Long getTargetTeacherId() {
+        return targetTeacherId;
+    }
+
+    public void setTargetTeacherId(Long targetTeacherId) {
+        this.targetTeacherId = targetTeacherId;
     }
 
     public String getStatus() {
@@ -101,11 +115,27 @@ public class ReplacementStatusChangedEvent extends BaseEvent {
         this.endTime = endTime;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getMessage() {
         return message;
     }
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getActionUrl() {
+        return actionUrl;
+    }
+
+    public void setActionUrl(String actionUrl) {
+        this.actionUrl = actionUrl;
     }
 }

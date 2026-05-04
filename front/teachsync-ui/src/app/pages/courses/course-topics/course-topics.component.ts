@@ -1,16 +1,19 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
 import { TopicService } from '../../../core/services/topic.service';
 import { Topic } from '../../../core/models/topics/topic.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { TopicTag } from '../../../core/models/topics/topic.model';
+import { RuleService } from '../../../core/services/role.rule.service';
+import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
 @Component({
   selector: 'app-course-topics',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaginationControlsComponent],
   templateUrl: './course-topics.html',
 })
 export class CourseTopics implements OnInit {
@@ -21,12 +24,39 @@ export class CourseTopics implements OnInit {
   loading = signal(false);
   selectedTag = signal<TopicTag | 'ALL'>('ALL');
   filteredTopics = signal<Topic[]>([]);
+  newTopicName = signal('');
+  newTopicTag = signal<TopicTag>('IT');
+  topicCreateError = signal<string | null>(null);
+  topicCreatePending = signal(false);
+  assignedPage = signal(1);
+  availablePage = signal(1);
+  private readonly pageSize = 8;
+  assignedTotalPages = computed(() => getTotalPages(this.assignedTopics().length, this.pageSize));
+  availableTotalPages = computed(() => getTotalPages(this.unassignedFilteredTopics().length, this.pageSize));
+  visibleAssignedTopics = computed(() => paginateItems(this.assignedTopics(), this.assignedPage(), this.pageSize));
+  visibleAvailableTopics = computed(() => paginateItems(this.unassignedFilteredTopics(), this.availablePage(), this.pageSize));
   readonly tags: (TopicTag | 'ALL')[] = ['ALL', 'IT', 'DESIGN', 'MATH', 'LANGUAGE', 'BUSINESS', 'SCIENCE', 'OTHER'];
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
   private courseService = inject(CourseService);
   private topicService = inject(TopicService);
+  readonly ruleService = inject(RuleService);
+
+  constructor() {
+    effect(() => {
+      const maxPage = this.assignedTotalPages();
+      if (this.assignedPage() > maxPage) {
+        this.assignedPage.set(maxPage);
+      }
+    });
+    effect(() => {
+      const maxPage = this.availableTotalPages();
+      if (this.availablePage() > maxPage) {
+        this.availablePage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -41,7 +71,7 @@ export class CourseTopics implements OnInit {
     }
   }
 
-loadData(): void {
+  loadData(): void {
     this.topicService.getAll().subscribe({
       next: allTopics => {
         this.allTopics.set(allTopics);
@@ -54,6 +84,7 @@ loadData(): void {
               return { id: found?.id ?? 0, name: t.name, topicTag: found?.topicTag ?? null };
             });
             this.assignedTopics.set(assigned);
+            this.assignedPage.set(1);
           }
         });
       }
@@ -64,7 +95,10 @@ loadData(): void {
     const tag = this.selectedTag();
     const all = this.allTopics();
     this.filteredTopics.set(tag === 'ALL' ? all : all.filter(t => t.topicTag === tag));
+    this.availablePage.set(1);
   }
+
+  unassignedFilteredTopics = computed(() => this.filteredTopics().filter(topic => !this.isAssigned(topic)));
 
   isAssigned(topic: Topic): boolean {
     return this.assignedTopics().some(t => t.name === topic.name);
@@ -93,14 +127,36 @@ loadData(): void {
 
   getTagColor(tag: TopicTag | null): string {
     const colors: Record<string, string> = {
-      IT:       'bg-indigo-500/20 text-indigo-400',
-      DESIGN:   'bg-pink-500/20 text-pink-400',
-      MATH:     'bg-amber-500/20 text-amber-400',
+      IT:       'bg-blue-500/20 text-blue-400',
+      DESIGN:   'bg-blue-500/20 text-blue-400',
+      MATH:     'bg-emerald-500/20 text-emerald-400',
       LANGUAGE: 'bg-emerald-500/20 text-emerald-400',
       BUSINESS: 'bg-blue-500/20 text-blue-400',
-      SCIENCE:  'bg-purple-500/20 text-purple-400',
+      SCIENCE:  'bg-blue-500/20 text-blue-400',
       OTHER:    'bg-slate-500/20 text-slate-400',
     };
     return tag ? (colors[tag] ?? 'bg-slate-500/20 text-slate-400') : 'bg-slate-500/20 text-slate-400';
+  }
+
+  createTopic(): void {
+    const name = this.newTopicName().trim();
+    if (!name) {
+      this.topicCreateError.set('Введите название темы.');
+      return;
+    }
+    this.topicCreatePending.set(true);
+    this.topicCreateError.set(null);
+    this.topicService.create({ name, topicTag: this.newTopicTag() }).subscribe({
+      next: created => {
+        this.newTopicName.set('');
+        this.newTopicTag.set(created.topicTag ?? 'IT');
+        this.loadData();
+        this.topicCreatePending.set(false);
+      },
+      error: err => {
+        this.topicCreateError.set(err?.error?.message ?? 'Не удалось создать тему.');
+        this.topicCreatePending.set(false);
+      }
+    });
   }
 }

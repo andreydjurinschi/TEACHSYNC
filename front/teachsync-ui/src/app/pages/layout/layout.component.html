@@ -1,11 +1,60 @@
-<div class="flex h-screen bg-white dark:bg-slate-900">
-  <aside class="w-64 flex-shrink-0 bg-gradient-to-b from-slate-900 via-blue-900 to-indigo-900 flex flex-col">
-    <div class="flex items-center gap-3 px-6 py-6 border-b border-slate-700">
-      <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
-        <span class="text-white font-bold text-sm">TS</span>
+<div class="app-shell lg:flex">
+  <div
+    class="fixed inset-0 z-40 bg-slate-950/40 lg:hidden"
+    *ngIf="sidebarOpen()"
+    (click)="closeSidebar()">
+  </div>
+
+  <header class="app-shell-mobile-bar sticky top-0 z-30 lg:hidden">
+    <button
+      type="button"
+      (click)="toggleSidebar()"
+      aria-label="Открыть навигацию"
+      class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <div class="app-shell-logo">TS</div>
+
+    <div class="min-w-0">
+      <p class="text-sm font-semibold text-slate-900 dark:text-white">TeachSync</p>
+      <p class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">{{ role }}</p>
+    </div>
+
+    <button
+      type="button"
+      (click)="toggleTheme()"
+      aria-label="Переключить тему"
+      class="ml-auto flex h-10 w-10 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
+      @if (theme() === 'dark') {
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5" />
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42 M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+      } @else {
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      }
+    </button>
+  </header>
+
+  <aside
+    class="app-shell-sidebar fixed inset-y-0 left-0 z-50 w-72 -translate-x-full transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0"
+    [class.translate-x-0]="sidebarOpen()">
+    <div class="app-shell-sidebar-header">
+      <div class="app-shell-logo">TS</div>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-slate-900 dark:text-white">TeachSync</p>
+        <p class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">{{ role }}</p>
       </div>
-      <span class="text-white font-semibold text-lg">TeachSync</span>
-      <button type="button" (click)="toggleTheme()" aria-label="Переключить тему" class="ml-auto w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200 border" [class.bg-slate-800]="theme() === 'dark'" [class.border-slate-700]="theme() === 'dark'" [class.text-slate-400]="theme() === 'dark'" [class.hover:bg-slate-700]="theme() === 'dark'" [class.bg-white]="theme() === 'light'" [class.border-slate-200]="theme() === 'light'" [class.text-slate-600]="theme() === 'light'" [class.hover:bg-slate-100]="theme() === 'light'">
+      <button
+        type="button"
+        (click)="toggleTheme()"
+        aria-label="Переключить тему"
+        class="ml-auto hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 transition hover:bg-slate-50 lg:flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
         @if (theme() === 'dark') {
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="5" />
@@ -17,197 +66,190 @@
           </svg>
         }
       </button>
+      <button
+        type="button"
+        (click)="closeSidebar()"
+        aria-label="Закрыть навигацию"
+        class="ml-auto flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 transition hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
-    <div class="px-6 py-3">
-      <span class="text-xs text-indigo-300 uppercase tracking-widest font-medium">
-        {{ role }}
-      </span>
-    </div>
-
-    <nav class="flex-1 px-3 py-2 space-y-1">
-      <a routerLink="/profile" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <nav class="flex-1 space-y-1 px-3 py-4">
+      <a routerLink="/profile" (click)="closeSidebar()" class="app-shell-nav-link">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="8" r="4" stroke-linecap="round" />
           <path d="M6 20C6 16 10 14 12 14C14 14 18 16 18 20" stroke-linecap="round" />
         </svg>
-        <span class="text-sm font-medium">Мой профиль</span>
+        <span>Мой профиль</span>
       </a>
 
-      <hr>
+      <div class="my-3 border-t border-slate-200 dark:border-slate-800"></div>
 
       @if (role === 'ADMIN') {
-        <a routerLink="/users" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/users" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
-          <span class="text-sm font-medium">Пользователи</span>
+          <span>Пользователи</span>
         </a>
 
-        <a routerLink="/courses" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <a routerLink="/courses" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332-.477-4.5 1.253" />
           </svg>
-          <span class="text-sm font-medium">Курсы</span>
+          <span>Курсы</span>
         </a>
 
-        <a routerLink="/schedules" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/schedules" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="text-sm font-medium">Расписание</span>
+          <span>Расписание</span>
         </a>
 
-        <a routerLink="/groups" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/groups" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1 M9 20H4v-2a4 4 0 014-4h1 M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <span class="text-sm font-medium">Группы</span>
+          <span>Группы</span>
         </a>
 
-        <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/notifications" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11 a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341 C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5 m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span class="text-sm font-medium">Уведомления</span>
+          <span>Уведомления</span>
           @if (unreadCount() > 0) {
-            <span class="ml-auto min-w-6 rounded-full bg-rose-500 px-2 py-0.5 text-center text-xs font-semibold text-white">
-              {{ unreadCount() > 99 ? '99+' : unreadCount() }}
-            </span>
+            <span class="app-shell-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
           }
         </a>
 
-        <a routerLink="/statistics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/statistics" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z M15 19V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
           </svg>
-          <span class="text-sm font-medium">Статистика</span>
+          <span>Статистика</span>
         </a>
-
       }
 
       @if (role === 'MANAGER') {
-        <a routerLink="/courses" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <a routerLink="/courses" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332-.477-4.5 1.253" />
           </svg>
-          <span class="text-sm font-medium">Курсы</span>
+          <span>Курсы</span>
         </a>
 
-        <a routerLink="/groups" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/groups" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1 M9 20H4v-2a4 4 0 014-4h1 M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <span class="text-sm font-medium">Группы</span>
+          <span>Группы</span>
         </a>
 
-        <a routerLink="/schedules" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/schedules" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="text-sm font-medium">Расписание</span>
+          <span>Расписание</span>
         </a>
 
-        <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/notifications" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11 a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341 C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5 m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span class="text-sm font-medium">Уведомления</span>
+          <span>Уведомления</span>
           @if (unreadCount() > 0) {
-            <span class="ml-auto min-w-6 rounded-full bg-rose-500 px-2 py-0.5 text-center text-xs font-semibold text-white">
-              {{ unreadCount() > 99 ? '99+' : unreadCount() }}
-            </span>
+            <span class="app-shell-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
           }
         </a>
 
-        <a routerLink="/statistics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/statistics" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z M15 19V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
           </svg>
-          <span class="text-sm font-medium">Статистика</span>
+          <span>Статистика</span>
         </a>
 
-        <a routerLink="/manager/replacements" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/manager/replacements" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h3m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <span class="text-sm font-medium">Проблемные замены</span>
+          <span>Проблемные замены</span>
         </a>
       }
 
       @if (role === 'TEACHER') {
-        <div class="relative" (click)="toggleCourses()" tabindex="0">
-          <button class="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        <div class="rounded-lg">
+          <button class="app-shell-nav-link w-full" (click)="toggleCourses()">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13 C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13 C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13 C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332-.477-4.5 1.253"/>
             </svg>
-
-            <span class="text-sm font-medium flex-1 text-left">Курсы</span>
-
-            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="coursesOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="flex-1 text-left">Курсы</span>
+            <svg class="h-4 w-4 transition-transform" [class.rotate-180]="coursesOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
 
-          <div *ngIf="coursesOpen" class="mt-1 ml-8 space-y-1">
-            <a routerLink="/courses" class="block px-3 py-2 rounded-md text-slate-400 hover:text-white hover:bg-white/10 text-sm">
+          <div *ngIf="coursesOpen" class="mt-1 space-y-1 pl-10">
+            <a routerLink="/courses" (click)="closeSidebar()" class="app-shell-nav-link-muted">
               Все курсы
             </a>
-
-            <a routerLink="/profile/courses" class="block px-3 py-2 rounded-md text-slate-400 hover:text-white hover:bg-white/10 text-sm">
+            <a routerLink="/profile/courses" (click)="closeSidebar()" class="app-shell-nav-link-muted">
               Мои курсы
             </a>
           </div>
         </div>
 
-        <a routerLink="/profile/schedules" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/profile/schedules" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="text-sm font-medium">Мое расписание</span>
+          <span>Мое расписание</span>
         </a>
 
-        <a routerLink="/profile/replacements" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/profile/replacements" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h5m-9 8h14a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
           </svg>
-          <span class="text-sm font-medium">Замены</span>
+          <span>Замены</span>
         </a>
 
-        <a routerLink="/notifications" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/notifications" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11 a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341 C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5 m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span class="text-sm font-medium">Уведомления</span>
+          <span>Уведомления</span>
           @if (unreadCount() > 0) {
-            <span class="ml-auto min-w-6 rounded-full bg-rose-500 px-2 py-0.5 text-center text-xs font-semibold text-white">
-              {{ unreadCount() > 99 ? '99+' : unreadCount() }}
-            </span>
+            <span class="app-shell-badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
           }
         </a>
 
-        <a routerLink="/statistics" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:bg-white/10 hover:text-white transition-all group">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a routerLink="/statistics" (click)="closeSidebar()" class="app-shell-nav-link">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z M15 19V9a2 2 0 00-2-2h-2a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z M21 19V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
           </svg>
-          <span class="text-sm font-medium">Статистика</span>
+          <span>Статистика</span>
         </a>
       }
     </nav>
 
-    <div class="px-3 py-4 border-t border-slate-700">
-      <button (click)="logout()" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-slate-400 hover:bg-red-500/20 hover:text-red-400 transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="border-t border-slate-200 px-3 py-4 dark:border-slate-800">
+      <button (click)="logout()" class="app-shell-nav-link w-full text-left">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
         </svg>
-        <span class="text-sm font-medium">Logout</span>
+        <span>Выход</span>
       </button>
     </div>
   </aside>
 
-  <main class="flex-1 overflow-auto bg-white dark:bg-slate-900">
+  <main class="app-shell-main">
     <router-outlet />
   </main>
 </div>

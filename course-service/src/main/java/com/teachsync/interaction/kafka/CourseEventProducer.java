@@ -2,14 +2,16 @@ package com.teachsync.interaction.kafka;
 
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
+import com.teachsync.teachsyncevents.courses.GroupDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
-import com.teachsync.teachsyncevents.courses.CourseTeacherAssignmentRequestedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -63,20 +65,6 @@ public class CourseEventProducer {
                 );
             }
         }));
-    }
-
-    public void publishCourseTeacherAssignmentRequested(CourseTeacherAssignmentRequestedEvent event) {
-        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(
-                KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event
-        );
-        future.whenComplete((result, ex) -> {
-            if (ex != null) {
-                log.error("Failed publish event for teacher assignment request in course service: {}", ex.getMessage());
-            } else {
-                log.info("CourseTeacherAssignmentRequestedEvent published successfully... courseId: {}, teacherId: {}",
-                        event.getCourseId(), event.getTeacherId());
-            }
-        });
     }
 
     public void publishCourseTeacherUnassigned(CourseTeacherUnassignedEvent event) {
@@ -155,6 +143,37 @@ public class CourseEventProducer {
                 log.info("CourseTopicRemovedEvent published successfully... courseId: {}, topicId: {}", event.getCourseId(), event.getTopicId());
             }
         });
+    }
+
+    public void publishCourseDeleted(CourseDeletedEvent event) {
+        kafkaTemplate.send(KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed publish event for course delete in course service: {}", ex.getMessage());
+                    } else {
+                        log.info("CourseDeletedEvent published successfully... courseId: {}", event.getCourseId());
+                    }
+                });
+    }
+
+    public void publishGroupDeleted(GroupDeletedEvent event) {
+        kafkaTemplate.send(KafkaTopics.COURSE_EVENTS, event.getGroupId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed publish event for group delete in course service: {}", ex.getMessage());
+                    } else {
+                        log.info("GroupDeletedEvent published successfully... groupId: {}", event.getGroupId());
+                    }
+                });
+    }
+
+    public void publishSystemAlert(SystemAlertEvent event) {
+        kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getSourceServiceName(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish SystemAlertEvent from course service: {}", ex.getMessage());
+                    }
+                });
     }
 
 }

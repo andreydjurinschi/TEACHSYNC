@@ -1,8 +1,6 @@
 package com.teachsync.dto_s.domain.schedule;
 
 import com.teachsync.domain.WeekDays;
-import com.teachsync.dto_s.feign.GroupCourseDto;
-import com.teachsync.dto_s.feign.TeacherDto;
 
 import java.time.LocalTime;
 import java.util.Set;
@@ -11,17 +9,18 @@ public class ScheduleUpdateDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private Set<WeekDays> weekDays;
-    private GroupCourseDto groupCourseId;
-    private TeacherDto teacherId;
-    private Integer classRoomBaseDto;
+    private Long groupCourseId;
+    private Long classRoomId;
 
-    public ScheduleUpdateDto(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, GroupCourseDto groupCourseId, TeacherDto teacherId, Integer classRoomBaseDto) {
+    public ScheduleUpdateDto() {
+    }
+
+    public ScheduleUpdateDto(LocalTime startTime, LocalTime endTime, Set<WeekDays> weekDays, Long groupCourseId, Long classRoomId) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.weekDays = weekDays;
         this.groupCourseId = groupCourseId;
-        this.teacherId = teacherId;
-        this.classRoomBaseDto = classRoomBaseDto;
+        this.classRoomId = classRoomId;
     }
 
     public LocalTime getStartTime() {
@@ -48,27 +47,19 @@ public class ScheduleUpdateDto {
         this.weekDays = weekDays;
     }
 
-    public GroupCourseDto getGroupCourseId() {
+    public Long getGroupCourseId() {
         return groupCourseId;
     }
 
-    public void setGroupCourseId(GroupCourseDto groupCourseId) {
+    public void setGroupCourseId(Long groupCourseId) {
         this.groupCourseId = groupCourseId;
     }
 
-    public TeacherDto getTeacherId() {
-        return teacherId;
+    public Long getClassRoomId() {
+        return classRoomId;
     }
 
-    public void setTeacherId(TeacherDto teacherId) {
-        this.teacherId = teacherId;
-    }
-
-    public Integer getClassRoomBaseDto() {
-        return classRoomBaseDto;
-    }
-
-    public void setClassRoomBaseDto(Integer classRoomBaseDto) {
-        this.classRoomBaseDto = classRoomBaseDto;
+    public void setClassRoomId(Long classRoomId) {
+        this.classRoomId = classRoomId;
     }
 }

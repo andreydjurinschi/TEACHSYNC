@@ -1,0 +1,12 @@
+.git
+.idea
+.codex
+**/target
+**/node_modules
+**/dist
+**/.angular
+**/.env
+**/*.log
+*.pdf
+*.docx
+*.md

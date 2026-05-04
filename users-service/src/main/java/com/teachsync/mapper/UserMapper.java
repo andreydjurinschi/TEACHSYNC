@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 public class UserMapper {
     public static UserBaseDto mapToBaseDto(User user){
         return new UserBaseDto(
-               user.getId(), user.getName(), user.getSurname(), user.getEmail(),
+                user.getId(), user.getName(), user.getSurname(), user.getEmail(), user.getProfilePicture(),
                 user.getRegisteredAt(),
                 user.getRole(),
 
                 user.getSpecializations().stream().map(
-                    SpecializationMapper::mapToBaseDto
+                        SpecializationMapper::mapToBaseDto
                 ).collect(Collectors.toSet())
         );
     }
@@ -24,7 +24,7 @@ public class UserMapper {
                 dto.getName(),
                 dto.getSurname(),
                 dto.getEmail(),
-                null,
+                dto.getPassword(),
                 dto.getRegisteredAt(),
                 dto.getProfilePicture(),
                 dto.getRole()

@@ -46,6 +46,7 @@ public class UserInternalController {
         response.setName(user.getName());
         response.setSurname(user.getSurname());
         response.setEmail(user.getEmail());
+        response.setSpecializations(user.getSpecializations());
         return response;
     }
 

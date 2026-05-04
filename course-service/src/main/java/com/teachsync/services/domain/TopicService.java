@@ -2,6 +2,7 @@ package com.teachsync.services.domain;
 
 import com.teachsync.domain.Topic;
 import com.teachsync.domain.TopicTag;
+import com.teachsync.dto_s.topics.TopicCreateDto;
 import com.teachsync.dto_s.topics.TopicBaseDto;
 import com.teachsync.mappers.TopicMapper;
 import com.teachsync.repositories.TopicRepository;
@@ -24,6 +25,14 @@ public class TopicService {
 
     public TopicBaseDto getById(Long id){
         Topic topic = topicRepository.findById(id).orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        return TopicMapper.mapToDto(topic);
+    }
+
+    public TopicBaseDto create(TopicCreateDto dto) {
+        Topic topic = new Topic();
+        topic.setName(dto.getName().trim());
+        topic.setTag(dto.getTopicTag());
+        topicRepository.save(topic);
         return TopicMapper.mapToDto(topic);
     }
 

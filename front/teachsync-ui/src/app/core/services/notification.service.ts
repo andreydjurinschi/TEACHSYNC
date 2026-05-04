@@ -1,16 +1,20 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
-import { NotificationItem } from '../models/notifications/notification.model';
+import { NotificationItem, NotificationPreference, UserActivity } from '../models/notifications/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private api = 'http://localhost:8080/teachsync/notifications';
   private refreshSubject = new Subject<void>();
+  private realtimeSubject = new Subject<NotificationItem>();
+  private eventSource: EventSource | null = null;
+  private connectionKey: string | null = null;
 
   refresh$ = this.refreshSubject.asObservable();
+  realtime$ = this.realtimeSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private zone: NgZone) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt_token');
@@ -39,6 +43,42 @@ export class NotificationService {
 
   markAllReadForRole(role: string, userId: number) {
     return this.http.patch<void>(`${this.api}/role/${role}/read-all?userId=${userId}`, {}, { headers: this.getHeaders() });
+  }
+
+  getPreferences(userId: number) {
+    return this.http.get<NotificationPreference>(`${this.api}/preferences/${userId}`, { headers: this.getHeaders() });
+  }
+
+  updatePreferences(userId: number, preferences: NotificationPreference) {
+    return this.http.put<NotificationPreference>(`${this.api}/preferences/${userId}`, preferences, { headers: this.getHeaders() });
+  }
+
+  getActivities(userId: number, role: string, limit = 10) {
+    return this.http.get<UserActivity[]>(`${this.api}/activities/user/${userId}?role=${role}&limit=${limit}`, { headers: this.getHeaders() });
+  }
+
+  connectRealtime(userId: number, role: string): void {
+    const nextConnectionKey = `${userId}:${role}`;
+    if (this.eventSource && this.connectionKey === nextConnectionKey) {
+      return;
+    }
+
+    this.disconnectRealtime();
+    this.connectionKey = nextConnectionKey;
+    this.eventSource = new EventSource(`${this.api}/stream?userId=${userId}&role=${role}`);
+    this.eventSource.addEventListener('notification', event => {
+      this.zone.run(() => {
+        const notification = JSON.parse((event as MessageEvent).data) as NotificationItem;
+        this.realtimeSubject.next(notification);
+        this.triggerRefresh();
+      });
+    });
+  }
+
+  disconnectRealtime(): void {
+    this.eventSource?.close();
+    this.eventSource = null;
+    this.connectionKey = null;
   }
 
   triggerRefresh(): void {

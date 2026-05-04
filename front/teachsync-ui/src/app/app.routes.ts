@@ -53,6 +53,7 @@ export const routes: Routes = [
       { path: 'groups/edit/:id', component: GroupEdit },
       { path: 'groups/:id/courses', component: GroupCourse },
       { path: 'profile', component: AccountInfo },
+      { path: 'statistics', component: AccountInfo },
 
       { path: 'schedules', component: ScheduleList },
       { path: 'schedules/create', component: ScheduleCreateComponent },

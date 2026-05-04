@@ -52,8 +52,9 @@ export class LayoutComponent implements OnInit {
   unreadCount = signal(0);
   theme = this.themeService.theme;
   coursesOpen = false;
+  sidebarOpen = signal(false);
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) { }
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -62,6 +63,7 @@ export class LayoutComponent implements OnInit {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.role = payload.roles;
         this.startNotificationPolling();
+        this.startNotificationStream();
       }
     }
   }
@@ -72,6 +74,14 @@ export class LayoutComponent implements OnInit {
 
   toggleCourses() {
     this.coursesOpen = !this.coursesOpen;
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update(value => !value);
+  }
+
+  closeSidebar() {
+    this.sidebarOpen.set(false);
   }
 
   private startNotificationPolling(): void {
@@ -100,9 +110,26 @@ export class LayoutComponent implements OnInit {
     });
   }
 
+  private startNotificationStream(): void {
+    const role = this.ruleService.getRole();
+    const userId = this.ruleService.getId();
+
+    if (!role || userId == null || typeof EventSource === 'undefined') {
+      return;
+    }
+
+    this.notificationService.connectRealtime(userId, role);
+  }
+
   logout() {
+    const theme = localStorage.getItem('theme');
+    localStorage.clear();
+    if (theme) {
+      localStorage.setItem('theme', theme);
+    }
     this.auth.logout();
     this.unreadCount.set(0);
+    this.notificationService.disconnectRealtime();
     this.router.navigate(['/login']);
   }
 }

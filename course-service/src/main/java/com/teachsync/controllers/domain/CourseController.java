@@ -8,6 +8,7 @@ import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseUpdateDto;
 import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
+import com.teachsync.dto_s.statistics.CourseStatisticsDto;
 import com.teachsync.services.domain.CourseService;
 import feign.Response;
 import jakarta.validation.Valid;
@@ -44,8 +45,18 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.OK).body(courseService.findAll());
     }
 
+    @GetMapping("/statistics")
+    public ResponseEntity<CourseStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(courseService.getStatistics());
+    }
+
     @GetMapping("/my")
     public ResponseEntity<List<CourseDetailedDto>> getMyCourses(@RequestHeader("Authorization") String authHeader) {
+        return getTeacherMyCourses(authHeader);
+    }
+
+    @GetMapping("/teacher/my")
+    public ResponseEntity<List<CourseDetailedDto>> getTeacherMyCourses(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         Long teacherId = jwtService.extractUserId(token);
         return ResponseEntity.ok(courseService.getCoursesFullDataForTeacher(teacherId));
@@ -57,13 +68,18 @@ public class CourseController {
     }
 
     @GetMapping("/course-with-groups/{id}")
-    public ResponseEntity<CourseWithGroupDto> findCourseWithGroup(@PathVariable Long id) {
+    public ResponseEntity<CourseWithGroupDto> findCourseWithGroup(@PathVariable Long id,
+                                                                  @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
         return ResponseEntity.status(HttpStatus.OK).body(courseService.getCourseWithGroup(id));
     }
 
     @PutMapping("/edit/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody CourseUpdateDto dto) {
-        courseService.updateCourse(id, dto);
+    public ResponseEntity<Void> update(@PathVariable Long id,
+                                       @Valid @RequestBody CourseUpdateDto dto,
+                                       @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourse(id, currentUserId(authHeader), currentRole(authHeader));
+        courseService.updateCourse(id, dto, currentUserId(authHeader), currentRole(authHeader));
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
@@ -74,19 +90,27 @@ public class CourseController {
     }
 
     @PostMapping("/assign-group/{course_id}/{group_id}")
-    public ResponseEntity<Void> assignGroupToCourse(@PathVariable Long course_id, @PathVariable Long group_id) {
+    public ResponseEntity<Void> assignGroupToCourse(@PathVariable Long course_id,
+                                                    @PathVariable Long group_id,
+                                                    @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
         courseService.assignGroupToCourse(course_id, group_id);
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
+        courseService.deleteCourse(id, currentUserId(authHeader), currentUsername(authHeader));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 
     @DeleteMapping("/unassign-group/{course_id}/{group_id}")
-    public ResponseEntity<Void> unassignGroupToCourse(@PathVariable Long course_id, @PathVariable Long group_id) {
+    public ResponseEntity<Void> unassignGroupToCourse(@PathVariable Long course_id,
+                                                      @PathVariable Long group_id,
+                                                      @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
         courseService.unassignGroupToCourse(course_id, group_id);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
@@ -98,39 +122,38 @@ public class CourseController {
     }
 
     @PostMapping("/assign-topic/{courseId}/{topicId}")
-    public ResponseEntity<Void> assignTopicToCourse(@PathVariable("courseId") Long courseId, @PathVariable("topicId") Long topicId) {
+    public ResponseEntity<Void> assignTopicToCourse(@PathVariable("courseId") Long courseId,
+                                                    @PathVariable("topicId") Long topicId,
+                                                    @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourse(courseId, currentUserId(authHeader), currentRole(authHeader));
         courseService.assignTopicToCourse(courseId, topicId);
         return ResponseEntity
                 .status(HttpStatus.CREATED).body(null);
     }
 
     @DeleteMapping("/unassign-topic/{courseId}/{topicId}")
-    public ResponseEntity<Void> unassignTopicFromCourse(@PathVariable("courseId") Long courseId, @PathVariable("topicId") Long topicId){
+    public ResponseEntity<Void> unassignTopicFromCourse(@PathVariable("courseId") Long courseId,
+                                                        @PathVariable("topicId") Long topicId,
+                                                        @RequestHeader("Authorization") String authHeader){
+        courseService.assertCanManageCourse(courseId, currentUserId(authHeader), currentRole(authHeader));
         courseService.unassignTopicToCourse(courseId, topicId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT).body(null);
     }
     // feign
     @PutMapping("/assign-teacher/{courseId}/{teacherId}")
-    public ResponseEntity<Void> assignTeacher(@PathVariable Long courseId, @PathVariable Long teacherId) {
+    public ResponseEntity<Void> assignTeacher(@PathVariable Long courseId,
+                                              @PathVariable Long teacherId,
+                                              @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
         courseService.assignTeacherToCourse(courseId, teacherId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PostMapping("/teacher-requests/{courseId}/{teacherId}")
-    public ResponseEntity<Void> requestTeacher(@PathVariable Long courseId, @PathVariable Long teacherId) {
-        courseService.requestTeacherForCourse(courseId, teacherId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @PutMapping("/teacher-requests/{courseId}/{teacherId}/approve")
-    public ResponseEntity<Void> approveTeacherRequest(@PathVariable Long courseId, @PathVariable Long teacherId) {
-        courseService.approveTeacherAssignment(courseId, teacherId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
     @PutMapping("/unassign-teacher/{courseId}/")
-    public ResponseEntity<Void> unassignTeacher(@PathVariable Long courseId) {
+    public ResponseEntity<Void> unassignTeacher(@PathVariable Long courseId,
+                                                @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
         courseService.unassignTeacherFromCourse(courseId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -142,4 +165,16 @@ public class CourseController {
         return ResponseEntity.ok(courseService.getCourseWithTeacher(id));
     }
     // kafka requests
+
+    private Long currentUserId(String authHeader) {
+        return jwtService.extractUserId(authHeader.replace("Bearer ", ""));
+    }
+
+    private String currentRole(String authHeader) {
+        return jwtService.extractRole(authHeader.replace("Bearer ", ""));
+    }
+
+    private String currentUsername(String authHeader) {
+        return jwtService.extractUsername(authHeader.replace("Bearer ", ""));
+    }
 }

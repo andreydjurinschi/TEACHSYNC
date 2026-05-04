@@ -36,4 +36,8 @@ export class ReplacementService {
   getProblematic() {
     return this.http.get<ReplacementRequest[]>(`${this.api}/problematic`, { headers: this.getHeaders() });
   }
+
+  delete(requestId: number) {
+    return this.http.delete<void>(`${this.api}/${requestId}`, { headers: this.getHeaders() });
+  }
 }

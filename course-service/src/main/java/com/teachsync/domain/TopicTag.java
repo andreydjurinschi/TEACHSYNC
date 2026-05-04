@@ -6,5 +6,6 @@ public enum TopicTag {
     MATH,
     LANGUAGE,
     BUSINESS,
-    SCIENCE
+    SCIENCE,
+    OTHER
 }

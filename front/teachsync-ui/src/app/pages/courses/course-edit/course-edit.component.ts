@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, OnInit, PLATFORM_ID, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 
 import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
@@ -11,6 +11,7 @@ import { CategoryBase } from '../../../core/models/category/category.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { TeacherDto } from '../../../core/models/users/teacher.model';
 import { RuleService } from '../../../core/services/role.rule.service';
+import { ImageBase64Service } from '../../../core/services/image-base64.service';
 
 type TeacherFilter = 'none' | 'by-category' | 'all';
 
@@ -36,11 +37,18 @@ export class CourseEdit implements OnInit {
   private courseService = inject(CourseService);
   private categoryService = inject(CategoryService);
   private teacherService  = inject(TeacherService);
+  private imageBase64Service = inject(ImageBase64Service);
   public  ruleService     = inject(RuleService);
 
   courseCategory = computed(() =>
     this.categories().find(c => c.id === this.course()?.categoryId) ?? null
   );
+
+  canEditCourse = computed(() => {
+    if (this.ruleService.isAdmin() || this.ruleService.isManager()) return true;
+    if (!this.ruleService.isTeacher()) return false;
+    return this.course()?.teacher === this.ruleService.getId();
+  });
 
   filteredTeachers = computed(() => {
     const mode = this.teacherMode();
@@ -60,6 +68,7 @@ export class CourseEdit implements OnInit {
       name:        ['', [Validators.required, Validators.minLength(3)]],
       description: ['', Validators.required],
       categoryId:  [null],
+      photoUrl:    [''],
     });
 
     if (!isPlatformBrowser(this.platformId)) return;
@@ -69,7 +78,9 @@ export class CourseEdit implements OnInit {
     forkJoin({
       course:     this.courseService.getById(id),
       categories: this.categoryService.getAll(),
-      teachers:   this.teacherService.getAll(),           
+      teachers:   this.ruleService.isAdmin() || this.ruleService.isManager()
+        ? this.teacherService.getAll()
+        : of([] as TeacherDto[]),
     }).subscribe({
       next: ({ course, categories, teachers }) => {
         console.log('course:', course);    
@@ -77,10 +88,17 @@ export class CourseEdit implements OnInit {
         this.course.set(course);
         this.categories.set(categories);
         this.teachers.set(teachers);
+
+        if (!this.canEditCourse()) {
+          this.router.navigate(['/courses', id]);
+          return;
+        }
+
         this.form.patchValue({
           name:        course.name,
           description: course.description,
           categoryId:  course.categoryId ?? null,
+          photoUrl:    course.photoUrl ?? '',
         });
         this.selectedTeacherId.set(course.teacher ?? null);
         if (course.teacher) this.teacherMode.set('all');
@@ -104,10 +122,27 @@ export class CourseEdit implements OnInit {
     return id ? this.teachers().find(t => t.id === id) : undefined;
   }
 
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      input.value = '';
+      return;
+    }
+    this.imageBase64Service.toDataUrl(file).then(dataUrl => {
+      this.form.patchValue({ photoUrl: dataUrl });
+    });
+  }
+
   submit(): void {
     if (this.form.invalid) return;
     const id = this.course()?.id;
     if (!id) return;
+    if (!this.canEditCourse()) {
+      this.router.navigate(['/courses', id]);
+      return;
+    }
     this.loading.set(true);
 
     const courseUpdate$ = this.courseService.update(id, this.form.value);
@@ -140,5 +175,11 @@ export class CourseEdit implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  cancelLink(): string {
+    return this.ruleService.isTeacher()
+      ? '/profile/courses'
+      : `/courses/${this.route.snapshot.paramMap.get('id')}`;
   }
 }

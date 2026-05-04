@@ -5,6 +5,9 @@ import com.teachsync.domain.WeekDays;
 import com.teachsync.dto_s.domain.class_room.ClassRoomBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.dto_s.domain.schedule.ScheduleCreateDto;
+import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
+import com.teachsync.dto_s.domain.statistics.ScheduleStatisticsDto;
+import com.teachsync.dto_s.domain.statistics.TeacherWorkloadStatisticsDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
 import com.teachsync.interation.feign.Role;
 import com.teachsync.interation.feign.clients.GroupCourseClient;
@@ -60,6 +63,16 @@ public class ScheduleController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @GetMapping("/statistics")
+    public ResponseEntity<ScheduleStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(service.getStatistics());
+    }
+
+    @GetMapping("/statistics/teacher/{teacherId}")
+    public ResponseEntity<TeacherWorkloadStatisticsDto> getTeacherWorkload(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(service.getTeacherWorkload(teacherId));
+    }
+
     @GetMapping("/available-teachers/{id}")
     public List<Long> availableTeachers(@PathVariable Long id,@RequestParam WeekDays weekDay) {
         return service.findAvailableTeachers(id, weekDay);
@@ -75,6 +88,32 @@ public class ScheduleController {
     public ResponseEntity<Void> createSchedule(@RequestBody ScheduleCreateDto dto) {
         service.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ScheduleBaseDto> updateSchedule(
+            @PathVariable Long id,
+            @RequestBody ScheduleUpdateDto dto,
+            @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String role = jwtService.extractRole(token);
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        Long changedByUserId = jwtService.extractUserId(token);
+        return ResponseEntity.ok(service.update(id, dto, changedByUserId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable Long id,
+                                               @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String role = jwtService.extractRole(token);
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        service.delete(id, jwtService.extractUserId(token), jwtService.extractUsername(token));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/group-courses/group-without-mention-in-schedule")

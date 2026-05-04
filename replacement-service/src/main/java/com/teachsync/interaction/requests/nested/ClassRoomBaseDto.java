@@ -1,9 +1,15 @@
 package com.teachsync.interaction.requests.nested;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassRoomBaseDto {
     private Long id;
     private String name;
     private Integer capacity;
+
+    public ClassRoomBaseDto() {
+    }
 
     public ClassRoomBaseDto(Long id, String name, Integer capacity) {
         this.id = id;

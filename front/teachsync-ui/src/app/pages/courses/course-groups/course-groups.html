@@ -15,7 +15,7 @@
   <div class="flex justify-center">
     <div class="w-full max-w-3xl space-y-6">
 
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+      <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 p-6">
         <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
           Назначенные группы
         </h3>
@@ -26,10 +26,10 @@
           </p>
         } @else {
           <div class="space-y-2">
-            @for (group of assignedGroups(); track group.id) {
+            @for (group of visibleAssignedGroups(); track group.id) {
               <div class="flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
                 <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                   <span class="text-sm text-slate-800 dark:text-white">
                     {{ group.name }}
                   </span>
@@ -44,15 +44,21 @@
               </div>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="assignedPage()"
+            [totalPages]="assignedTotalPages()"
+            [totalItems]="assignedGroups().length"
+            itemLabel="groups"
+            (pageChange)="assignedPage.set($event)" />
         }
       </div>
 
-      <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+      <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 p-6">
         <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
           Доступные группы
         </h3>
 
-        @for (group of availableGroups; track group.id) {
+        @for (group of visibleAvailableGroups(); track group.id) {
           <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg mb-2">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500"></span>
@@ -64,11 +70,17 @@
             <button
               (click)="assign(group)"
               [disabled]="loading()"
-              class="text-xs px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition disabled:opacity-50">
+              class="text-xs px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition disabled:opacity-50">
               Добавить
             </button>
           </div>
         }
+        <app-pagination-controls
+          [currentPage]="availablePage()"
+          [totalPages]="availableTotalPages()"
+          [totalItems]="availableGroups().length"
+          itemLabel="groups"
+          (pageChange)="availablePage.set($event)" />
       </div>
 
     </div>

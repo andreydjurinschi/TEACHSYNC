@@ -5,7 +5,6 @@ import com.teachsync.domain.Role;
 import com.teachsync.domain.User;
 import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.interaction.KAFKA.producer.UserEventProducer;
-import com.teachsync.interaction.clients.CourseClient;
 import com.teachsync.interaction.requests.CourseBaseDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
 import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
@@ -18,6 +17,7 @@ import com.teachsync.repository.UserRepository;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
+import com.teachsync.dto.statistics.UserStatisticsDto;
 import com.teachsync.teachsyncevents.users.UserCreatedEvent;
 import com.teachsync.teachsyncevents.users.UserDeletedEvent;
 import com.teachsync.teachsyncevents.users.UserRoleChangedEvent;
@@ -36,13 +36,13 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserRepository repository;
-    private final CourseClient courseClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
     private final SpecializationsRepository specializationsRepository;
     private final UserEventProducer userEventProducer;
 
-    public UserService(UserRepository repository, CourseClient courseClient, SpecializationsRepository specializationsRepository, UserEventProducer userEventProducer) {
+    public UserService(UserRepository repository, ReferenceDataCacheService referenceDataCacheService, SpecializationsRepository specializationsRepository, UserEventProducer userEventProducer) {
         this.repository = repository;
-        this.courseClient = courseClient;
+        this.referenceDataCacheService = referenceDataCacheService;
         this.specializationsRepository = specializationsRepository;
         this.userEventProducer = userEventProducer;
     }
@@ -85,6 +85,7 @@ public class UserService {
     @Transactional
     public void createUser(UserCreateDto dto) {
         User user = UserMapper.mapToUser(dto);
+        user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         user.setRegisteredAt(LocalDate.now());
         user.setPassword(PasswordUtils.hash(user.getPassword()));
         repository.save(user);
@@ -100,6 +101,7 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
+        if (dto.getProfilePicture() != null) user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         if (dto.getRole() != null) {
             Role role = user.getRole();
             user.setRole(dto.getRole());
@@ -115,7 +117,7 @@ public class UserService {
         if (StringUtils.hasText(dto.getName())) user.setName(dto.getName());
         if (StringUtils.hasText(dto.getSurname())) user.setSurname(dto.getSurname());
         if (StringUtils.hasText(dto.getEmail())) user.setEmail(dto.getEmail());
-        if (StringUtils.hasText(dto.getProfilePicture())) user.setProfilePicture(dto.getProfilePicture());
+        if (dto.getProfilePicture() != null) user.setProfilePicture(normalizeProfilePicture(dto.getProfilePicture()));
         if (StringUtils.hasText(dto.getPassword())) {
             String hashedPassword = PasswordUtils.hash(dto.getPassword());
             user.setPassword(hashedPassword);
@@ -156,7 +158,7 @@ public class UserService {
         dto.setEmail(user.getEmail());
         List<CourseBaseDto> courses;
 
-        courses = courseClient.requestForCourseInfo(userId);
+        courses = referenceDataCacheService.getCoursesForTeacher(userId);
         dto.setCourseNames(courses);
         dto.setAvailable(true);
         return dto;
@@ -217,5 +219,21 @@ public class UserService {
     public List<UserBaseDto> findAllByIds(List<Long> ids) {
         return repository.findAllById(ids)
                 .stream().map(UserMapper::mapToBaseDto).toList();
+    }
+
+    public UserStatisticsDto getStatistics() {
+        return new UserStatisticsDto(
+                repository.count(),
+                repository.countByRole(Role.ADMIN),
+                repository.countByRole(Role.MANAGER),
+                repository.countByRole(Role.TEACHER)
+        );
+    }
+
+    private String normalizeProfilePicture(String profilePicture) {
+        if (!StringUtils.hasText(profilePicture)) {
+            return null;
+        }
+        return profilePicture.trim();
     }
 }

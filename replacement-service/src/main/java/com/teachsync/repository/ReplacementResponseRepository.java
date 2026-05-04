@@ -1,6 +1,7 @@
 package com.teachsync.repository;
 
 import com.teachsync.domain.ReplacementResponse;
+import com.teachsync.domain.ResponseStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +13,6 @@ public interface ReplacementResponseRepository extends JpaRepository<Replacement
     Optional<ReplacementResponse> findByReplacementRequestIdAndTeacherResponse(Long replacementRequestId, Long teacherResponse);
     List<ReplacementResponse> findByReplacementRequestId(Long replacementRequestId);
     List<ReplacementResponse> findByTeacherResponse(Long teacherResponse);
+    long countByTeacherResponseAndResponseStatus(Long teacherResponse, ResponseStatus responseStatus);
+    void deleteByReplacementRequestId(Long replacementRequestId);
 }

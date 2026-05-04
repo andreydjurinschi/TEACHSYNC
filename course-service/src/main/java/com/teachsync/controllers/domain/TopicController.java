@@ -1,15 +1,20 @@
 package com.teachsync.controllers.domain;
 
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.TopicTag;
+import com.teachsync.dto_s.topics.TopicCreateDto;
 import com.teachsync.dto_s.topics.TopicBaseDto;
 import com.teachsync.services.domain.TopicService;
-import feign.Response;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,9 +24,11 @@ import java.util.List;
 public class TopicController {
 
     private final TopicService topicService;
+    private final JwtService jwtService;
 
-    public TopicController(TopicService topicRepository) {
+    public TopicController(TopicService topicRepository, JwtService jwtService) {
         this.topicService = topicRepository;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/all")
@@ -39,9 +46,26 @@ public class TopicController {
         return ResponseEntity.ok(topicService.getTopicsByTags(tag));
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<TopicBaseDto> createTopic(@Valid @RequestBody TopicCreateDto dto,
+                                                    @RequestHeader("Authorization") String authHeader) {
+        assertAdmin(authHeader);
+        return ResponseEntity.status(HttpStatus.CREATED).body(topicService.create(dto));
+    }
+
     @PatchMapping("/{id}/tag/{tag}")
-    public ResponseEntity<Void> setTag(@PathVariable Long id, @PathVariable TopicTag tag) {
+    public ResponseEntity<Void> setTag(@PathVariable Long id,
+                                       @PathVariable TopicTag tag,
+                                       @RequestHeader("Authorization") String authHeader) {
+        assertAdmin(authHeader);
         topicService.setTagToTopic(tag, id);
         return ResponseEntity.ok().build();
+    }
+
+    private void assertAdmin(String authHeader) {
+        String role = jwtService.extractRole(authHeader.replace("Bearer ", ""));
+        if (!"ADMIN".equals(role)) {
+            throw new org.springframework.security.access.AccessDeniedException("only admins can manage topic categories");
+        }
     }
 }

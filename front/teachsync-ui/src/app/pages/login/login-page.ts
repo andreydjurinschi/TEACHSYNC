@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,7 +7,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -16,7 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   form: FormGroup;
   serverError = '';
   loading = false;
@@ -34,16 +33,33 @@ export class LoginComponent {
     });
   }
 
-get emailInvalid() {
-  return this.form.controls['email'].invalid && this.form.controls['email'].touched;
-}
+  ngOnInit(): void {
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    this.theme = savedTheme ?? 'dark';
+    this.applyTheme();
+  }
 
-get passwordInvalid() {
-  return this.form.controls['password'].invalid && this.form.controls['password'].touched;
-}
+  get emailInvalid() {
+    return this.form.controls['email'].invalid && this.form.controls['email'].touched;
+  }
+
+  get passwordInvalid() {
+    return this.form.controls['password'].invalid && this.form.controls['password'].touched;
+  }
 
   toggleTheme() {
     this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', this.theme);
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    const root = document.documentElement;
+    if (this.theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
   }
 
   onSubmit() {
@@ -62,7 +78,9 @@ get passwordInvalid() {
         this.loading = false;
         this.serverError = 'Неверный email или пароль. Попробуйте снова.';
       },
-      complete: () => { this.loading = false; }
+      complete: () => {
+        this.loading = false;
+      }
     });
   }
 }

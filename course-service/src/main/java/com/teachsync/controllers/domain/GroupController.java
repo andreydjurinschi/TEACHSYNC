@@ -1,5 +1,6 @@
 package com.teachsync.controllers.domain;
 
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.dto_s.groups.GroupBaseDto;
 import com.teachsync.dto_s.groups.GroupCreateDto;
 import com.teachsync.dto_s.groups.GroupUpdateDto;
@@ -17,9 +18,11 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService groupService;
+    private final JwtService jwtService;
 
-    public GroupController(GroupService groupService) {
+    public GroupController(GroupService groupService, JwtService jwtService) {
         this.groupService = groupService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/all")
@@ -39,8 +42,14 @@ public class GroupController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable("id") Long id) {
-        groupService.delete(id);
+    public ResponseEntity<Void> deleteGroup(@PathVariable("id") Long id,
+                                            @RequestHeader("Authorization") String authHeader) {
+        assertCanManageGroups(authHeader);
+        groupService.delete(
+                id,
+                jwtService.extractUserId(authHeader.replace("Bearer ", "")),
+                jwtService.extractUsername(authHeader.replace("Bearer ", ""))
+        );
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -68,5 +77,10 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getById(id));
     }
 
-
+    private void assertCanManageGroups(String authHeader) {
+        String role = jwtService.extractRole(authHeader.replace("Bearer ", ""));
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            throw new org.springframework.security.access.AccessDeniedException("only managers and admins can delete groups");
+        }
+    }
 }

@@ -1,11 +1,14 @@
 package com.teachsync.interation.feign.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.teachsync.interation.feign.Role;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TeacherBaseInfoRequest {
     private Long id;
     private String name;

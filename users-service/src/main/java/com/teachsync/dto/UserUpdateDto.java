@@ -16,12 +16,15 @@ public class UserUpdateDto {
     @Email
     private String email;
 
+    private String profilePicture;
+
     private Role role;
 
-    public UserUpdateDto(String name, String surname, String email, Role role) {
+    public UserUpdateDto(String name, String surname, String email, String profilePicture, Role role) {
         this.name = name;
         this.surname = surname;
         this.email = email;
+        this.profilePicture = profilePicture;
         this.role = role;
     }
 
@@ -50,6 +53,14 @@ public class UserUpdateDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 
     public Role getRole() {

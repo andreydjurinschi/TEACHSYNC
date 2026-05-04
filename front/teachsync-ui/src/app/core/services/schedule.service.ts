@@ -6,6 +6,7 @@ import { ClassRoomInfo, GroupCourseInfo, ScheduleBase, TeacherInfo } from '../mo
 @Injectable({ providedIn: 'root' })
 export class ScheduleService {
     private base = 'http://localhost:8080/teachsync/schedules';
+    private classroomsBase = 'http://localhost:8080/teachsync/classrooms';
 
     constructor(private http: HttpClient) { }
 
@@ -35,8 +36,20 @@ export class ScheduleService {
         return this.http.get<ClassRoomInfo[]>(`${this.base}/classrooms/all`, { headers: this.getHeaders() });
     }
 
+    createClassroom(dto: { name: string; capacity: number; photoUrl?: string }): Observable<void> {
+        return this.http.post<void>(this.classroomsBase, dto, { headers: this.getHeaders() });
+    }
+
     create(dto: any): Observable<void> {
         return this.http.post<void>(`${this.base}/create`, dto, { headers: this.getHeaders() });
+    }
+
+    update(id: number, dto: any): Observable<ScheduleBase> {
+        return this.http.put<ScheduleBase>(`${this.base}/${id}`, dto, { headers: this.getHeaders() });
+    }
+
+    delete(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.base}/${id}`, { headers: this.getHeaders() });
     }
 
     checkClassroomConflicts(

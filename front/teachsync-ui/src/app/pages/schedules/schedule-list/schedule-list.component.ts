@@ -1,15 +1,26 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { GroupCourseInfo, ScheduleBase, WeekDay } from '../../../core/models/schedules/schedule-base.model';
+import { ClassRoomInfo, GroupCourseInfo, ScheduleBase, WeekDay } from '../../../core/models/schedules/schedule-base.model';
 import { ScheduleService } from '../../../core/services/schedule.service';
+import { RuleService } from '../../../core/services/role.rule.service';
+import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
 const DAY_ORDER: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+type ScheduleEditForm = {
+  startTime: string;
+  endTime: string;
+  weekDays: WeekDay[];
+  groupCourseId: number | null;
+  classRoomId: number | null;
+};
 
 @Component({
   selector: 'app-schedule-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaginationControlsComponent],
   templateUrl: './schedule-list.html',
 })
 export class ScheduleList implements OnInit {
@@ -18,8 +29,29 @@ export class ScheduleList implements OnInit {
   unscheduled  = signal<GroupCourseInfo[]>([]);
   showUnscheduled = signal(false);
   activeDay    = signal<WeekDay | 'all'>('all');
+  groupCourses = signal<GroupCourseInfo[]>([]);
+  classRooms = signal<ClassRoomInfo[]>([]);
+  editing = signal<ScheduleBase | null>(null);
+  savingEdit = signal(false);
+  editError = signal<string | null>(null);
+  showClassroomForm = signal(false);
+  classroomName = signal('');
+  classroomCapacity = signal<number | null>(null);
+  classroomPhotoUrl = signal('');
+  classroomError = signal<string | null>(null);
+  classroomSaving = signal(false);
+  unscheduledPage = signal(1);
+  filteredPage = signal(1);
+  editForm = signal<ScheduleEditForm>({
+    startTime: '',
+    endTime: '',
+    weekDays: [] as WeekDay[],
+    groupCourseId: null as number | null,
+    classRoomId: null as number | null,
+  });
 
   private scheduleService = inject(ScheduleService);
+  readonly ruleService = inject(RuleService);
   private router          = inject(Router);
 
   readonly DAY_ORDER = DAY_ORDER;
@@ -41,20 +73,47 @@ export class ScheduleList implements OnInit {
     if (d === 'all') return this.schedules();
     return this.slotsForDay(d);
   });
+  private readonly unscheduledPageSize = 5;
+  private readonly filteredPageSize = 8;
+  unscheduledTotalPages = computed(() => getTotalPages(this.unscheduled().length, this.unscheduledPageSize));
+  filteredTotalPages = computed(() => getTotalPages(this.filteredSchedules().length, this.filteredPageSize));
+  visibleUnscheduled = computed(() => paginateItems(this.unscheduled(), this.unscheduledPage(), this.unscheduledPageSize));
+  visibleFilteredSchedules = computed(() => paginateItems(this.filteredSchedules(), this.filteredPage(), this.filteredPageSize));
+
+  constructor() {
+    effect(() => {
+      const maxPage = this.unscheduledTotalPages();
+      if (this.unscheduledPage() > maxPage) {
+        this.unscheduledPage.set(maxPage);
+      }
+    });
+    effect(() => {
+      const maxPage = this.filteredTotalPages();
+      if (this.filteredPage() > maxPage) {
+        this.filteredPage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loading.set(true);
     this.scheduleService.getAll().subscribe({
-      next:  d => { this.schedules.set(d); this.loading.set(false); },
+      next:  d => { this.schedules.set(d); this.filteredPage.set(1); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+    this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
+    this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
   }
 
-  setDay(day: WeekDay | 'all'): void { this.activeDay.set(day); }
+  setDay(day: WeekDay | 'all'): void {
+    this.activeDay.set(day);
+    this.filteredPage.set(1);
+  }
 
   loadUnscheduled(): void {
     this.scheduleService.getUnscheduledGroupCourses().subscribe(d => {
       this.unscheduled.set(d);
+      this.unscheduledPage.set(1);
       this.showUnscheduled.set(true);
     });
   }
@@ -70,5 +129,112 @@ export class ScheduleList implements OnInit {
 
   sortedDays(days: WeekDay[]): WeekDay[] {
     return [...days].sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+  }
+
+  canEdit(): boolean {
+    return this.ruleService.isAdmin() || this.ruleService.isManager();
+  }
+
+  canCreateClassrooms(): boolean {
+    return this.ruleService.isAdmin();
+  }
+
+  startEdit(schedule: ScheduleBase): void {
+    this.editing.set(schedule);
+    this.editError.set(null);
+    this.editForm.set({
+      startTime: this.formatTime(schedule.startTime),
+      endTime: this.formatTime(schedule.endTime),
+      weekDays: [...schedule.weekDays],
+      groupCourseId: schedule.groupCourseDto?.id ?? null,
+      classRoomId: schedule.classRoomBaseDto?.id ?? null,
+    });
+  }
+
+  closeEdit(): void {
+    this.editing.set(null);
+    this.editError.set(null);
+    this.savingEdit.set(false);
+  }
+
+  updateEditField<K extends keyof ScheduleEditForm>(key: K, value: ScheduleEditForm[K]): void {
+    this.editForm.update(form => ({ ...form, [key]: value }));
+  }
+
+  toggleEditDay(day: WeekDay): void {
+    this.editForm.update(form => ({
+      ...form,
+      weekDays: form.weekDays.includes(day)
+        ? form.weekDays.filter(item => item !== day)
+        : [...form.weekDays, day],
+    }));
+  }
+
+  saveEdit(): void {
+    const schedule = this.editing();
+    const form = this.editForm();
+    if (!schedule || !form.startTime || !form.endTime || !form.groupCourseId || !form.classRoomId || !form.weekDays.length) {
+      this.editError.set('Заполните время, дни, курс/группу и аудиторию.');
+      return;
+    }
+
+    this.savingEdit.set(true);
+    this.editError.set(null);
+    this.scheduleService.update(schedule.id, form).subscribe({
+      next: updated => {
+        this.schedules.update(list => list.map(item => item.id === updated.id ? updated : item));
+        this.closeEdit();
+      },
+      error: err => {
+        this.editError.set(err?.error?.message ?? 'Не удалось изменить расписание');
+        this.savingEdit.set(false);
+      }
+    });
+  }
+
+  deleteSchedule(schedule: ScheduleBase): void {
+    if (!confirm('Удалить это занятие? Связанные заявки на замену тоже будут очищены.')) {
+      return;
+    }
+    this.scheduleService.delete(schedule.id).subscribe({
+      next: () => {
+        this.schedules.update(list => list.filter(item => item.id !== schedule.id));
+        if (this.editing()?.id === schedule.id) {
+          this.closeEdit();
+        }
+      },
+      error: err => {
+        this.editError.set(err?.error?.message ?? 'Не удалось удалить расписание');
+      }
+    });
+  }
+
+  createClassroom(): void {
+    const name = this.classroomName().trim();
+    const capacity = this.classroomCapacity();
+    if (!name || capacity == null) {
+      this.classroomError.set('Заполните название и вместимость аудитории.');
+      return;
+    }
+    this.classroomSaving.set(true);
+    this.classroomError.set(null);
+    this.scheduleService.createClassroom({
+      name,
+      capacity,
+      photoUrl: this.classroomPhotoUrl().trim() || undefined,
+    }).subscribe({
+      next: () => {
+        this.classroomName.set('');
+        this.classroomCapacity.set(null);
+        this.classroomPhotoUrl.set('');
+        this.showClassroomForm.set(false);
+        this.classroomSaving.set(false);
+        this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
+      },
+      error: err => {
+        this.classroomError.set(err?.error?.message ?? 'Не удалось создать аудиторию');
+        this.classroomSaving.set(false);
+      }
+    });
   }
 }

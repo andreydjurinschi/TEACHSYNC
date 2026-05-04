@@ -1,6 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { CourseDetailed as CourseDetailedModel } from '../../../core/models/courses/course-detailed.model';
 import { CourseWithTeacher } from '../../../core/models/courses/course-with-teacher.model';
@@ -21,8 +21,6 @@ export class CourseDetailed implements OnInit {
   withTeacher = signal<CourseWithTeacher | null>(null);
   teachers = signal<TeacherDto[]>([]);
   selectedTeacherId = signal<number | null>(null);
-  currentTeacherSpecializationIds = signal<number[]>([]);
-  assignmentRequestMode = signal(false);
   pending = signal(false);
   actionMessage = signal<string | null>(null);
   actionError = signal<string | null>(null);
@@ -35,19 +33,25 @@ export class CourseDetailed implements OnInit {
     );
   });
 
-  canApproveRequest = computed(() => {
-    const course = this.course();
-    if (!course || !this.assignmentRequestMode() || !this.ruleSevice.isTeacher() || course.teacher != null) {
-      return false;
-    }
-    if (course.categoryId == null) {
-      return true;
-    }
-    return this.currentTeacherSpecializationIds().includes(course.categoryId);
+  canManageCourse = computed(() => {
+    if (this.ruleSevice.isManager() || this.ruleSevice.isAdmin()) return true;
+    if (!this.ruleSevice.isTeacher()) return false;
+    const teacherId = this.ruleSevice.getId();
+    if (teacherId == null) return false;
+    return this.course()?.teacher === teacherId;
   });
+
+  canManageGroups = computed(() =>
+    this.ruleSevice.isManager() || this.ruleSevice.isAdmin()
+  );
+
+  canDeleteCourse = computed(() =>
+    this.ruleSevice.isManager() || this.ruleSevice.isAdmin()
+  );
 
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   public ruleSevice = inject(RuleService)
 
   constructor(private courseService: CourseService, private teacherService: TeacherService) {}
@@ -61,23 +65,11 @@ export class CourseDetailed implements OnInit {
         next: data => this.withTeacher.set(data),
         error: () => this.withTeacher.set(null)
       });
-      this.route.queryParamMap.subscribe(params => {
-        this.assignmentRequestMode.set(params.get('assignmentRequest') === 'true');
-      });
       if (this.ruleSevice.isManager() || this.ruleSevice.isAdmin()) {
         this.teacherService.getAll().subscribe({
           next: data => this.teachers.set(data),
           error: () => this.teachers.set([])
         });
-      }
-      if (this.ruleSevice.isTeacher()) {
-        const teacherId = this.ruleSevice.getId();
-        if (teacherId != null) {
-          this.teacherService.getSpecializations(teacherId).subscribe({
-            next: specs => this.currentTeacherSpecializationIds.set(specs.map(spec => spec.id)),
-            error: () => this.currentTeacherSpecializationIds.set([])
-          });
-        }
       }
     }
   }
@@ -87,43 +79,52 @@ export class CourseDetailed implements OnInit {
     this.selectedTeacherId.set(value ? Number(value) : null);
   }
 
-  requestSelectedTeacher(): void {
+  assignSelectedTeacher(): void {
     const courseId = this.course()?.id;
     const teacherId = this.selectedTeacherId();
     if (courseId == null || teacherId == null) return;
     this.pending.set(true);
     this.actionMessage.set(null);
     this.actionError.set(null);
-    this.courseService.requestTeacher(courseId, teacherId).subscribe({
+    this.courseService.assignTeacher(courseId, teacherId).subscribe({
       next: () => {
+        this.course.update(course => course ? { ...course, teacher: teacherId } : course);
+        this.courseService.getWithTeacher(courseId).subscribe({
+          next: data => this.withTeacher.set(data),
+          error: () => this.withTeacher.set(null)
+        });
         this.pending.set(false);
-        this.actionMessage.set('Запрос отправлен преподавателю.');
+        this.actionMessage.set('Преподаватель назначен на курс.');
       },
       error: err => {
         this.pending.set(false);
-        this.actionError.set(err?.error?.message ?? 'Не удалось отправить запрос.');
+        this.actionError.set(err?.error?.message ?? 'Не удалось назначить преподавателя.');
       }
     });
   }
 
-  approveRequest(): void {
+  deleteCourse(): void {
     const courseId = this.course()?.id;
-    const teacherId = this.ruleSevice.getId();
-    if (courseId == null || teacherId == null || !this.canApproveRequest()) return;
+    if (courseId == null) return;
+    if (!confirm('Удалить этот курс? Связанные расписания и заявки на замену будут очищены автоматически.')) {
+      return;
+    }
     this.pending.set(true);
     this.actionMessage.set(null);
     this.actionError.set(null);
-    this.courseService.approveTeacherRequest(courseId, teacherId).subscribe({
+    this.courseService.delete(courseId).subscribe({
       next: () => {
         this.pending.set(false);
-        this.actionMessage.set('Запрос подтвержден. Курс назначен вам.');
-        this.course.update(course => course ? { ...course, teacher: teacherId } : course);
-        this.assignmentRequestMode.set(false);
+        this.router.navigate(['/courses']);
       },
       error: err => {
         this.pending.set(false);
-        this.actionError.set(err?.error?.message ?? 'Не удалось подтвердить запрос.');
+        this.actionError.set(err?.error?.message ?? 'Не удалось удалить курс.');
       }
     });
+  }
+
+  backLink(): string {
+    return '/courses';
   }
 }

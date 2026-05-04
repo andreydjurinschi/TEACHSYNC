@@ -3,7 +3,6 @@ package com.teachsync.services.feign;
 import com.teachsync.domain.Course;
 import com.teachsync.domain.Group;
 import com.teachsync.domain.GroupCourse;
-import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
 import com.teachsync.interaction.feign.responses.GroupCourseResponseForScheduleService;
 import com.teachsync.repositories.CourseRepository;
@@ -22,13 +21,13 @@ public class CourseFeignResponseService {
     private final GroupRepository groupRepository;
     private final CourseRepository courseRepository;
     private final GroupCourseRepository groupCourseRepository;
-    private final UserClient userClient;
+    private final ReferenceDataCacheService referenceDataCacheService;
 
-    public CourseFeignResponseService(GroupRepository groupRepository, CourseRepository courseRepository, GroupCourseRepository groupCourseRepository, UserClient userClient) {
+    public CourseFeignResponseService(GroupRepository groupRepository, CourseRepository courseRepository, GroupCourseRepository groupCourseRepository, ReferenceDataCacheService referenceDataCacheService) {
         this.groupRepository = groupRepository;
         this.courseRepository = courseRepository;
         this.groupCourseRepository = groupCourseRepository;
-        this.userClient = userClient;
+        this.referenceDataCacheService = referenceDataCacheService;
     }
 
     public List<GroupCourseResponseForScheduleService> getAll() {
@@ -42,7 +41,7 @@ public class CourseFeignResponseService {
 
         System.out.println(">>> teacherIds: " + teacherIds); // ← добавь
 
-        List<TeacherRequest> teachers = userClient.getTeachersByIds(teacherIds);
+        List<TeacherRequest> teachers = referenceDataCacheService.getTeachersByIds(teacherIds);
         System.out.println(">>> teachers from user-service: " + teachers); // ← добавь
 
         Map<Long, TeacherRequest> teacherMap = teachers.stream()
@@ -72,7 +71,7 @@ public class CourseFeignResponseService {
         Course course = groupCourse.getCourse();
         Group group = groupCourse.getGroup();
 
-        TeacherRequest teacher = course.getTeacherId() == null ? null : userClient.getTeacher(course.getTeacherId());
+        TeacherRequest teacher = course.getTeacherId() == null ? null : referenceDataCacheService.getTeacher(course.getTeacherId());
 
         return new GroupCourseResponseForScheduleService(
                 groupCourse.getId(), group.getId(), course.getId(),
@@ -93,7 +92,7 @@ public class CourseFeignResponseService {
                 .distinct()
                 .toList();
 
-        Map<Long, TeacherRequest> teacherMap = userClient.getTeachersByIds(teacherIds)
+        Map<Long, TeacherRequest> teacherMap = referenceDataCacheService.getTeachersByIds(teacherIds)
                 .stream()
                 .collect(Collectors.toMap(TeacherRequest::id, t -> t));
 

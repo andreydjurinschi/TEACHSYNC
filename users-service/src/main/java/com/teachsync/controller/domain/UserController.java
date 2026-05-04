@@ -1,11 +1,13 @@
 package com.teachsync.controller.domain;
 
+import com.teachsync.auth.service.JwtService;
 import com.teachsync.domain.Role;
 import com.teachsync.dto.AccountUpdateDto;
 import com.teachsync.dto.UserBaseDto;
 import com.teachsync.dto.UserCreateDto;
 import com.teachsync.dto.UserUpdateDto;
 import com.teachsync.dto.feign.UserWithCoursesDto;
+import com.teachsync.dto.statistics.UserStatisticsDto;
 import com.teachsync.interaction.responses.feign.SpecializationsBaseDto;
 import com.teachsync.interaction.responses.feign.TeacherResponse;
 import com.teachsync.service.UserService;
@@ -23,14 +25,21 @@ import java.util.stream.Collectors;
 @RequestMapping("/teachsync/users")
 public class UserController {
     private final UserService service;
+    private final JwtService jwtService;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, JwtService jwtService) {
         this.service = service;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<UserBaseDto>> getAll(){
         return ResponseEntity.ok(service.findAll());
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<UserStatisticsDto> getStatistics() {
+        return ResponseEntity.ok(service.getStatistics());
     }
 
     @GetMapping("/{id}")
@@ -39,7 +48,15 @@ public class UserController {
     }
 
     @PutMapping("/edit/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody UserUpdateDto dto){
+    public ResponseEntity<Void> update(@PathVariable Long id,
+                                       @Valid @RequestBody UserUpdateDto dto,
+                                       @RequestHeader("Authorization") String authHeader){
+        String token = authHeader.replace("Bearer ", "");
+        Long currentUserId = jwtService.extractUserId(token);
+        String currentRole = jwtService.extractRole(token);
+        if ("ADMIN".equals(currentRole) && id.equals(currentUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         service.updateUser(id, dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }

@@ -55,8 +55,35 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "where group_id=:group_id and course_id=:course_id")
     void unassignGroupToCourse(@Param("course_id") Long course_id, @Param("group_id") Long group_id );
 
+    @Query(nativeQuery = true, value = "select id from group_courses where course_id = :courseId")
+    List<Long> findGroupCourseIdsByCourseId(@Param("courseId") Long courseId);
+
+    @Query(nativeQuery = true, value = "select id from group_courses where group_id = :groupId")
+    List<Long> findGroupCourseIdsByGroupId(@Param("groupId") Long groupId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(nativeQuery = true, value = "delete from course_topics where course_id = :courseId")
+    void deleteAllTopicRelations(@Param("courseId") Long courseId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(nativeQuery = true, value = "delete from group_courses where course_id = :courseId")
+    void deleteAllGroupRelationsForCourse(@Param("courseId") Long courseId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(nativeQuery = true, value = "delete from group_courses where group_id = :groupId")
+    void deleteAllGroupRelationsForGroup(@Param("groupId") Long groupId);
+
     @Query(
             nativeQuery = true, value = "select * from group_courses where id = :id"
     )
     GroupCourse getGroupCourseById(@Param("id") Long id);
+
+    @Query("select count(c) from Course c where c.teacherId is not null")
+    long countWithTeacher();
+
+    @Query("select count(c) from Course c where c.teacherId is null")
+    long countWithoutTeacher();
+
+    @Query(nativeQuery = true, value = "select count(*) from group_courses")
+    long countGroupCourseRelations();
 }

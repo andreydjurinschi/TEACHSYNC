@@ -4,6 +4,7 @@ import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.replacements.ReplacementApprovedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementRequestedEvent;
 import com.teachsync.teachsyncevents.replacements.ReplacementStatusChangedEvent;
+import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -42,6 +43,15 @@ public class ReplacementEventProducer {
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to publish ReplacementStatusChangedEvent: {}", ex.getMessage());
+                    }
+                });
+    }
+
+    public void publishSystemAlert(SystemAlertEvent event) {
+        kafkaTemplate.send(KafkaTopics.SYSTEM_EVENTS, event.getSourceServiceName(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish SystemAlertEvent from replacement service: {}", ex.getMessage());
                     }
                 });
     }

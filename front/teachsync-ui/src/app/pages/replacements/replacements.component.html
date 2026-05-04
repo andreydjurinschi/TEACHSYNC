@@ -1,149 +1,164 @@
-<section class="min-h-screen bg-slate-100 p-8 dark:bg-slate-900">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Замены занятий</h1>
-      <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Здесь собраны ваши запросы на замену и приглашения помочь коллегам.
-      </p>
+<section class="app-page">
+  <div class="app-page-content">
+    <div class="app-page-header">
+      <div>
+        <h1 class="app-page-title">Замены занятий</h1>
+        <p class="app-page-subtitle">Ваши запросы на замену и приглашения помочь коллегам.</p>
+      </div>
     </div>
+
+    @if (actionMessage()) {
+      <div class="app-alert-success mb-4">{{ actionMessage() }}</div>
+    }
+
+    @if (actionError()) {
+      <div class="app-alert-error mb-4">{{ actionError() }}</div>
+    }
+
+    @if (loading()) {
+      <div class="space-y-3">
+        @for (_ of [1, 2, 3]; track $index) {
+          <div class="h-28 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800"></div>
+        }
+      </div>
+    } @else {
+      <div class="grid gap-6 xl:grid-cols-3">
+        <div class="app-panel">
+          <h2 class="app-label mb-4">Нужна моя помощь</h2>
+          @if (!pendingForMe().length) {
+            <p class="text-sm text-slate-400 dark:text-slate-500">Активных приглашений нет.</p>
+          }
+          <div class="space-y-3">
+            @for (item of pendingForMePage(); track item.id) {
+              <article class="app-panel-muted border-l-4 border-l-blue-700">
+                <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {{ formatTime(item.scheduleBaseDtoRequest.startTime) }} - {{ formatTime(item.scheduleBaseDtoRequest.endTime) }}
+                </p>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Причина: {{ item.reason }}</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button type="button" (click)="approve(item.id)" class="app-btn-primary">
+                    Подтвердить замену
+                  </button>
+                  <button type="button" (click)="decline(item.id)" class="app-btn-secondary">
+                    Отказаться
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+          <app-pagination-controls
+            [currentPage]="pendingPage()"
+            [totalPages]="pendingTotalPages()"
+            [totalItems]="pendingForMe().length"
+            itemLabel="invites"
+            (pageChange)="pendingPage.set($event)" />
+        </div>
+
+        <div class="app-panel">
+          <h2 class="app-label mb-4">Мои запросы</h2>
+          @if (!requestedByMe().length) {
+            <p class="text-sm text-slate-400 dark:text-slate-500">Вы еще не создавали замены.</p>
+          }
+          <div class="space-y-3">
+            @for (item of requestedByMePage(); track item.id) {
+              <article class="app-panel-muted border-l-4 border-l-blue-700">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
+                  </div>
+                  <span class="app-status"
+                    [class.bg-blue-50]="item.status === 'PENDING'"
+                    [class.text-blue-700]="item.status === 'PENDING'"
+                    [class.bg-emerald-700]="item.status === 'APPROVED'"
+                    [class.text-white]="item.status === 'APPROVED'"
+                    [class.bg-slate-100]="item.status !== 'PENDING' && item.status !== 'APPROVED'"
+                    [class.text-slate-600]="item.status !== 'PENDING' && item.status !== 'APPROVED'"
+                    [class.dark:bg-slate-800]="item.status !== 'APPROVED'"
+                    [class.dark:text-slate-300]="item.status !== 'APPROVED'">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                </div>
+                @if (item.approvedByTeacherBaseInfoRequest) {
+                  <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Заменяет: {{ teacherName(item.approvedByTeacherBaseInfoRequest) }}
+                  </p>
+                }
+                @if (item.status === 'PENDING') {
+                  <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                    Ожидаем ответов: {{ item.pendingInvitationsCount }}
+                  </p>
+                  <div class="mt-3">
+                    <button type="button" (click)="cancel(item.id)" class="app-btn-danger">
+                      Отменить заявку
+                    </button>
+                  </div>
+                }
+              </article>
+            }
+          </div>
+          <app-pagination-controls
+            [currentPage]="requestedPage()"
+            [totalPages]="requestedTotalPages()"
+            [totalItems]="requestedByMe().length"
+            itemLabel="requests"
+            (pageChange)="requestedPage.set($event)" />
+        </div>
+
+        <div class="app-panel">
+          <h2 class="app-label mb-4">Я заменяю</h2>
+          @if (!acceptedByMe().length) {
+            <p class="text-sm text-slate-400 dark:text-slate-500">Подтвержденных замен пока нет.</p>
+          }
+          <div class="space-y-3">
+            @for (item of acceptedByMePage(); track item.id) {
+              <article class="app-panel-muted border-l-4 border-l-emerald-700">
+                <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Вместо: {{ teacherName(item.teacherBaseInfoRequest) }}
+                </p>
+              </article>
+            }
+          </div>
+          <app-pagination-controls
+            [currentPage]="acceptedPage()"
+            [totalPages]="acceptedTotalPages()"
+            [totalItems]="acceptedByMe().length"
+            itemLabel="accepted"
+            (pageChange)="acceptedPage.set($event)" />
+        </div>
+
+        <div class="app-panel xl:col-span-3">
+          <h2 class="app-label mb-4">Закрытые заявки</h2>
+          @if (!closedRequests().length) {
+            <p class="text-sm text-slate-400 dark:text-slate-500">Закрытых заявок пока нет.</p>
+          }
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            @for (item of closedRequestsPage(); track item.id) {
+              <article class="app-panel-muted border-l-4 border-l-slate-300 dark:border-l-slate-700">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
+                  </div>
+                  <span class="app-status bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                </div>
+              </article>
+            }
+          </div>
+          <app-pagination-controls
+            [currentPage]="closedPage()"
+            [totalPages]="closedTotalPages()"
+            [totalItems]="closedRequests().length"
+            itemLabel="closed requests"
+            (pageChange)="closedPage.set($event)" />
+        </div>
+      </div>
+    }
   </div>
-
-  @if (actionMessage()) {
-    <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-      {{ actionMessage() }}
-    </div>
-  }
-
-  @if (actionError()) {
-    <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
-      {{ actionError() }}
-    </div>
-  }
-
-  @if (loading()) {
-    <div class="space-y-3">
-      @for (_ of [1, 2, 3]; track $index) {
-        <div class="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800"></div>
-      }
-    </div>
-  } @else {
-    <div class="grid gap-6 xl:grid-cols-3">
-      <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Нужна моя помощь</h2>
-        @if (!pendingForMe().length) {
-          <p class="text-sm text-slate-400 dark:text-slate-500">Активных приглашений нет.</p>
-        }
-        <div class="space-y-3">
-          @for (item of pendingForMe(); track item.id) {
-            <article class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-              <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {{ formatTime(item.scheduleBaseDtoRequest.startTime) }} - {{ formatTime(item.scheduleBaseDtoRequest.endTime) }}
-              </p>
-              <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Причина: {{ item.reason }}</p>
-              <button
-                type="button"
-                (click)="approve(item.id)"
-                class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
-                Подтвердить замену
-              </button>
-              <button
-                type="button"
-                (click)="decline(item.id)"
-                class="mt-3 ml-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
-                Отказаться
-              </button>
-            </article>
-          }
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Мои запросы</h2>
-        @if (!requestedByMe().length) {
-          <p class="text-sm text-slate-400 dark:text-slate-500">Вы еще не создавали замены.</p>
-        }
-        <div class="space-y-3">
-          @for (item of requestedByMe(); track item.id) {
-            <article class="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
-                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
-                </div>
-                <span class="rounded-full px-2 py-1 text-xs font-semibold"
-                      [class.bg-amber-100]="item.status === 'PENDING'"
-                      [class.text-amber-700]="item.status === 'PENDING'"
-                      [class.bg-emerald-100]="item.status === 'APPROVED'"
-                      [class.text-emerald-700]="item.status === 'APPROVED'"
-                      [class.bg-slate-100]="item.status !== 'PENDING' && item.status !== 'APPROVED'"
-                      [class.text-slate-700]="item.status !== 'PENDING' && item.status !== 'APPROVED'">
-                  {{ statusLabel(item.status) }}
-                </span>
-              </div>
-              @if (item.approvedByTeacherBaseInfoRequest) {
-                <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                  Заменяет: {{ teacherName(item.approvedByTeacherBaseInfoRequest) }}
-                </p>
-              }
-              @if (item.status === 'PENDING') {
-                <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-                  Ожидаем ответов: {{ item.pendingInvitationsCount }}
-                </p>
-              }
-              @if (item.status === 'PENDING') {
-                <button
-                  type="button"
-                  (click)="cancel(item.id)"
-                  class="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-                  Отменить заявку
-                </button>
-              }
-            </article>
-          }
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Я заменяю</h2>
-        @if (!acceptedByMe().length) {
-          <p class="text-sm text-slate-400 dark:text-slate-500">Подтвержденных замен пока нет.</p>
-        }
-        <div class="space-y-3">
-          @for (item of acceptedByMe(); track item.id) {
-            <article class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/60 dark:bg-emerald-950/30">
-              <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
-              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Вместо: {{ teacherName(item.teacherBaseInfoRequest) }}
-              </p>
-            </article>
-          }
-        </div>
-      </div>
-
-      <div class="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-800 xl:col-span-3">
-        <h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Закрытые заявки</h2>
-        @if (!closedRequests().length) {
-          <p class="text-sm text-slate-400 dark:text-slate-500">Закрытых заявок пока нет.</p>
-        }
-        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          @for (item of closedRequests(); track item.id) {
-            <article class="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
-              <div class="flex items-start justify-between gap-3">
-                <div>
-                  <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
-                  <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
-                </div>
-                <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                  {{ statusLabel(item.status) }}
-                </span>
-              </div>
-            </article>
-          }
-        </div>
-      </div>
-    </div>
-  }
 </section>
