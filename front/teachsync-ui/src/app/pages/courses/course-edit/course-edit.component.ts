@@ -65,8 +65,8 @@ export class CourseEdit implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name:        ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
+      name:        ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
+      description: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(200)]],
       categoryId:  [null],
       photoUrl:    [''],
     });

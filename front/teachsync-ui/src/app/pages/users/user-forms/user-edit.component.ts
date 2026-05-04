@@ -52,7 +52,7 @@ export class UserEdit implements OnInit {
   ngOnInit(): void {
     const userId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.ruleService.isAdmin() && this.ruleService.getId() === userId) {
-      this.router.navigate(['/profile']);
+      this.router.navigate(['/forbidden']);
       return;
     }
     this.categoryService.getAll().subscribe(d => this.categories.set(d));

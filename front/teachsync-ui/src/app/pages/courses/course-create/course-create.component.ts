@@ -6,6 +6,7 @@ import { CourseService } from '../../../core/services/course.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { CategoryBase } from '../../../core/models/category/category.model';
 import { ImageBase64Service } from '../../../core/services/image-base64.service';
+import { RuleService } from '../../../core/services/role.rule.service';
 
 @Component({
   selector: 'app-course-create',
@@ -16,7 +17,11 @@ import { ImageBase64Service } from '../../../core/services/image-base64.service'
 export class CourseCreate implements OnInit {
   form!: FormGroup;
   loading = signal(false);
+  error = signal<string | null>(null);
   categories = signal<CategoryBase[]>([]);
+  categoryName = signal('');
+  categorySaving = signal(false);
+  categoryError = signal<string | null>(null);
 
   private platformId = inject(PLATFORM_ID);
   private fb = inject(FormBuilder);
@@ -24,20 +29,25 @@ export class CourseCreate implements OnInit {
   private courseService = inject(CourseService);
   private categoryService = inject(CategoryService);
   private imageBase64Service = inject(ImageBase64Service);
+  readonly ruleService = inject(RuleService);
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name:        ['', [Validators.required, Validators.minLength(3)]],
-      description: ['', Validators.required],
+      name:        ['', [Validators.required, Validators.minLength(5), Validators.maxLength(50)]],
+      description: ['', [Validators.required, Validators.minLength(15), Validators.maxLength(200)]],
       categoryId:  [null],
       photoUrl:    [''],
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      this.categoryService.getAll().subscribe({
-        next: data => this.categories.set(data),
-      });
+      this.loadCategories();
     }
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAll().subscribe({
+      next: data => this.categories.set(data),
+    });
   }
 
   onPhotoSelected(event: Event): void {
@@ -56,9 +66,43 @@ export class CourseCreate implements OnInit {
   submit(): void {
     if (this.form.invalid) return;
     this.loading.set(true);
+    this.error.set(null);
     this.courseService.create(this.form.value).subscribe({
       next: () => this.router.navigate(['/courses']),
-      error: () => this.loading.set(false),
+      error: err => {
+        this.loading.set(false);
+        const payload = err?.error;
+        if (payload?.name) {
+          this.error.set(`Название: ${payload.name}`);
+          return;
+        }
+        if (payload?.description) {
+          this.error.set(`Описание: ${payload.description}`);
+          return;
+        }
+        this.error.set(typeof payload === 'string' ? payload : 'Не удалось создать курс.');
+      },
+    });
+  }
+
+  createCategory(): void {
+    const name = this.categoryName().trim();
+    if (!name) {
+      this.categoryError.set('Введите название категории.');
+      return;
+    }
+    this.categorySaving.set(true);
+    this.categoryError.set(null);
+    this.categoryService.create({ name }).subscribe({
+      next: () => {
+        this.categoryName.set('');
+        this.categorySaving.set(false);
+        this.loadCategories();
+      },
+      error: err => {
+        this.categorySaving.set(false);
+        this.categoryError.set(err?.error?.message ?? 'Не удалось создать категорию.');
+      }
     });
   }
 }
