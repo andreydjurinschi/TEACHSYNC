@@ -8,6 +8,7 @@ import com.teachsync.notificationservice.service.UserActivityService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
@@ -15,6 +16,7 @@ import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicsAddedEvent;
 import com.teachsync.teachsyncevents.courses.CourseUpdatedEvent;
+import com.teachsync.teachsyncevents.courses.GroupDeletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -48,6 +50,8 @@ public class CourseEventConsumer {
             String eventType = node.get("actionType").asText();
             switch (eventType) {
                 case ActionTypes.COURSE_CREATED -> handleCourseCreated(objectMapper.readValue(rawMessage, CourseCreatedEvent.class));
+                case ActionTypes.COURSE_DELETED -> handleCourseDeleted(objectMapper.readValue(rawMessage, CourseDeletedEvent.class));
+                case ActionTypes.GROUP_DELETED -> handleGroupDeleted(objectMapper.readValue(rawMessage, GroupDeletedEvent.class));
                 case ActionTypes.COURSE_TEACHER_ASSIGNED -> handleCourseTeacherAssigned(objectMapper.readValue(rawMessage, CourseTeacherAssignedEvent.class));
                 case ActionTypes.COURSE_TEACHER_UNASSIGNED -> handleCourseTeacherUnassigned(objectMapper.readValue(rawMessage, CourseTeacherUnassignedEvent.class));
                 case ActionTypes.COURSE_EDITED -> handleCourseUpdated(objectMapper.readValue(rawMessage, CourseUpdatedEvent.class));
@@ -86,6 +90,113 @@ public class CourseEventConsumer {
                 "/courses/" + event.getCourseId()
         );
         log.info("Saved COURSE_CREATED notification for admins: {}", event.getUuid());
+    }
+
+    private void handleCourseDeleted(CourseDeletedEvent event) {
+        String actor = event.getChangedByName() == null || event.getChangedByName().isBlank()
+                ? "системой"
+                : event.getChangedByName();
+        String message = "Курс \"" + event.getCourseName() + "\" удален из системы пользователем " + actor + ".";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.COURSE_DELETED,
+                TargetRole.MANAGER,
+                "Курс удален",
+                message,
+                "/courses"
+        );
+        activityService.recordForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.COURSE_DELETED,
+                TargetRole.MANAGER,
+                event.getChangedByUserId(),
+                actor,
+                "Курс удален",
+                message,
+                "Категория: " + (event.getCategoryName() == null ? "не указана" : event.getCategoryName()) + ".",
+                "/courses"
+        );
+        if (event.getChangedByUserId() != null) {
+            activityService.recordForUser(
+                    event.getUuid() + ":actor",
+                    event.getServiceName(),
+                    ActionTypes.COURSE_DELETED,
+                    event.getChangedByUserId(),
+                    event.getChangedByUserId(),
+                    actor,
+                    "Вы удалили курс",
+                    "Вы удалили курс \"" + event.getCourseName() + "\".",
+                    "Категория: " + (event.getCategoryName() == null ? "не указана" : event.getCategoryName()) + ".",
+                    "/courses"
+            );
+        }
+        if (event.getTeacherId() != null) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.COURSE_DELETED,
+                    event.getTeacherId(),
+                    "Курс закрыт",
+                    "Курс \"" + event.getCourseName() + "\" удален из системы. Связанные занятия и назначения закрыты.",
+                    "/profile/courses"
+            );
+            activityService.recordForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    ActionTypes.COURSE_DELETED,
+                    event.getTeacherId(),
+                    event.getChangedByUserId(),
+                    actor,
+                    "Курс закрыт",
+                    "Курс \"" + event.getCourseName() + "\" удален из системы.",
+                    "Удалил: " + actor + ".",
+                    "/profile/courses"
+            );
+        }
+    }
+
+    private void handleGroupDeleted(GroupDeletedEvent event) {
+        String actor = event.getChangedByName() == null || event.getChangedByName().isBlank()
+                ? "системой"
+                : event.getChangedByName();
+        String message = "Группа \"" + event.getGroupName() + "\" закрыта и удалена из системы.";
+        notificationService.saveForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                TargetSubject.GROUP_DELETED,
+                TargetRole.MANAGER,
+                "Группа закрыта",
+                message,
+                "/groups"
+        );
+        activityService.recordForRole(
+                event.getUuid(),
+                event.getServiceName(),
+                ActionTypes.GROUP_DELETED,
+                TargetRole.MANAGER,
+                event.getChangedByUserId(),
+                actor,
+                "Группа закрыта",
+                message,
+                "Изменил: " + actor + ".",
+                "/groups"
+        );
+        if (event.getChangedByUserId() != null) {
+            activityService.recordForUser(
+                    event.getUuid() + ":actor",
+                    event.getServiceName(),
+                    ActionTypes.GROUP_DELETED,
+                    event.getChangedByUserId(),
+                    event.getChangedByUserId(),
+                    actor,
+                    "Вы закрыли группу",
+                    "Вы удалили группу \"" + event.getGroupName() + "\".",
+                    "Связанные занятия и замены были очищены.",
+                    "/groups"
+            );
+        }
     }
 
     private void handleCourseTeacherAssigned(CourseTeacherAssignedEvent event) {

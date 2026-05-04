@@ -195,6 +195,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: pass
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       TEACHSYNC_SERVICES_USERS_URL: http://users-service:8083/internal/users
+      TEACHSYNC_SERVICES_SCHEDULES_URL: http://schedule-service:8082/internal/schedules
     ports:
       - "8081:8081"
     restart: on-failure

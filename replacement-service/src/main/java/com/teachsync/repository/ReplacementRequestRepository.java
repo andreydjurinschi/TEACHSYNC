@@ -34,6 +34,8 @@ public interface ReplacementRequestRepository extends JpaRepository<ReplacementR
 
     long countByApprovedById(Long approvedById);
 
+    List<ReplacementRequest> findByScheduleId(Long scheduleId);
+
     @Query("""
             select rr
             from ReplacementRequest rr

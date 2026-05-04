@@ -1,6 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, computed, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { CourseDetailed as CourseDetailedModel } from '../../../core/models/courses/course-detailed.model';
 import { CourseWithTeacher } from '../../../core/models/courses/course-with-teacher.model';
@@ -45,8 +45,13 @@ export class CourseDetailed implements OnInit {
     this.ruleSevice.isManager() || this.ruleSevice.isAdmin()
   );
 
+  canDeleteCourse = computed(() =>
+    this.ruleSevice.isManager() || this.ruleSevice.isAdmin()
+  );
+
   private platformId = inject(PLATFORM_ID);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   public ruleSevice = inject(RuleService)
 
   constructor(private courseService: CourseService, private teacherService: TeacherService) {}
@@ -94,6 +99,27 @@ export class CourseDetailed implements OnInit {
       error: err => {
         this.pending.set(false);
         this.actionError.set(err?.error?.message ?? 'Не удалось назначить преподавателя.');
+      }
+    });
+  }
+
+  deleteCourse(): void {
+    const courseId = this.course()?.id;
+    if (courseId == null) return;
+    if (!confirm('Удалить этот курс? Связанные расписания и заявки на замену будут очищены автоматически.')) {
+      return;
+    }
+    this.pending.set(true);
+    this.actionMessage.set(null);
+    this.actionError.set(null);
+    this.courseService.delete(courseId).subscribe({
+      next: () => {
+        this.pending.set(false);
+        this.router.navigate(['/courses']);
+      },
+      error: err => {
+        this.pending.set(false);
+        this.actionError.set(err?.error?.message ?? 'Не удалось удалить курс.');
       }
     });
   }

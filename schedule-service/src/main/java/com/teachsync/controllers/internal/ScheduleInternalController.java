@@ -2,7 +2,10 @@ package com.teachsync.controllers.internal;
 
 import com.teachsync.dto_s.domain.schedule.ScheduleBaseDto;
 import com.teachsync.domain.WeekDays;
+import com.teachsync.dto_s.internal.ScheduleCleanupRequest;
 import com.teachsync.services.ScheduleService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,5 +32,15 @@ public class ScheduleInternalController {
     @GetMapping("/{id}/available-teachers")
     public List<Long> availableTeachers(@PathVariable Long id, @RequestParam WeekDays weekDay) {
         return scheduleService.findAvailableTeachers(id, weekDay);
+    }
+
+    @PostMapping("/cleanup/group-courses")
+    public void cleanupByGroupCourses(@RequestBody ScheduleCleanupRequest request) {
+        scheduleService.deleteByGroupCourseIds(
+                request.getGroupCourseIds(),
+                request.getReason(),
+                request.getChangedByUserId(),
+                request.getChangedByName()
+        );
     }
 }

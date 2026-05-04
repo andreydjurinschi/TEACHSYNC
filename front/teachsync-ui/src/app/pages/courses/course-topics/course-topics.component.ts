@@ -6,6 +6,7 @@ import { TopicService } from '../../../core/services/topic.service';
 import { Topic } from '../../../core/models/topics/topic.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { TopicTag } from '../../../core/models/topics/topic.model';
+import { RuleService } from '../../../core/services/role.rule.service';
 import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
 import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
@@ -23,6 +24,10 @@ export class CourseTopics implements OnInit {
   loading = signal(false);
   selectedTag = signal<TopicTag | 'ALL'>('ALL');
   filteredTopics = signal<Topic[]>([]);
+  newTopicName = signal('');
+  newTopicTag = signal<TopicTag>('IT');
+  topicCreateError = signal<string | null>(null);
+  topicCreatePending = signal(false);
   assignedPage = signal(1);
   availablePage = signal(1);
   private readonly pageSize = 8;
@@ -36,6 +41,7 @@ export class CourseTopics implements OnInit {
   private route = inject(ActivatedRoute);
   private courseService = inject(CourseService);
   private topicService = inject(TopicService);
+  readonly ruleService = inject(RuleService);
 
   constructor() {
     effect(() => {
@@ -130,5 +136,27 @@ export class CourseTopics implements OnInit {
       OTHER:    'bg-slate-500/20 text-slate-400',
     };
     return tag ? (colors[tag] ?? 'bg-slate-500/20 text-slate-400') : 'bg-slate-500/20 text-slate-400';
+  }
+
+  createTopic(): void {
+    const name = this.newTopicName().trim();
+    if (!name) {
+      this.topicCreateError.set('Введите название темы.');
+      return;
+    }
+    this.topicCreatePending.set(true);
+    this.topicCreateError.set(null);
+    this.topicService.create({ name, topicTag: this.newTopicTag() }).subscribe({
+      next: created => {
+        this.newTopicName.set('');
+        this.newTopicTag.set(created.topicTag ?? 'IT');
+        this.loadData();
+        this.topicCreatePending.set(false);
+      },
+      error: err => {
+        this.topicCreateError.set(err?.error?.message ?? 'Не удалось создать тему.');
+        this.topicCreatePending.set(false);
+      }
+    });
   }
 }

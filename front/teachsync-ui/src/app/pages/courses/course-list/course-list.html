@@ -9,8 +9,48 @@
     </a>
   </div>
 
-  @if (!grouped().length) {
+  <div class="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+    <div>
+      <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        Поиск по названию или описанию курса
+      </label>
+      <input
+        type="text"
+        [value]="searchQuery()"
+        (input)="updateSearch($any($event.target).value)"
+        placeholder="Например: Java, English, database"
+        class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+    </div>
+
+    <div>
+      <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        Преподаватель
+      </label>
+      <div class="flex flex-wrap gap-2">
+        <button
+          type="button"
+          (click)="setTeacherFilter('all')"
+          [class]="teacherFilter() === 'all'
+            ? 'rounded-lg border border-blue-600 bg-blue-600 px-3 py-2 text-sm font-medium text-white'
+            : 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-blue-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'">
+          Все курсы ({{ courses().length }})
+        </button>
+        <button
+          type="button"
+          (click)="setTeacherFilter('without-teacher')"
+          [class]="teacherFilter() === 'without-teacher'
+            ? 'rounded-lg border border-amber-500 bg-amber-500 px-3 py-2 text-sm font-medium text-white'
+            : 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-amber-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'">
+          Без преподавателя ({{ coursesWithoutTeacherCount() }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (!courses().length) {
     <p class="text-slate-400 text-sm">Курсы не найдены</p>
+  } @else if (!grouped().length) {
+    <p class="text-slate-400 text-sm">По вашему запросу курсы не найдены</p>
   } @else {
     <div class="space-y-8">
       @for (group of grouped(); track group.category) {
@@ -72,7 +112,7 @@
     <app-pagination-controls
       [currentPage]="currentPage()"
       [totalPages]="totalPages()"
-      [totalItems]="courses().length"
+      [totalItems]="filteredCourses().length"
       itemLabel="courses"
       (pageChange)="currentPage.set($event)" />
   }

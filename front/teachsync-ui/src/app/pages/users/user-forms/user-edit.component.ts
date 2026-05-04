@@ -9,6 +9,7 @@ import { UserService } from '../../../core/services/user.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { TeacherService } from '../../../core/services/teacher.service';
 import { CategoryBase } from '../../../core/models/category/category.model';
+import { RuleService } from '../../../core/services/role.rule.service';
 
 @Component({
   selector: 'app-user-edit',
@@ -36,6 +37,7 @@ export class UserEdit implements OnInit {
     private userService: UserService,
     private categoryService: CategoryService,
     private teacherService: TeacherService,
+    private ruleService: RuleService,
     private router: Router,
   ) {
     this.form = this.fb.nonNullable.group({
@@ -49,6 +51,10 @@ export class UserEdit implements OnInit {
 
   ngOnInit(): void {
     const userId = Number(this.route.snapshot.paramMap.get('id'));
+    if (this.ruleService.isAdmin() && this.ruleService.getId() === userId) {
+      this.router.navigate(['/profile']);
+      return;
+    }
     this.categoryService.getAll().subscribe(d => this.categories.set(d));
     this.loadUser(userId);
   }

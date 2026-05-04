@@ -15,10 +15,18 @@ import { getTotalPages, paginateItems } from '../../../shared/pagination/paginat
 export class GroupList implements OnInit {
   groups = signal<GroupBase[]>([]);
   loading = signal(true);
+  searchQuery = signal('');
   currentPage = signal(1);
   private readonly pageSize = 10;
-  totalPages = computed(() => getTotalPages(this.groups().length, this.pageSize));
-  visibleGroups = computed(() => paginateItems(this.groups(), this.currentPage(), this.pageSize));
+  filteredGroups = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query) {
+      return this.groups();
+    }
+    return this.groups().filter(group => group.name.toLowerCase().includes(query));
+  });
+  totalPages = computed(() => getTotalPages(this.filteredGroups().length, this.pageSize));
+  visibleGroups = computed(() => paginateItems(this.filteredGroups(), this.currentPage(), this.pageSize));
 
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
@@ -44,6 +52,9 @@ export class GroupList implements OnInit {
 
   delete(id: number, event: Event): void {
     event.stopPropagation();
+    if (!confirm('Закрыть и удалить группу? Связанные занятия и заявки на замену будут очищены.')) {
+      return;
+    }
     this.groupService.delete(id).subscribe({
       next: () => this.groups.update(g => g.filter(x => x.id !== id)),
     });
@@ -51,5 +62,10 @@ export class GroupList implements OnInit {
 
   goTo(group: GroupBase): void {
     this.router.navigate(['/groups', group.id]);
+  }
+
+  updateSearch(query: string): void {
+    this.searchQuery.set(query);
+    this.currentPage.set(1);
   }
 }

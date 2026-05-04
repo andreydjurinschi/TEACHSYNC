@@ -2,6 +2,7 @@ package com.teachsync.services.domain;
 
 import com.teachsync.domain.Course;
 import com.teachsync.domain.Group;
+import com.teachsync.dto_s.internal.ScheduleCleanupRequest;
 import com.teachsync.dto_s.courses.CourseShortDto;
 import com.teachsync.dto_s.groups.GroupBaseDto;
 import com.teachsync.dto_s.groups.GroupCreateDto;
@@ -11,6 +12,7 @@ import com.teachsync.mappers.CourseMapper;
 import com.teachsync.mappers.GroupMapper;
 import com.teachsync.repositories.CourseRepository;
 import com.teachsync.repositories.GroupRepository;
+import com.teachsync.teachsyncevents.courses.GroupDeletedEvent;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,10 +27,14 @@ import java.util.stream.Collectors;
 public class GroupService {
     private final GroupRepository repository;
     private final CourseRepository courseRepository;
+    private final CourseService courseService;
+    private final com.teachsync.interaction.kafka.CourseEventProducer courseEventProducer;
 
-    public GroupService(GroupRepository repository, CourseRepository courseRepository) {
+    public GroupService(GroupRepository repository, CourseRepository courseRepository, CourseService courseService, com.teachsync.interaction.kafka.CourseEventProducer courseEventProducer) {
         this.repository = repository;
         this.courseRepository = courseRepository;
+        this.courseService = courseService;
+        this.courseEventProducer = courseEventProducer;
     }
 
     public List<GroupBaseDto> getAll(){
@@ -68,9 +74,22 @@ public class GroupService {
         repository.assignGroupToCourse(groupId, courseId);
     }
 
-    public void delete(Long id){
+    public void delete(Long id, Long changedByUserId, String changedByName){
         Group group = getGroup(id);
+        courseService.cleanupSchedules(
+                courseRepository.findGroupCourseIdsByGroupId(id),
+                "Группа закрыта и удалена из системы",
+                changedByUserId,
+                changedByName
+        );
+        courseRepository.deleteAllGroupRelationsForGroup(id);
         repository.delete(group);
+        courseEventProducer.publishGroupDeleted(new GroupDeletedEvent(
+                group.getId(),
+                group.getName(),
+                changedByUserId,
+                changedByName
+        ));
     }
 
     public GroupWithCoursesDto getDetailedDto(Long id){

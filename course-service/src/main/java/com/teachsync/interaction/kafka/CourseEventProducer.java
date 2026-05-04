@@ -2,7 +2,9 @@ package com.teachsync.interaction.kafka;
 
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
+import com.teachsync.teachsyncevents.courses.GroupDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
@@ -141,6 +143,28 @@ public class CourseEventProducer {
                 log.info("CourseTopicRemovedEvent published successfully... courseId: {}, topicId: {}", event.getCourseId(), event.getTopicId());
             }
         });
+    }
+
+    public void publishCourseDeleted(CourseDeletedEvent event) {
+        kafkaTemplate.send(KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed publish event for course delete in course service: {}", ex.getMessage());
+                    } else {
+                        log.info("CourseDeletedEvent published successfully... courseId: {}", event.getCourseId());
+                    }
+                });
+    }
+
+    public void publishGroupDeleted(GroupDeletedEvent event) {
+        kafkaTemplate.send(KafkaTopics.COURSE_EVENTS, event.getGroupId().toString(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed publish event for group delete in course service: {}", ex.getMessage());
+                    } else {
+                        log.info("GroupDeletedEvent published successfully... groupId: {}", event.getGroupId());
+                    }
+                });
     }
 
     public void publishSystemAlert(SystemAlertEvent event) {

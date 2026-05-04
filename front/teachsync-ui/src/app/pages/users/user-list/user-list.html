@@ -13,6 +13,27 @@
       </a>
     </div>
 
+    <div class="mb-6">
+      <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        Поиск по имени, фамилии или почте
+      </label>
+      <input
+        type="text"
+        [value]="searchQuery()"
+        (input)="updateSearch($any($event.target).value)"
+        placeholder="Например: ivan, petrov или teacher@mail.com"
+        class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+    </div>
+
+    @if (!users().length) {
+      <div class="app-panel py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+        Пользователи пока не найдены.
+      </div>
+    } @else if (!filteredUsers().length) {
+      <div class="app-panel py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+        По вашему запросу пользователи не найдены.
+      </div>
+    } @else {
     <div class="app-table-wrap">
       <table class="app-table">
         <thead>
@@ -58,8 +79,9 @@
     <app-pagination-controls
       [currentPage]="currentPage()"
       [totalPages]="totalPages()"
-      [totalItems]="users().length"
+      [totalItems]="filteredUsers().length"
       itemLabel="users"
       (pageChange)="currentPage.set($event)" />
+    }
   </div>
 </section>

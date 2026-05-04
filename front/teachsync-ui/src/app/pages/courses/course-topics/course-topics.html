@@ -16,6 +16,42 @@
   <div class="flex justify-center">
     <div class="w-full max-w-3xl space-y-6">
 
+      @if (ruleService.isAdmin()) {
+      <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 p-6">
+        <h3 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
+          Новая тема
+        </h3>
+        <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px_auto]">
+          <input
+            type="text"
+            [value]="newTopicName()"
+            (input)="newTopicName.set($any($event.target).value)"
+            placeholder="Название темы"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200" />
+          <select
+            [value]="newTopicTag()"
+            (change)="newTopicTag.set($any($event.target).value)"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+            @for (tag of tags; track tag) {
+              @if (tag !== 'ALL') {
+                <option [value]="tag">{{ tag }}</option>
+              }
+            }
+          </select>
+          <button
+            type="button"
+            (click)="createTopic()"
+            [disabled]="topicCreatePending()"
+            class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-50">
+            {{ topicCreatePending() ? 'Создание...' : 'Создать' }}
+          </button>
+        </div>
+        @if (topicCreateError()) {
+          <p class="mt-3 text-sm text-red-500">{{ topicCreateError() }}</p>
+        }
+      </div>
+      }
+
       <div class="bg-white dark:bg-slate-800 rounded-md
                   border border-slate-200 dark:border-slate-700 p-6">
 

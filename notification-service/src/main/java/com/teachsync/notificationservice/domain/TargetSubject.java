@@ -2,6 +2,8 @@ package com.teachsync.notificationservice.domain;
 
 public enum TargetSubject {
     COURSE_CREATED,
+    COURSE_DELETED,
+    GROUP_DELETED,
     COURSE_UPDATED,
     COURSE_GROUP_ENROLLED,
     COURSE_GROUP_REMOVED,
@@ -12,6 +14,7 @@ public enum TargetSubject {
     TEACHER_ASSIGNED,
     SCHEDULE_CREATED,
     SCHEDULE_UPDATED,
+    SCHEDULE_DELETED,
     USER_CREATED,
     USER_DELETED,
     USER_ROLE_CHANGED,

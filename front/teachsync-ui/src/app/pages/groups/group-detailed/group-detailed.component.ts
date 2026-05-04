@@ -57,6 +57,9 @@ export class GroupDetailed implements OnInit {
   delete(): void {
     const id = this.group()?.id;
     if (!id) return;
+    if (!confirm('Закрыть и удалить группу? Связанные занятия и заявки на замену будут очищены.')) {
+      return;
+    }
     this.groupService.delete(id).subscribe({
       next: () => this.router.navigate(['/groups']),
     });

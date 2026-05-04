@@ -9,7 +9,9 @@ import com.teachsync.domain.Topic;
 import com.teachsync.dto_s.courses.CourseDetailedDto;
 import com.teachsync.dto_s.courses.CourseWithGroupDto;
 import com.teachsync.dto_s.feign.CourseWithTeacherRequest;
+import com.teachsync.dto_s.internal.ScheduleCleanupRequest;
 import com.teachsync.dto_s.statistics.CourseStatisticsDto;
+import com.teachsync.interaction.feign.clients.ScheduleCleanupClient;
 import com.teachsync.interaction.feign.clients.UserClient;
 import com.teachsync.interaction.feign.requests.TeacherRequest;
 import com.teachsync.interaction.kafka.CourseEventProducer;
@@ -23,6 +25,7 @@ import com.teachsync.dto_s.courses.CourseCreateDto;
 import com.teachsync.repositories.GroupRepository;
 import com.teachsync.repositories.TopicRepository;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
+import com.teachsync.teachsyncevents.courses.CourseDeletedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
@@ -56,10 +59,11 @@ public class CourseService {
     private final UserClient userClient;
     private final ReferenceDataCacheService referenceDataCacheService;
     private final CourseEventProducer courseEventProducer;
+    private final ScheduleCleanupClient scheduleCleanupClient;
     private final ObjectMapper objectMapper;
 
     @Autowired
-    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, ReferenceDataCacheService referenceDataCacheService, CourseEventProducer courseEventProducer, JwtService jwtService, ObjectMapper objectMapper) {
+    public CourseService(CourseRepository repository, TopicRepository topicRepository, CategoryRepository categoryRepository, GroupRepository groupRepository, UserClient userClient, ReferenceDataCacheService referenceDataCacheService, CourseEventProducer courseEventProducer, ScheduleCleanupClient scheduleCleanupClient, JwtService jwtService, ObjectMapper objectMapper) {
         this.repository = repository;
         this.topicRepository = topicRepository;
         this.categoryRepository = categoryRepository;
@@ -67,6 +71,7 @@ public class CourseService {
         this.userClient = userClient;
         this.referenceDataCacheService = referenceDataCacheService;
         this.courseEventProducer = courseEventProducer;
+        this.scheduleCleanupClient = scheduleCleanupClient;
         this.objectMapper = objectMapper;
     }
 
@@ -162,9 +167,25 @@ public class CourseService {
     }
 
     @Transactional
-    public void deleteCourse(Long id){
+    public void deleteCourse(Long id, Long changedByUserId, String changedByName){
         Course course = getCourse(id);
+        cleanupSchedules(
+                repository.findGroupCourseIdsByCourseId(id),
+                "Курс удален из системы",
+                changedByUserId,
+                changedByName
+        );
+        repository.deleteAllTopicRelations(id);
+        repository.deleteAllGroupRelationsForCourse(id);
         repository.delete(course);
+        courseEventProducer.publishCourseDeleted(new CourseDeletedEvent(
+                course.getId(),
+                course.getName(),
+                course.getTeacherId(),
+                course.getCategory() == null ? null : course.getCategory().getName(),
+                changedByUserId,
+                changedByName
+        ));
     }
 
     @Transactional
@@ -297,6 +318,23 @@ public class CourseService {
     private Course getCourse(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("this course does not exist"));
+    }
+
+    @Transactional
+    public void cleanupSchedules(List<Long> groupCourseIds, String reason, Long changedByUserId, String changedByName) {
+        if (groupCourseIds == null || groupCourseIds.isEmpty()) {
+            return;
+        }
+        requireDependency(
+                "Удаление связанных расписаний при закрытии курса или группы",
+                "schedule-service",
+                () -> {
+                    scheduleCleanupClient.cleanupSchedulesByGroupCourses(
+                            new ScheduleCleanupRequest(groupCourseIds, reason, changedByUserId, changedByName)
+                    );
+                    return null;
+                }
+        );
     }
 
     private void validateTeacherCanLeadCourse(Course course, Long teacherId) {

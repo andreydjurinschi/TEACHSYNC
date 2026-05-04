@@ -27,10 +27,22 @@ import { getTotalPages, paginateItems } from '../../../shared/pagination/paginat
 export class UserList implements OnInit {
 
   users = signal<User[]>([]);
+  searchQuery = signal('');
   currentPage = signal(1);
   private readonly pageSize = 10;
-  totalPages = computed(() => getTotalPages(this.users().length, this.pageSize));
-  visibleUsers = computed(() => paginateItems(this.users(), this.currentPage(), this.pageSize));
+  filteredUsers = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query) {
+      return this.users();
+    }
+    return this.users().filter(user =>
+      user.name.toLowerCase().includes(query)
+      || user.surname.toLowerCase().includes(query)
+      || user.email.toLowerCase().includes(query)
+    );
+  });
+  totalPages = computed(() => getTotalPages(this.filteredUsers().length, this.pageSize));
+  visibleUsers = computed(() => paginateItems(this.filteredUsers(), this.currentPage(), this.pageSize));
 
   private platformId = inject(PLATFORM_ID);
 
@@ -58,5 +70,10 @@ export class UserList implements OnInit {
       },
       error: err => console.error(err)
     });
+  }
+
+  updateSearch(query: string): void {
+    this.searchQuery.set(query);
+    this.currentPage.set(1);
   }
 }

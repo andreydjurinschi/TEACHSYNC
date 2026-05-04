@@ -21,6 +21,8 @@ public class NotificationSchemaSynchronizer {
                     add constraint notifications_target_subj_check
                     check (target_subj in (
                         'COURSE_CREATED',
+                        'COURSE_DELETED',
+                        'GROUP_DELETED',
                         'COURSE_UPDATED',
                         'COURSE_GROUP_ENROLLED',
                         'COURSE_GROUP_REMOVED',
@@ -31,6 +33,7 @@ public class NotificationSchemaSynchronizer {
                         'TEACHER_ASSIGNED',
                         'SCHEDULE_CREATED',
                         'SCHEDULE_UPDATED',
+                        'SCHEDULE_DELETED',
                         'USER_CREATED',
                         'USER_DELETED',
                         'USER_ROLE_CHANGED',

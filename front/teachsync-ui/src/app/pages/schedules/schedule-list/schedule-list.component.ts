@@ -34,6 +34,12 @@ export class ScheduleList implements OnInit {
   editing = signal<ScheduleBase | null>(null);
   savingEdit = signal(false);
   editError = signal<string | null>(null);
+  showClassroomForm = signal(false);
+  classroomName = signal('');
+  classroomCapacity = signal<number | null>(null);
+  classroomPhotoUrl = signal('');
+  classroomError = signal<string | null>(null);
+  classroomSaving = signal(false);
   unscheduledPage = signal(1);
   filteredPage = signal(1);
   editForm = signal<ScheduleEditForm>({
@@ -129,6 +135,10 @@ export class ScheduleList implements OnInit {
     return this.ruleService.isAdmin() || this.ruleService.isManager();
   }
 
+  canCreateClassrooms(): boolean {
+    return this.ruleService.isAdmin();
+  }
+
   startEdit(schedule: ScheduleBase): void {
     this.editing.set(schedule);
     this.editError.set(null);
@@ -178,6 +188,52 @@ export class ScheduleList implements OnInit {
       error: err => {
         this.editError.set(err?.error?.message ?? 'Не удалось изменить расписание');
         this.savingEdit.set(false);
+      }
+    });
+  }
+
+  deleteSchedule(schedule: ScheduleBase): void {
+    if (!confirm('Удалить это занятие? Связанные заявки на замену тоже будут очищены.')) {
+      return;
+    }
+    this.scheduleService.delete(schedule.id).subscribe({
+      next: () => {
+        this.schedules.update(list => list.filter(item => item.id !== schedule.id));
+        if (this.editing()?.id === schedule.id) {
+          this.closeEdit();
+        }
+      },
+      error: err => {
+        this.editError.set(err?.error?.message ?? 'Не удалось удалить расписание');
+      }
+    });
+  }
+
+  createClassroom(): void {
+    const name = this.classroomName().trim();
+    const capacity = this.classroomCapacity();
+    if (!name || capacity == null) {
+      this.classroomError.set('Заполните название и вместимость аудитории.');
+      return;
+    }
+    this.classroomSaving.set(true);
+    this.classroomError.set(null);
+    this.scheduleService.createClassroom({
+      name,
+      capacity,
+      photoUrl: this.classroomPhotoUrl().trim() || undefined,
+    }).subscribe({
+      next: () => {
+        this.classroomName.set('');
+        this.classroomCapacity.set(null);
+        this.classroomPhotoUrl.set('');
+        this.showClassroomForm.set(false);
+        this.classroomSaving.set(false);
+        this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
+      },
+      error: err => {
+        this.classroomError.set(err?.error?.message ?? 'Не удалось создать аудиторию');
+        this.classroomSaving.set(false);
       }
     });
   }

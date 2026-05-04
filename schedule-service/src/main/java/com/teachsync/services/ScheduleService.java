@@ -11,6 +11,7 @@ import com.teachsync.dto_s.domain.schedule.ScheduleUpdateDto;
 import com.teachsync.dto_s.domain.statistics.ScheduleStatisticsDto;
 import com.teachsync.dto_s.domain.statistics.TeacherWorkloadStatisticsDto;
 import com.teachsync.dto_s.feign.GroupCourseDto;
+import com.teachsync.dto_s.internal.ScheduleCleanupRequest;
 import com.teachsync.exceptions.InvalidTimeRangeException;
 import com.teachsync.exceptions.ScheduleConflictException;
 import com.teachsync.interation.feign.Role;
@@ -24,6 +25,7 @@ import com.teachsync.repositories.ClassRoomRepository;
 import com.teachsync.repositories.ScheduleDayRepository;
 import com.teachsync.repositories.ScheduleRepository;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
+import com.teachsync.teachsyncevents.schedules.ScheduleDeletedEvent;
 import com.teachsync.teachsyncevents.schedules.ScheduleUpdatedEvent;
 import com.teachsync.teachsyncevents.system.SystemAlertEvent;
 import com.teachsync.validator.CustomTimeValidator;
@@ -360,9 +362,24 @@ public class ScheduleService {
     }
 
 
-    //TODO: schedule delete logic
-    public void delete(Long id){
+    @Transactional
+    public void delete(Long id, Long changedByUserId, String changedByName){
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("this schedule does not exist"));
+        publishScheduleDeleted(schedule, "Расписание удалено вручную", changedByUserId, changedByName);
+        scheduleRepository.delete(schedule);
+    }
 
+    @Transactional
+    public void deleteByGroupCourseIds(List<Long> groupCourseIds, String reason, Long changedByUserId, String changedByName) {
+        if (groupCourseIds == null || groupCourseIds.isEmpty()) {
+            return;
+        }
+        List<Schedule> schedules = scheduleRepository.findAllByGroupCourseIdIn(groupCourseIds);
+        for (Schedule schedule : schedules) {
+            publishScheduleDeleted(schedule, reason, changedByUserId, changedByName);
+        }
+        scheduleRepository.deleteAll(schedules);
     }
 
     private void findTeacherConflicts(ScheduleCreateDto dto, Long teacherId) {
@@ -535,6 +552,28 @@ public class ScheduleService {
 
     private String safe(String value) {
         return value == null ? "" : value;
+    }
+
+    private void publishScheduleDeleted(Schedule schedule, String reason, Long changedByUserId, String changedByName) {
+        GroupCourseBaseInfoRequest groupCourse = requireDependency(
+                "Удаление расписания",
+                "course-service",
+                () -> groupCourseClient.groupCourseBaseInfoRequest(schedule.getGroupCourseId())
+        );
+        scheduleEventProducer.publishScheduleDeleted(new ScheduleDeletedEvent(
+                schedule.getId(),
+                schedule.getTeacherId(),
+                schedule.getGroupCourseId(),
+                groupCourse.getCourseName(),
+                groupCourse.getGroupName(),
+                schedule.getClassRoom() == null ? null : schedule.getClassRoom().getName(),
+                schedule.getStartTime(),
+                schedule.getEndTime(),
+                schedule.getWeekDays().stream().map(Enum::name).collect(Collectors.toSet()),
+                reason,
+                changedByUserId,
+                changedByName
+        ));
     }
 
     private <T> T requireDependency(String operation, String dependency, Supplier<T> call) {

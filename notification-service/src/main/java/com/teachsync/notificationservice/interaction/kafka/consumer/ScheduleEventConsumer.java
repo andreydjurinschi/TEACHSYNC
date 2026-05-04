@@ -7,6 +7,7 @@ import com.teachsync.notificationservice.service.UserActivityService;
 import com.teachsync.teachsyncevents.constants.ActionTypes;
 import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.schedules.ScheduleCreatedEvent;
+import com.teachsync.teachsyncevents.schedules.ScheduleDeletedEvent;
 import com.teachsync.teachsyncevents.schedules.ScheduleUpdatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ public class ScheduleEventConsumer {
             switch (eventType) {
                 case ActionTypes.SCHEDULE_CREATED -> handleScheduleCreated(objectMapper.readValue(rawMessage, ScheduleCreatedEvent.class));
                 case ActionTypes.SCHEDULE_UPDATED -> handleScheduleUpdated(objectMapper.readValue(rawMessage, ScheduleUpdatedEvent.class));
+                case ActionTypes.SCHEDULE_DELETED -> handleScheduleDeleted(objectMapper.readValue(rawMessage, ScheduleDeletedEvent.class));
                 default -> log.info("Unsupported schedule event type: {}", eventType);
             }
         } catch (Exception e) {
@@ -158,5 +160,57 @@ public class ScheduleEventConsumer {
         }
 
         log.info("Saved SCHEDULE_UPDATED notification for teacher {}", event.getTeacherId());
+    }
+
+    private void handleScheduleDeleted(ScheduleDeletedEvent event) {
+        String days = event.getWeekDays() == null ? "" : String.join(", ", event.getWeekDays());
+        String actor = event.getChangedByName() == null || event.getChangedByName().isBlank()
+                ? "системой"
+                : event.getChangedByName();
+        String message = "Занятие по курсу \"" + event.getCourseName()
+                + "\" для группы \"" + event.getGroupName()
+                + "\" удалено. Причина: " + (event.getReason() == null ? "не указана" : event.getReason()) + ".";
+
+        if (event.getTeacherId() != null) {
+            notificationService.saveForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    TargetSubject.SCHEDULE_DELETED,
+                    event.getTeacherId(),
+                    "Занятие удалено из расписания",
+                    message + " Удалил: " + actor + ".",
+                    "/profile/schedules"
+            );
+            activityService.recordForUser(
+                    event.getUuid(),
+                    event.getServiceName(),
+                    ActionTypes.SCHEDULE_DELETED,
+                    event.getTeacherId(),
+                    event.getChangedByUserId(),
+                    actor,
+                    "Занятие удалено из расписания",
+                    message,
+                    "Было: " + days + ", " + event.getStartTime() + "-" + event.getEndTime()
+                            + ", аудитория \"" + event.getClassRoomName() + "\". Удалил: " + actor + ".",
+                    "/profile/schedules"
+            );
+        }
+
+        if (event.getChangedByUserId() != null) {
+            activityService.recordForUser(
+                    event.getUuid() + ":actor",
+                    event.getServiceName(),
+                    ActionTypes.SCHEDULE_DELETED,
+                    event.getChangedByUserId(),
+                    event.getChangedByUserId(),
+                    actor,
+                    "Вы удалили занятие",
+                    "Вы удалили занятие по курсу \"" + event.getCourseName() + "\" для группы \"" + event.getGroupName() + "\".",
+                    "Было: " + days + ", " + event.getStartTime() + "-" + event.getEndTime()
+                            + ", аудитория \"" + event.getClassRoomName() + "\". Причина: "
+                            + (event.getReason() == null ? "не указана" : event.getReason()) + ".",
+                    "/schedules"
+            );
+        }
     }
 }

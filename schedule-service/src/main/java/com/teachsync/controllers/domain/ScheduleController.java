@@ -104,6 +104,18 @@ public class ScheduleController {
         return ResponseEntity.ok(service.update(id, dto, changedByUserId));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable Long id,
+                                               @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String role = jwtService.extractRole(token);
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        service.delete(id, jwtService.extractUserId(token), jwtService.extractUsername(token));
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/group-courses/group-without-mention-in-schedule")
     public ResponseEntity<List<GroupCourseBaseInfoRequest>> getNotMentionedGroups(){
         return ResponseEntity.ok(service.getAllGroupCoursesWithoutSchedule());

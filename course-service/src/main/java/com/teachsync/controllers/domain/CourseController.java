@@ -99,8 +99,10 @@ public class CourseController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id,
+                                       @RequestHeader("Authorization") String authHeader) {
+        courseService.assertCanManageCourseGroups(currentRole(authHeader));
+        courseService.deleteCourse(id, currentUserId(authHeader), currentUsername(authHeader));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
     }
 
@@ -170,5 +172,9 @@ public class CourseController {
 
     private String currentRole(String authHeader) {
         return jwtService.extractRole(authHeader.replace("Bearer ", ""));
+    }
+
+    private String currentUsername(String authHeader) {
+        return jwtService.extractUsername(authHeader.replace("Bearer ", ""));
     }
 }

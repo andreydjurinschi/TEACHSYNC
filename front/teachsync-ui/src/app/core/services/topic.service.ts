@@ -26,6 +26,10 @@ export class TopicService {
     return this.http.get<Topic[]>(`${this.apiUrl}/all/by-tag/${tag}`, { headers: this.getHeaders() });
   }
 
+  create(dto: { name: string; topicTag: TopicTag }): Observable<Topic> {
+    return this.http.post<Topic>(`${this.apiUrl}/create`, dto, { headers: this.getHeaders() });
+  }
+
   setTag(topicId: number, tag: TopicTag): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${topicId}/tag/${tag}`, {}, { headers: this.getHeaders() });
   }

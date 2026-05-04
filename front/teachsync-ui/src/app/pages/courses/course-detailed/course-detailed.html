@@ -202,6 +202,14 @@
         Управлять группами
       </a>
       }
+      @if (canDeleteCourse()) {
+      <button type="button"
+        (click)="deleteCourse()"
+        [disabled]="pending()"
+        class="px-5 py-2.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium rounded-lg transition disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50">
+        {{ pending() ? 'Удаление...' : 'Удалить курс' }}
+      </button>
+      }
     </div>
 
   </div>

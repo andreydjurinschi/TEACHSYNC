@@ -8,6 +8,18 @@
     </a>
   </div>
 
+  <div class="mb-6">
+    <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      Поиск по имени группы
+    </label>
+    <input
+      type="text"
+      [value]="searchQuery()"
+      (input)="updateSearch($any($event.target).value)"
+      placeholder="Например: Frontend-241"
+      class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+  </div>
+
   @if (loading()) {
     <div class="flex justify-center mt-20">
       <svg class="animate-spin w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24">
@@ -26,6 +38,10 @@
       <p class="text-slate-500 dark:text-slate-400 text-sm">Группы не найдены</p>
       <a routerLink="/groups/create"
          class="text-blue-400 hover:text-blue-300 text-sm transition">Создать первую группу</a>
+    </div>
+  } @else if (filteredGroups().length === 0) {
+    <div class="flex flex-col items-center justify-center mt-20 gap-3">
+      <p class="text-slate-500 dark:text-slate-400 text-sm">По вашему запросу группы не найдены</p>
     </div>
   } @else {
     <div class="bg-white dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
@@ -82,7 +98,7 @@
     <app-pagination-controls
       [currentPage]="currentPage()"
       [totalPages]="totalPages()"
-      [totalItems]="groups().length"
+      [totalItems]="filteredGroups().length"
       itemLabel="groups"
       (pageChange)="currentPage.set($event)" />
   }

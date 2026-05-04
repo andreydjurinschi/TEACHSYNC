@@ -202,6 +202,15 @@ public class ReplacementRequestService {
     }
 
     @Transactional
+    public void deleteByScheduleId(Long scheduleId) {
+        List<ReplacementRequest> requests = repository.findByScheduleId(scheduleId);
+        for (ReplacementRequest request : requests) {
+            responseRepository.deleteByReplacementRequestId(request.getId());
+        }
+        repository.deleteAll(requests);
+    }
+
+    @Transactional
     public ReplacementRequestBaseDto approve(Long requestId, Long teacherId) {
         ReplacementRequest request = getPendingRequest(requestId);
         ReplacementResponse response = responseRepository

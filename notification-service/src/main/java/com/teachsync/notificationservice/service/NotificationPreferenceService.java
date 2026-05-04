@@ -78,11 +78,14 @@ public class NotificationPreferenceService {
             case REPLACEMENT_REQUESTED,
                  REPLACEMENT_APPROVED,
                  REPLACEMENT_STATUS_CHANGED,
+                 COURSE_DELETED,
+                 GROUP_DELETED,
                  COURSE_TEACHER_UNASSIGNED,
                  TEACHER_ASSIGNMENT_REQUESTED,
                  TEACHER_ASSIGNED,
                  SCHEDULE_CREATED,
                  SCHEDULE_UPDATED,
+                 SCHEDULE_DELETED,
                  USER_ROLE_CHANGED,
                  SYSTEM_ALERT -> true;
             default -> false;
@@ -92,11 +95,14 @@ public class NotificationPreferenceService {
     private NotificationCategory categoryOf(TargetSubject subject) {
         return switch (subject) {
             case SCHEDULE_CREATED,
-                 SCHEDULE_UPDATED -> NotificationCategory.SCHEDULE;
+                 SCHEDULE_UPDATED,
+                 SCHEDULE_DELETED -> NotificationCategory.SCHEDULE;
             case REPLACEMENT_REQUESTED,
                  REPLACEMENT_APPROVED,
                  REPLACEMENT_STATUS_CHANGED -> NotificationCategory.REPLACEMENT;
             case COURSE_CREATED,
+                 COURSE_DELETED,
+                 GROUP_DELETED,
                  COURSE_UPDATED,
                  COURSE_GROUP_ENROLLED,
                  COURSE_GROUP_REMOVED,

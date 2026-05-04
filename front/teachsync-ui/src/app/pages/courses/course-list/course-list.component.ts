@@ -20,10 +20,28 @@ interface CourseGroup {
 })
 export class CourseList implements OnInit {
   courses = signal<CourseBase[]>([]);
+  searchQuery = signal('');
+  teacherFilter = signal<'all' | 'without-teacher'>('all');
   currentPage = signal(1);
   private readonly pageSize = 9;
-  totalPages = computed(() => getTotalPages(this.courses().length, this.pageSize));
-  pagedCourses = computed(() => paginateItems(this.courses(), this.currentPage(), this.pageSize));
+  filteredCourses = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const withoutTeacherOnly = this.teacherFilter() === 'without-teacher';
+
+    return this.courses().filter(course => {
+      if (withoutTeacherOnly && course.teacher) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
+      return course.name.toLowerCase().includes(query)
+        || (course.description ?? '').toLowerCase().includes(query);
+    });
+  });
+  totalPages = computed(() => getTotalPages(this.filteredCourses().length, this.pageSize));
+  pagedCourses = computed(() => paginateItems(this.filteredCourses(), this.currentPage(), this.pageSize));
+  coursesWithoutTeacherCount = computed(() => this.courses().filter(course => !course.teacher).length);
   
   grouped = computed<CourseGroup[]>(() => {
     const map = new Map<string, CourseBase[]>();
@@ -57,5 +75,15 @@ export class CourseList implements OnInit {
       },
       error: err => console.error(err),
     });
+  }
+
+  updateSearch(query: string): void {
+    this.searchQuery.set(query);
+    this.currentPage.set(1);
+  }
+
+  setTeacherFilter(filter: 'all' | 'without-teacher'): void {
+    this.teacherFilter.set(filter);
+    this.currentPage.set(1);
   }
 }
