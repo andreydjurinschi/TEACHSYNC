@@ -5,7 +5,7 @@
     <a *ngIf="ruleService.isAdmin() || ruleService.isManager()" routerLink="/courses/create"
        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white
               text-sm font-medium rounded-lg transition">
-      + Создать
+      Создать
     </a>
   </div>
 
@@ -18,14 +18,11 @@
         type="text"
         [value]="searchQuery()"
         (input)="updateSearch($any($event.target).value)"
-        placeholder="Например: Java, English, database"
+        placeholder=""
         class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-        Преподаватель
-      </label>
       <div class="flex flex-wrap gap-2">
         <button
           type="button"

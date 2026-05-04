@@ -8,9 +8,6 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   template: `
     @if (totalPages > 1) {
       <div class="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-        <p class="text-xs text-slate-500 dark:text-slate-400">
-          Показываю {{ totalItems }} {{ itemLabel }}
-        </p>
 
         <div class="flex items-center gap-2">
           <button
