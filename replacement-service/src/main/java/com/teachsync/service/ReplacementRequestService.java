@@ -395,10 +395,10 @@ public class ReplacementRequestService {
             return List.of();
         }
         return requireDependency(
-                        "Поиск кандидатов на замену: получение данных преподавателей",
-                        "users-service",
-                        () -> userClient.getByIds(List.copyOf(freeTeacherIds))
-                )
+                "Поиск кандидатов на замену: получение данных преподавателей",
+                "users-service",
+                () -> userClient.getByIds(List.copyOf(freeTeacherIds))
+        )
                 .stream()
                 .filter(teacher -> !teacher.getId().equals(request.getTeacherRequested()))
                 .filter(teacher -> hasRequiredSpecialization(teacher, groupCourse.getCategoryId()))
@@ -617,7 +617,7 @@ public class ReplacementRequestService {
                 operation,
                 dependency,
                 "HIGH",
-                "Операция не может быть безопасно выполнена без актуальных данных зависимого сервиса",
+                "Операция не может быть безопасно",
                 e.getClass().getSimpleName() + ": " + (e.getMessage() == null ? "" : e.getMessage())
         ));
     }

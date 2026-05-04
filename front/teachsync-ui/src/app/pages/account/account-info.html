@@ -2,8 +2,7 @@
   <div class="app-page-content max-w-4xl">
     <div class="app-page-header">
       <div>
-        <h1 class="app-page-title">Профиль</h1>
-        <p class="app-page-subtitle">Персональные данные и базовые настройки учетной записи.</p>
+        <h1 class="app-page-title">Личный профиль</h1>
       </div>
     </div>
 
@@ -108,7 +107,6 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">
-                  <button type="button" (click)="toggleEdit()" class="app-btn-secondary">Отменить</button>
                   <button type="submit" [disabled]="editForm.invalid || saving()" class="app-btn-primary">
                     {{ saving() ? 'Сохраняем...' : 'Сохранить изменения' }}
                   </button>
@@ -132,9 +130,6 @@
         <div class="app-panel">
           <div class="mb-4">
             <h3 class="app-label">Статистика</h3>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Метрики, сформированные на основе данных сервисов.
-            </p>
           </div>
 
           @if (statsLoading()) {
@@ -251,9 +246,6 @@
         <div class="app-panel">
           <div class="mb-4">
             <h3 class="app-label">Последние активные действия</h3>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Краткая история событий, зафиксированных системой.
-            </p>
           </div>
 
           @if (activityLoading()) {

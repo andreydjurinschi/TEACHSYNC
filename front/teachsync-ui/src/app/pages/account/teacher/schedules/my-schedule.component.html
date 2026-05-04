@@ -22,47 +22,6 @@
     }
 
     @if (!loading()) {
-      @if (replacementSummary().length) {
-        <div class="app-panel mb-6">
-          <h2 class="app-label mb-4">Мои заявки на замену</h2>
-          <div class="grid gap-3 md:grid-cols-2">
-            @for (replacement of replacementSummary(); track replacement.id) {
-              <div class="app-panel-muted">
-                <div class="mb-2 flex items-center justify-between gap-2">
-                  <span class="font-semibold text-slate-900 dark:text-white">
-                    {{ replacement.groupCourseBaseInfoRequest.courseName }}
-                  </span>
-                  <span
-                    class="app-status"
-                    [class.bg-emerald-700]="replacement.status === 'APPROVED'"
-                    [class.text-white]="replacement.status === 'APPROVED'"
-                    [class.bg-blue-50]="replacement.status === 'PENDING'"
-                    [class.text-blue-700]="replacement.status === 'PENDING'"
-                    [class.bg-slate-100]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'"
-                    [class.text-slate-600]="replacement.status !== 'APPROVED' && replacement.status !== 'PENDING'"
-                    [class.dark:bg-slate-800]="replacement.status !== 'APPROVED'"
-                    [class.dark:text-slate-300]="replacement.status !== 'APPROVED'">
-                    {{ replacementStatusLabel(replacement.status) }}
-                  </span>
-                </div>
-                <p class="text-sm text-slate-600 dark:text-slate-300">
-                  {{ formatDateLabel(replacement.lessonDate) }} · {{ replacement.groupCourseBaseInfoRequest.groupName }}
-                </p>
-                @if (replacement.approvedByTeacherBaseInfoRequest) {
-                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Заменяет: {{ teacherName(replacement.approvedByTeacherBaseInfoRequest) }}
-                  </p>
-                } @else {
-                  <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                    Ожидается ответ приглашённых преподавателей.
-                  </p>
-                }
-              </div>
-            }
-          </div>
-        </div>
-      }
-
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
         <div class="app-panel">
           <div class="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">

@@ -29,7 +29,6 @@ public class User {
     @Column(nullable = false)
     private LocalDate registeredAt;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String profilePicture;
 

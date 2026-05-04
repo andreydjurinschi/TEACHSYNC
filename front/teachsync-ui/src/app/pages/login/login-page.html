@@ -1,20 +1,10 @@
 <div class="flex min-h-screen bg-white dark:bg-slate-950">
-  <div class="hidden w-[40%] border-r border-slate-200 bg-blue-800 px-12 py-14 text-blue-50 dark:border-slate-800 dark:bg-slate-900 lg:flex lg:flex-col lg:justify-between">
-    <div>
-      <div class="mb-10 flex h-11 w-11 items-center justify-center rounded-lg border border-blue-600 bg-blue-900 text-sm font-semibold text-white dark:border-slate-700 dark:bg-slate-950">
-        TS
-      </div>
-      <h1 class="max-w-sm text-3xl font-semibold leading-tight text-white">
-        TeachSync для управления курсами, преподавателями и заменами.
-      </h1>
-      <p class="mt-4 max-w-md text-sm leading-6 text-blue-100/80 dark:text-slate-400">
-        Единое рабочее пространство для учебного центра: расписание, роли, уведомления и оперативные изменения без лишнего шума.
-      </p>
-    </div>
-    <div class="rounded-lg border border-blue-700 bg-blue-900/40 p-5 dark:border-slate-800 dark:bg-slate-950">
-      <p class="text-xs font-semibold uppercase tracking-widest text-blue-100/60 dark:text-slate-500">Рабочая среда</p>
-      <p class="mt-2 text-sm text-blue-50/90 dark:text-slate-300">Спокойный интерфейс для ежедневной операционной работы.</p>
-    </div>
+  <div class="hidden w-[40%] border-r border-slate-200 bg-blue-800 dark:border-slate-800 dark:bg-slate-900 lg:flex lg:items-center lg:justify-center">
+    <img
+      [src]="theme === 'dark' ? 'assets/photos/dark/logo.png' : 'assets/photos/light/logo.png'"
+      alt="TeachSync"
+      class="max-h-[80vh] max-w-[80%] object-contain"
+    />
   </div>
 
   <div class="relative flex flex-1 items-center justify-center px-6 py-10">

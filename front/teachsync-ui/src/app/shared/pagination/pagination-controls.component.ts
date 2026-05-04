@@ -9,7 +9,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     @if (totalPages > 1) {
       <div class="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <p class="text-xs text-slate-500 dark:text-slate-400">
-          Showing {{ totalItems }} {{ itemLabel }}
+          Показываю {{ totalItems }} {{ itemLabel }}
         </p>
 
         <div class="flex items-center gap-2">
@@ -18,7 +18,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             (click)="previous()"
             [disabled]="currentPage <= 1"
             class="app-btn-secondary px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50">
-            Previous
+            Назад
           </button>
 
           <span class="min-w-24 text-center text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -30,7 +30,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
             (click)="next()"
             [disabled]="currentPage >= totalPages"
             class="app-btn-secondary px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50">
-            Next
+            Вперед
           </button>
         </div>
       </div>
