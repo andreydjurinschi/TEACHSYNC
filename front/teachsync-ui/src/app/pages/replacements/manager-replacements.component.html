@@ -31,7 +31,7 @@
       </div>
     } @else {
       <div class="grid gap-4 lg:grid-cols-2">
-        @for (item of replacements(); track item.id) {
+        @for (item of visibleReplacements(); track item.id) {
           <article class="app-panel">
             <div class="flex items-start justify-between gap-3">
               <div>
@@ -85,6 +85,12 @@
           </article>
         }
       </div>
+      <app-pagination-controls
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        [totalItems]="replacements().length"
+        itemLabel="requests"
+        (pageChange)="currentPage.set($event)" />
     }
   </div>
 </section>

@@ -25,7 +25,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users()" class="cursor-pointer" [routerLink]="['/users', user.id]">
+          <tr *ngFor="let user of visibleUsers()" class="cursor-pointer" [routerLink]="['/users', user.id]">
             <td>
               <div class="flex items-center gap-3">
                 @if (user.profilePicture) {
@@ -55,5 +55,11 @@
         </tbody>
       </table>
     </div>
+    <app-pagination-controls
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalItems]="users().length"
+      itemLabel="users"
+      (pageChange)="currentPage.set($event)" />
   </div>
 </section>

@@ -7,19 +7,19 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button type="button" (click)="filter.set('all')" class="app-btn-secondary"
+        <button type="button" (click)="filter.set('all'); currentPage.set(1)" class="app-btn-secondary"
           [class.bg-slate-900]="filter() === 'all'"
           [class.text-white]="filter() === 'all'"
           [class.border-slate-900]="filter() === 'all'">
           Все ({{ notifications().length }})
         </button>
-        <button type="button" (click)="filter.set('unread')" class="app-btn-secondary"
+        <button type="button" (click)="filter.set('unread'); currentPage.set(1)" class="app-btn-secondary"
           [class.bg-slate-900]="filter() === 'unread'"
           [class.text-white]="filter() === 'unread'"
           [class.border-slate-900]="filter() === 'unread'">
           Непрочитанные ({{ unreadCount() }})
         </button>
-        <button type="button" (click)="filter.set('read')" class="app-btn-secondary"
+        <button type="button" (click)="filter.set('read'); currentPage.set(1)" class="app-btn-secondary"
           [class.bg-slate-900]="filter() === 'read'"
           [class.text-white]="filter() === 'read'"
           [class.border-slate-900]="filter() === 'read'">
@@ -100,7 +100,7 @@
       </div>
     } @else {
       <div class="grid gap-4">
-        @for (item of filteredNotifications(); track trackById($index, item)) {
+        @for (item of visibleNotifications(); track trackById($index, item)) {
           <article class="rounded-lg border p-5 shadow-sm"
             [class.border-slate-300]="!item.read"
             [class.bg-white]="!item.read"
@@ -146,6 +146,12 @@
           </article>
         }
       </div>
+      <app-pagination-controls
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        [totalItems]="filteredNotifications().length"
+        itemLabel="notifications"
+        (pageChange)="currentPage.set($event)" />
     }
   </div>
 </section>

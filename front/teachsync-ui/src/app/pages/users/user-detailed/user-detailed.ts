@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
@@ -9,11 +9,13 @@ import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { TeacherService } from '../../../core/services/teacher.service';
 import { CategoryBase } from '../../../core/models/category/category.model';
+import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
 @Component({
   selector: 'app-user-detailed',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule, RouterLink],
+  imports: [CommonModule, MatProgressSpinnerModule, RouterLink, PaginationControlsComponent],
   templateUrl: './user-detailed.html',
 })
 export class UserDetailed implements OnInit {
@@ -23,6 +25,8 @@ export class UserDetailed implements OnInit {
   specializations  = signal<CategoryBase[]>([]);   // ← новый сигнал
   loading          = signal(false);
   selectedCourseId = signal<number | null>(null);
+  currentPage = signal(1);
+  private readonly pageSize = 6;
 
   currentEmail = computed(() => {
     const token = this.authService.getToken();
@@ -32,6 +36,9 @@ export class UserDetailed implements OnInit {
   });
 
   isSelf = computed(() => this.currentEmail() === this.userWithCourses()?.email);
+  totalPages = computed(() => getTotalPages(this.courseNames().length, this.pageSize));
+  visibleCourses = computed(() => paginateItems(this.courseNames(), this.currentPage(), this.pageSize));
+  courseNames = computed(() => this.userWithCourses()?.courseNames ?? []);
 
   constructor(
     private route: ActivatedRoute,
@@ -39,7 +46,14 @@ export class UserDetailed implements OnInit {
     private teacherService: TeacherService,   // ← inject
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) {
+    effect(() => {
+      const maxPage = this.totalPages();
+      if (this.currentPage() > maxPage) {
+        this.currentPage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     const userId = Number(this.route.snapshot.paramMap.get('id'));
@@ -61,7 +75,10 @@ export class UserDetailed implements OnInit {
           });
 
           this.userService.getWithCourses(user.id).subscribe({
-            next: data => this.userWithCourses.set(data),
+            next: data => {
+              this.userWithCourses.set(data);
+              this.currentPage.set(1);
+            },
             error: () => this.userWithCourses.set({
               id: user.id, name: user.name, surname: user.surname,
               email: user.email, courseNames: [], available: false

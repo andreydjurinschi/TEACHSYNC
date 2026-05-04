@@ -1,13 +1,15 @@
-import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, OnInit, signal, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CourseService } from '../../../../core/services/course.service';
 import { CourseDetailedMy, TopicTag } from '../../../../core/models/courses/course-detailed-my-model';
+import { PaginationControlsComponent } from '../../../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../../../shared/pagination/pagination.utils';
 
 @Component({
   selector: 'app-my-courses',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaginationControlsComponent],
   templateUrl: './my-courses.component.html'
 })
 export class MyCoursesComponent implements OnInit {
@@ -16,10 +18,14 @@ export class MyCoursesComponent implements OnInit {
   courses    = signal<CourseDetailedMy[]>([]);
   loading    = signal(true);
   selected   = signal<CourseDetailedMy | null>(null);
+  currentPage = signal(1);
+  private readonly pageSize = 6;
+  totalPages = computed(() => getTotalPages(this.courses().length, this.pageSize));
+  pagedCourses = computed(() => paginateItems(this.courses(), this.currentPage(), this.pageSize));
 
   grouped = computed(() => {
     const map = new Map<string, CourseDetailedMy[]>();
-    for (const c of this.courses()) {
+    for (const c of this.pagedCourses()) {
       const key = c.categoryName ?? 'Без категории';
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(c);
@@ -36,6 +42,15 @@ export class MyCoursesComponent implements OnInit {
     SCIENCE:  { label: 'Наука',      classes: 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/70' },
   };
 
+  constructor() {
+    effect(() => {
+      const maxPage = this.totalPages();
+      if (this.currentPage() > maxPage) {
+        this.currentPage.set(maxPage);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.courseService.getMyCoursesDetailed().subscribe({
       next: d => {
@@ -45,6 +60,7 @@ export class MyCoursesComponent implements OnInit {
           topics: c.topics ?? [],
           groups: c.groups ?? []
         })));
+        this.currentPage.set(1);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

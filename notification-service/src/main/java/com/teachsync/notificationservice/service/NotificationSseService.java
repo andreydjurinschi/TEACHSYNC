@@ -29,7 +29,10 @@ public class NotificationSseService {
         Runnable cleanup = () -> removeConnection(connection);
         emitter.onCompletion(cleanup);
         emitter.onTimeout(cleanup);
-        emitter.onError(error -> cleanup.run());
+        emitter.onError(error -> {
+            deactivate(connection);
+            cleanup.run();
+        });
 
         if (!sendEvent(connection, SseEmitter.event().name("connected").data("connected"))) {
             removeConnection(connection);
@@ -93,14 +96,14 @@ public class NotificationSseService {
                 connection.emitter().send(event);
             }
             return true;
-        } catch (Exception e) {
-            connection.active().set(false);
+        } catch (IOException | IllegalStateException e) {
+            deactivate(connection);
             return false;
         }
     }
 
     private void removeConnection(ClientConnection connection) {
-        connection.active().set(false);
+        deactivate(connection);
 
         Set<ClientConnection> userConnections = userEmitters.get(connection.userId());
         if (userConnections != null) {
@@ -116,6 +119,20 @@ public class NotificationSseService {
             if (roleConnections.isEmpty()) {
                 roleEmitters.remove(connection.role(), roleConnections);
             }
+        }
+    }
+
+    private void deactivate(ClientConnection connection) {
+        if (!connection.active().compareAndSet(true, false)) {
+            return;
+        }
+
+        try {
+            synchronized (connection.emitter()) {
+                connection.emitter().complete();
+            }
+        } catch (Exception ignored) {
+            // The client may already be gone; this is a normal SSE disconnect path.
         }
     }
 

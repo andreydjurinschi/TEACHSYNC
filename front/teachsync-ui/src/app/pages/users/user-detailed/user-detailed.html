@@ -47,7 +47,7 @@
 
         <h3 class="app-label mb-3">Курсы</h3>
         <div *ngIf="userWithCourses()?.available; else noCourses" class="space-y-2">
-          <div *ngFor="let course of userWithCourses()?.courseNames; trackBy: trackByCourseId">
+          <div *ngFor="let course of visibleCourses(); trackBy: trackByCourseId">
             <button
               type="button"
               (click)="toggleCourse(course.id)"
@@ -78,6 +78,12 @@
               </a>
             </div>
           </div>
+          <app-pagination-controls
+            [currentPage]="currentPage()"
+            [totalPages]="totalPages()"
+            [totalItems]="courseNames().length"
+            itemLabel="courses"
+            (pageChange)="currentPage.set($event)" />
         </div>
         <ng-template #noCourses>
           <p class="text-sm text-slate-500 dark:text-slate-400">Курсы временно недоступны.</p>

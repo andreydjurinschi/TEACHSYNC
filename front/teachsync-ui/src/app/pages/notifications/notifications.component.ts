@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -7,11 +7,13 @@ import { forkJoin } from 'rxjs';
 import { NotificationItem, NotificationPreference } from '../../core/models/notifications/notification.model';
 import { NotificationService } from '../../core/services/notification.service';
 import { RuleService } from '../../core/services/role.rule.service';
+import { PaginationControlsComponent } from '../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../shared/pagination/pagination.utils';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaginationControlsComponent],
   templateUrl: './notifications.component.html',
 })
 export class NotificationsComponent implements OnInit {
@@ -28,6 +30,8 @@ export class NotificationsComponent implements OnInit {
   filter = signal<'all' | 'unread' | 'read'>('all');
   preferences = signal<NotificationPreference | null>(null);
   preferencesSaving = signal(false);
+  currentPage = signal(1);
+  private readonly pageSize = 8;
 
   unreadCount = computed(() => this.notifications().filter(item => !item.read).length);
   readCount = computed(() => this.notifications().filter(item => item.read).length);
@@ -41,6 +45,17 @@ export class NotificationsComponent implements OnInit {
         return this.notifications();
     }
   });
+  totalPages = computed(() => getTotalPages(this.filteredNotifications().length, this.pageSize));
+  visibleNotifications = computed(() => paginateItems(this.filteredNotifications(), this.currentPage(), this.pageSize));
+
+  constructor() {
+    effect(() => {
+      const maxPage = this.totalPages();
+      if (this.currentPage() > maxPage) {
+        this.currentPage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.role.set(this.ruleService.getRole());
@@ -70,6 +85,7 @@ export class NotificationsComponent implements OnInit {
     request.subscribe({
       next: data => {
         this.notifications.set(data);
+        this.currentPage.set(1);
         this.loading.set(false);
       },
       error: () => {
@@ -124,6 +140,7 @@ export class NotificationsComponent implements OnInit {
           }
           return [{ ...notification, read: false }, ...list];
         });
+        this.currentPage.set(1);
       });
   }
 

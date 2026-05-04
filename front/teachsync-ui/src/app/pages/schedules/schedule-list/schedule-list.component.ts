@@ -1,9 +1,11 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ClassRoomInfo, GroupCourseInfo, ScheduleBase, WeekDay } from '../../../core/models/schedules/schedule-base.model';
 import { ScheduleService } from '../../../core/services/schedule.service';
 import { RuleService } from '../../../core/services/role.rule.service';
+import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
 const DAY_ORDER: WeekDay[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
@@ -18,7 +20,7 @@ type ScheduleEditForm = {
 @Component({
   selector: 'app-schedule-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PaginationControlsComponent],
   templateUrl: './schedule-list.html',
 })
 export class ScheduleList implements OnInit {
@@ -32,6 +34,8 @@ export class ScheduleList implements OnInit {
   editing = signal<ScheduleBase | null>(null);
   savingEdit = signal(false);
   editError = signal<string | null>(null);
+  unscheduledPage = signal(1);
+  filteredPage = signal(1);
   editForm = signal<ScheduleEditForm>({
     startTime: '',
     endTime: '',
@@ -63,22 +67,47 @@ export class ScheduleList implements OnInit {
     if (d === 'all') return this.schedules();
     return this.slotsForDay(d);
   });
+  private readonly unscheduledPageSize = 5;
+  private readonly filteredPageSize = 8;
+  unscheduledTotalPages = computed(() => getTotalPages(this.unscheduled().length, this.unscheduledPageSize));
+  filteredTotalPages = computed(() => getTotalPages(this.filteredSchedules().length, this.filteredPageSize));
+  visibleUnscheduled = computed(() => paginateItems(this.unscheduled(), this.unscheduledPage(), this.unscheduledPageSize));
+  visibleFilteredSchedules = computed(() => paginateItems(this.filteredSchedules(), this.filteredPage(), this.filteredPageSize));
+
+  constructor() {
+    effect(() => {
+      const maxPage = this.unscheduledTotalPages();
+      if (this.unscheduledPage() > maxPage) {
+        this.unscheduledPage.set(maxPage);
+      }
+    });
+    effect(() => {
+      const maxPage = this.filteredTotalPages();
+      if (this.filteredPage() > maxPage) {
+        this.filteredPage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loading.set(true);
     this.scheduleService.getAll().subscribe({
-      next:  d => { this.schedules.set(d); this.loading.set(false); },
+      next:  d => { this.schedules.set(d); this.filteredPage.set(1); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
     this.scheduleService.getAllGroupCourses().subscribe(d => this.groupCourses.set(d));
     this.scheduleService.getAllClassrooms().subscribe(d => this.classRooms.set(d));
   }
 
-  setDay(day: WeekDay | 'all'): void { this.activeDay.set(day); }
+  setDay(day: WeekDay | 'all'): void {
+    this.activeDay.set(day);
+    this.filteredPage.set(1);
+  }
 
   loadUnscheduled(): void {
     this.scheduleService.getUnscheduledGroupCourses().subscribe(d => {
       this.unscheduled.set(d);
+      this.unscheduledPage.set(1);
       this.showUnscheduled.set(true);
     });
   }

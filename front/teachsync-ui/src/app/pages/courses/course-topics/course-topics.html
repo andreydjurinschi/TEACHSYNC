@@ -30,7 +30,7 @@
         </p>
         } @else {
         <div class="space-y-2">
-          @for (topic of assignedTopics(); track topic.name) {
+          @for (topic of visibleAssignedTopics(); track topic.name) {
           <div class="flex items-center justify-between px-4 py-2.5
                           bg-slate-100 dark:bg-slate-700 rounded-lg">
 
@@ -50,6 +50,12 @@
           </div>
           }
         </div>
+        <app-pagination-controls
+          [currentPage]="assignedPage()"
+          [totalPages]="assignedTotalPages()"
+          [totalItems]="assignedTopics().length"
+          itemLabel="topics"
+          (pageChange)="assignedPage.set($event)" />
         }
       </div>
 
@@ -71,8 +77,7 @@
           }
         </div>
 
-        @for (topic of filteredTopics(); track topic.id) {
-        @if (!isAssigned(topic)) {
+        @for (topic of visibleAvailableTopics(); track topic.id) {
         <div class="flex items-center justify-between px-4 py-2.5
                 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
           <div class="flex items-center gap-2">
@@ -90,7 +95,12 @@
           </button>
         </div>
         }
-        }
+        <app-pagination-controls
+          [currentPage]="availablePage()"
+          [totalPages]="availableTotalPages()"
+          [totalItems]="unassignedFilteredTopics().length"
+          itemLabel="topics"
+          (pageChange)="availablePage.set($event)" />
       </div>
     </div>
     

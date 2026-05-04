@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ReplacementRequest } from '../../core/models/replacements/replacement.model';
 import { ReplacementService } from '../../core/services/replacement.service';
 import { RuleService } from '../../core/services/role.rule.service';
+import { PaginationControlsComponent } from '../../shared/pagination/pagination-controls.component';
+import { getTotalPages, paginateItems } from '../../shared/pagination/pagination.utils';
 
 @Component({
   selector: 'app-replacements',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationControlsComponent],
   templateUrl: './replacements.component.html'
 })
 export class ReplacementsComponent implements OnInit {
@@ -18,6 +20,11 @@ export class ReplacementsComponent implements OnInit {
   loading = signal(true);
   actionMessage = signal<string | null>(null);
   actionError = signal<string | null>(null);
+  pendingPage = signal(1);
+  requestedPage = signal(1);
+  acceptedPage = signal(1);
+  closedPage = signal(1);
+  private readonly pageSize = 4;
 
   pendingForMe = computed(() => {
     const teacherId = this.ruleService.getId();
@@ -46,6 +53,23 @@ export class ReplacementsComponent implements OnInit {
       (item.teacherBaseInfoRequest.id === teacherId || item.approvedByTeacherBaseInfoRequest?.id === teacherId)
     );
   });
+
+  pendingTotalPages = computed(() => getTotalPages(this.pendingForMe().length, this.pageSize));
+  requestedTotalPages = computed(() => getTotalPages(this.requestedByMe().length, this.pageSize));
+  acceptedTotalPages = computed(() => getTotalPages(this.acceptedByMe().length, this.pageSize));
+  closedTotalPages = computed(() => getTotalPages(this.closedRequests().length, this.pageSize));
+
+  pendingForMePage = computed(() => paginateItems(this.pendingForMe(), this.pendingPage(), this.pageSize));
+  requestedByMePage = computed(() => paginateItems(this.requestedByMe(), this.requestedPage(), this.pageSize));
+  acceptedByMePage = computed(() => paginateItems(this.acceptedByMe(), this.acceptedPage(), this.pageSize));
+  closedRequestsPage = computed(() => paginateItems(this.closedRequests(), this.closedPage(), this.pageSize));
+
+  constructor() {
+    this.bindPage(this.pendingPage, this.pendingTotalPages);
+    this.bindPage(this.requestedPage, this.requestedTotalPages);
+    this.bindPage(this.acceptedPage, this.acceptedTotalPages);
+    this.bindPage(this.closedPage, this.closedTotalPages);
+  }
 
   ngOnInit(): void {
     this.load();
@@ -138,5 +162,14 @@ export class ReplacementsComponent implements OnInit {
       AUTO_CLOSED: 'Автозакрыта'
     };
     return map[status];
+  }
+
+  private bindPage(page: ReturnType<typeof signal<number>>, totalPages: ReturnType<typeof computed<number>>): void {
+    effect(() => {
+      const maxPage = totalPages();
+      if (page() > maxPage) {
+        page.set(maxPage);
+      }
+    });
   }
 }

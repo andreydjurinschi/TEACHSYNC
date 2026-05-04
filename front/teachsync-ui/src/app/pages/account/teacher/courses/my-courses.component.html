@@ -81,6 +81,12 @@
             </div>
           }
         </div>
+        <app-pagination-controls
+          [currentPage]="currentPage()"
+          [totalPages]="totalPages()"
+          [totalItems]="courses().length"
+          itemLabel="courses"
+          (pageChange)="currentPage.set($event)" />
       }
     </div>
   </section>

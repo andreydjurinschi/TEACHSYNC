@@ -26,7 +26,7 @@
           </p>
         } @else {
           <div class="space-y-2">
-            @for (group of assignedGroups(); track group.id) {
+            @for (group of visibleAssignedGroups(); track group.id) {
               <div class="flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
                 <div class="flex items-center gap-2">
                   <span class="w-2 h-2 rounded-full bg-blue-400"></span>
@@ -44,6 +44,12 @@
               </div>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="assignedPage()"
+            [totalPages]="assignedTotalPages()"
+            [totalItems]="assignedGroups().length"
+            itemLabel="groups"
+            (pageChange)="assignedPage.set($event)" />
         }
       </div>
 
@@ -52,7 +58,7 @@
           Доступные группы
         </h3>
 
-        @for (group of availableGroups; track group.id) {
+        @for (group of visibleAvailableGroups(); track group.id) {
           <div class="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-700/50 rounded-lg mb-2">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500"></span>
@@ -69,6 +75,12 @@
             </button>
           </div>
         }
+        <app-pagination-controls
+          [currentPage]="availablePage()"
+          [totalPages]="availableTotalPages()"
+          [totalItems]="availableGroups().length"
+          itemLabel="groups"
+          (pageChange)="availablePage.set($event)" />
       </div>
 
     </div>

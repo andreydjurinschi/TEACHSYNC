@@ -29,7 +29,7 @@
             <p class="text-sm text-slate-400 dark:text-slate-500">Активных приглашений нет.</p>
           }
           <div class="space-y-3">
-            @for (item of pendingForMe(); track item.id) {
+            @for (item of pendingForMePage(); track item.id) {
               <article class="app-panel-muted border-l-4 border-l-blue-700">
                 <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
                 <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
@@ -48,6 +48,12 @@
               </article>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="pendingPage()"
+            [totalPages]="pendingTotalPages()"
+            [totalItems]="pendingForMe().length"
+            itemLabel="invites"
+            (pageChange)="pendingPage.set($event)" />
         </div>
 
         <div class="app-panel">
@@ -56,7 +62,7 @@
             <p class="text-sm text-slate-400 dark:text-slate-500">Вы еще не создавали замены.</p>
           }
           <div class="space-y-3">
-            @for (item of requestedByMe(); track item.id) {
+            @for (item of requestedByMePage(); track item.id) {
               <article class="app-panel-muted border-l-4 border-l-blue-700">
                 <div class="flex items-start justify-between gap-3">
                   <div>
@@ -93,6 +99,12 @@
               </article>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="requestedPage()"
+            [totalPages]="requestedTotalPages()"
+            [totalItems]="requestedByMe().length"
+            itemLabel="requests"
+            (pageChange)="requestedPage.set($event)" />
         </div>
 
         <div class="app-panel">
@@ -101,7 +113,7 @@
             <p class="text-sm text-slate-400 dark:text-slate-500">Подтвержденных замен пока нет.</p>
           }
           <div class="space-y-3">
-            @for (item of acceptedByMe(); track item.id) {
+            @for (item of acceptedByMePage(); track item.id) {
               <article class="app-panel-muted border-l-4 border-l-emerald-700">
                 <p class="font-semibold text-slate-900 dark:text-white">{{ item.groupCourseBaseInfoRequest.courseName }}</p>
                 <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ item.lessonDate }} · {{ item.groupCourseBaseInfoRequest.groupName }}</p>
@@ -111,6 +123,12 @@
               </article>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="acceptedPage()"
+            [totalPages]="acceptedTotalPages()"
+            [totalItems]="acceptedByMe().length"
+            itemLabel="accepted"
+            (pageChange)="acceptedPage.set($event)" />
         </div>
 
         <div class="app-panel xl:col-span-3">
@@ -119,7 +137,7 @@
             <p class="text-sm text-slate-400 dark:text-slate-500">Закрытых заявок пока нет.</p>
           }
           <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            @for (item of closedRequests(); track item.id) {
+            @for (item of closedRequestsPage(); track item.id) {
               <article class="app-panel-muted border-l-4 border-l-slate-300 dark:border-l-slate-700">
                 <div class="flex items-start justify-between gap-3">
                   <div>
@@ -133,6 +151,12 @@
               </article>
             }
           </div>
+          <app-pagination-controls
+            [currentPage]="closedPage()"
+            [totalPages]="closedTotalPages()"
+            [totalItems]="closedRequests().length"
+            itemLabel="closed requests"
+            (pageChange)="closedPage.set($event)" />
         </div>
       </div>
     }

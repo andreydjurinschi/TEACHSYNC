@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnInit, signal } from "@angular/core";
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from "@angular/core";
 import { ProfileInfo } from "../../core/models/profile/profile-info.model";
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import { ProfileService } from "../../core/services/profile.service";
@@ -15,11 +15,13 @@ import {
   TeacherReplacementStatistics,
   TeacherWorkloadStatistics
 } from "../../core/models/statistics/profile-statistics.model";
+import { PaginationControlsComponent } from "../../shared/pagination/pagination-controls.component";
+import { getTotalPages, paginateItems } from "../../shared/pagination/pagination.utils";
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PaginationControlsComponent],
   templateUrl: './account-info.html'
 })
 export class AccountInfo implements OnInit {
@@ -37,6 +39,10 @@ export class AccountInfo implements OnInit {
   editMode = signal(false);
   previewUrl = signal<string | null>(null);
   imageError = signal<string | null>(null);
+  activityPage = signal(1);
+  private readonly activityPageSize = 5;
+  activityTotalPages = computed(() => getTotalPages(this.activities().length, this.activityPageSize));
+  visibleActivities = computed(() => paginateItems(this.activities(), this.activityPage(), this.activityPageSize));
   editForm!: FormGroup;
 
   private route = inject(ActivatedRoute);
@@ -46,6 +52,15 @@ export class AccountInfo implements OnInit {
   private profileStatisticsService = inject(ProfileStatisticsService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
+
+  constructor() {
+    effect(() => {
+      const maxPage = this.activityTotalPages();
+      if (this.activityPage() > maxPage) {
+        this.activityPage.set(maxPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email');
@@ -147,6 +162,7 @@ export class AccountInfo implements OnInit {
     this.notificationService.getActivities(userId, role, 10).subscribe({
       next: activities => {
         this.activities.set(activities);
+        this.activityPage.set(1);
         this.activityLoading.set(false);
       },
       error: err => {

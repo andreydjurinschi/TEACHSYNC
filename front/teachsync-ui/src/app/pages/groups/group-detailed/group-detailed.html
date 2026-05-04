@@ -50,7 +50,7 @@
         <p class="text-slate-400 text-sm">Курсы не назначены</p>
       } @else {
         <div class="space-y-2">
-  @for (course of withCourses()!.courses; track course.id) {
+  @for (course of visibleCourses(); track course.id) {
 
     <div (click)="toggleCourse(course.id)"
          class="flex items-center justify-between px-4 py-2.5
@@ -104,6 +104,12 @@
 
   }
 </div>
+        <app-pagination-controls
+          [currentPage]="currentPage()"
+          [totalPages]="totalPages()"
+          [totalItems]="courses().length"
+          itemLabel="courses"
+          (pageChange)="currentPage.set($event)" />
       }
     </div>
 
