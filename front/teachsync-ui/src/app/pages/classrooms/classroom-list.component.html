@@ -1,0 +1,97 @@
+<section class="app-page">
+  <div class="app-page-content max-w-7xl">
+    <div class="app-page-header">
+      <div>
+        <h1 class="app-page-title">Аудитории</h1>
+        <p class="app-page-subtitle">Отдельное управление аудиториями для администратора.</p>
+      </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <section class="app-panel">
+        <h2 class="mb-4 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          {{ form().id == null ? 'Новая аудитория' : 'Редактировать аудиторию' }}
+        </h2>
+
+        <div class="space-y-4">
+          <input
+            type="text"
+            [ngModel]="form().name"
+            (ngModelChange)="updateName($event)"
+            placeholder="Название"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+
+          <input
+            type="number"
+            min="5"
+            max="80"
+            [ngModel]="form().capacity"
+            (ngModelChange)="updateCapacity($event)"
+            placeholder="Вместимость"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white" />
+
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onPhotoSelected($event)"
+            class="w-full text-sm text-slate-600 dark:text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-indigo-700" />
+
+          @if (form().photoUrl) {
+            <img [src]="form().photoUrl" alt="classroom preview" class="h-40 w-full rounded-lg object-cover" />
+          }
+
+          <div class="flex gap-3">
+            <button type="button" (click)="submit()" [disabled]="saving()" class="app-btn-primary flex-1">
+              {{ saving() ? 'Сохранение...' : (form().id == null ? 'Создать' : 'Обновить') }}
+            </button>
+            @if (form().id != null) {
+              <button type="button" (click)="resetForm()" class="app-btn-secondary">Сбросить</button>
+            }
+          </div>
+
+          @if (error()) {
+            <div class="app-alert-error">{{ error() }}</div>
+          }
+        </div>
+      </section>
+
+      <section class="app-panel">
+        @if (loading()) {
+          <div class="grid gap-4 md:grid-cols-2">
+            @for (_ of [1,2,3,4]; track $index) {
+              <div class="h-52 animate-pulse rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"></div>
+            }
+          </div>
+        } @else {
+          <div class="grid gap-4 md:grid-cols-2">
+            @for (item of visibleClassrooms(); track item.id) {
+              <article class="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                @if (item.photoUrl) {
+                  <img [src]="item.photoUrl" [alt]="item.name" class="h-36 w-full object-cover" />
+                } @else {
+                  <div class="flex h-36 items-center justify-center bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-600">
+                    Без фото
+                  </div>
+                }
+                <div class="p-4">
+                  <h3 class="text-base font-semibold text-slate-900 dark:text-white">{{ item.name }}</h3>
+                  <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Вместимость: {{ item.capacity }}</p>
+                  <div class="mt-4 flex gap-2">
+                    <button type="button" (click)="edit(item)" class="app-btn-secondary">Изменить</button>
+                    <button type="button" (click)="remove(item)" class="app-btn-danger">Удалить</button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+          <app-pagination-controls
+            [currentPage]="currentPage()"
+            [totalPages]="totalPages()"
+            [totalItems]="classrooms().length"
+            itemLabel="classrooms"
+            (pageChange)="currentPage.set($event)" />
+        }
+      </section>
+    </div>
+  </div>
+</section>

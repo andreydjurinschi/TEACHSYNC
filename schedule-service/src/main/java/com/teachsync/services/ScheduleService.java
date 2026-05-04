@@ -113,7 +113,7 @@ public class ScheduleService {
     public List<ClassRoomBaseDto> getAllClassrooms() {
         return classRoomRepository.findAll()
                 .stream()
-                .map(cr -> new ClassRoomBaseDto(cr.getId(), cr.getName(), cr.getCapacity()))
+                .map(cr -> new ClassRoomBaseDto(cr.getId(), cr.getName(), cr.getCapacity(), cr.getPhotoUrl()))
                 .toList();
     }
 

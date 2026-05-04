@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class ClassRoomMapper {
     public static ClassRoomBaseDto mapToBaseDto(ClassRoom classRoom){
-        return new ClassRoomBaseDto(classRoom.getId(), classRoom.getName(), classRoom.getCapacity());
+        return new ClassRoomBaseDto(classRoom.getId(), classRoom.getName(), classRoom.getCapacity(), classRoom.getPhotoUrl());
     }
 
     public static ClassRoomDetailedDto mapToDetailedDto(ClassRoom classRoom){

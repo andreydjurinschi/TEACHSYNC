@@ -45,7 +45,7 @@ public class NotificationPreferenceService {
     }
 
     public boolean shouldShowToUser(Long userId, Notification notification) {
-        return isAllowed(getOrCreate(userId), notification.getTargetSubject());
+        return isVisible(getOrCreate(userId), notification.getTargetSubject());
     }
 
     public boolean shouldPushToUser(Long userId, Notification notification) {
@@ -64,6 +64,18 @@ public class NotificationPreferenceService {
         }
         if (preference.isImportantOnly() && !isImportant(subject)) {
             return false;
+        }
+        return switch (categoryOf(subject)) {
+            case SCHEDULE -> preference.isScheduleEnabled();
+            case REPLACEMENT -> preference.isReplacementEnabled();
+            case COURSE -> preference.isCourseEnabled();
+            case SYSTEM -> preference.isSystemEnabled();
+        };
+    }
+
+    private boolean isVisible(NotificationPreference preference, TargetSubject subject) {
+        if (subject == null) {
+            return preference.isSystemEnabled();
         }
         return switch (categoryOf(subject)) {
             case SCHEDULE -> preference.isScheduleEnabled();

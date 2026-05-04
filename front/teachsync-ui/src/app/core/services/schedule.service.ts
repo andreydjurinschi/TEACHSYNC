@@ -36,6 +36,14 @@ export class ScheduleService {
         return this.http.get<ClassRoomInfo[]>(`${this.base}/classrooms/all`, { headers: this.getHeaders() });
     }
 
+    updateClassroom(id: number, dto: { name: string; capacity: number; photoUrl?: string }): Observable<void> {
+        return this.http.put<void>(`${this.classroomsBase}/${id}`, dto, { headers: this.getHeaders() });
+    }
+
+    deleteClassroom(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.classroomsBase}/${id}`, { headers: this.getHeaders() });
+    }
+
     createClassroom(dto: { name: string; capacity: number; photoUrl?: string }): Observable<void> {
         return this.http.post<void>(this.classroomsBase, dto, { headers: this.getHeaders() });
     }

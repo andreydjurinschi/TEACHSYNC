@@ -19,10 +19,10 @@ export class CategoryService {
   }
 
   create(dto: { name: string }): Observable<void> {
-    return this.http.post<void>(`${this.base}/create`, dto);
+    return this.http.post<void>(`${this.base}/create`, dto, { headers: this.getHeaders() });
   }
 
   update(id: number, dto: { name: string }): Observable<void> {
-    return this.http.put<void>(`${this.base}/update/${id}`, dto);
+    return this.http.put<void>(`${this.base}/update/${id}`, dto, { headers: this.getHeaders() });
   }
 }
