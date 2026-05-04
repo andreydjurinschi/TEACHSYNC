@@ -4,7 +4,6 @@ import com.teachsync.teachsyncevents.constants.KafkaTopics;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
-import com.teachsync.teachsyncevents.courses.CourseTeacherAssignmentRequestedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
@@ -64,25 +63,6 @@ public class CourseEventProducer {
                 );
             }
         }));
-    }
-
-    public void publishCourseTeacherAssignmentRequested(CourseTeacherAssignmentRequestedEvent event) {
-        CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(
-                KafkaTopics.COURSE_EVENTS, event.getCourseId().toString(), event
-        );
-        future.whenComplete((result, ex) -> {
-            if (ex != null) {
-                log.error("Failed publish event for teacher assignment request in course service: {}", ex.getMessage());
-            } else {
-                log.info(
-                        "CourseTeacherAssignmentRequestedEvent published successfully... courseId: {}, teacherId: {}, notificationCategoryId: {}, notificationCategoryName: {}",
-                        event.getCourseId(),
-                        event.getTeacherId(),
-                        event.getCategoryId(),
-                        event.getCategoryName() == null ? "without category" : event.getCategoryName()
-                );
-            }
-        });
     }
 
     public void publishCourseTeacherUnassigned(CourseTeacherUnassignedEvent event) {

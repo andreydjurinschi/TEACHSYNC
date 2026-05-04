@@ -21,7 +21,6 @@ export class CourseDetailed implements OnInit {
   withTeacher = signal<CourseWithTeacher | null>(null);
   teachers = signal<TeacherDto[]>([]);
   selectedTeacherId = signal<number | null>(null);
-  assignmentRequestMode = signal(false);
   pending = signal(false);
   actionMessage = signal<string | null>(null);
   actionError = signal<string | null>(null);
@@ -34,21 +33,12 @@ export class CourseDetailed implements OnInit {
     );
   });
 
-  canApproveRequest = computed(() => {
-    const course = this.course();
-    if (!course || !this.assignmentRequestMode() || !this.ruleSevice.isTeacher() || course.teacher != null) {
-      return false;
-    }
-    return true;
-  });
-
   canManageCourse = computed(() => {
     if (this.ruleSevice.isManager() || this.ruleSevice.isAdmin()) return true;
     if (!this.ruleSevice.isTeacher()) return false;
     const teacherId = this.ruleSevice.getId();
     if (teacherId == null) return false;
-    return this.course()?.teacher === teacherId
-      || this.withTeacher()?.teacherRequest?.id === teacherId;
+    return this.course()?.teacher === teacherId;
   });
 
   canManageGroups = computed(() =>
@@ -70,9 +60,6 @@ export class CourseDetailed implements OnInit {
         next: data => this.withTeacher.set(data),
         error: () => this.withTeacher.set(null)
       });
-      this.route.queryParamMap.subscribe(params => {
-        this.assignmentRequestMode.set(params.get('assignmentRequest') === 'true');
-      });
       if (this.ruleSevice.isManager() || this.ruleSevice.isAdmin()) {
         this.teacherService.getAll().subscribe({
           next: data => this.teachers.set(data),
@@ -87,42 +74,26 @@ export class CourseDetailed implements OnInit {
     this.selectedTeacherId.set(value ? Number(value) : null);
   }
 
-  requestSelectedTeacher(): void {
+  assignSelectedTeacher(): void {
     const courseId = this.course()?.id;
     const teacherId = this.selectedTeacherId();
     if (courseId == null || teacherId == null) return;
     this.pending.set(true);
     this.actionMessage.set(null);
     this.actionError.set(null);
-    this.courseService.requestTeacher(courseId, teacherId).subscribe({
+    this.courseService.assignTeacher(courseId, teacherId).subscribe({
       next: () => {
-        this.pending.set(false);
-        this.actionMessage.set('Запрос отправлен преподавателю.');
-      },
-      error: err => {
-        this.pending.set(false);
-        this.actionError.set(err?.error?.message ?? 'Не удалось отправить запрос.');
-      }
-    });
-  }
-
-  approveRequest(): void {
-    const courseId = this.course()?.id;
-    const teacherId = this.ruleSevice.getId();
-    if (courseId == null || teacherId == null || !this.canApproveRequest()) return;
-    this.pending.set(true);
-    this.actionMessage.set(null);
-    this.actionError.set(null);
-    this.courseService.approveTeacherRequest(courseId, teacherId).subscribe({
-      next: () => {
-        this.pending.set(false);
-        this.actionMessage.set('Запрос подтвержден. Курс назначен вам.');
         this.course.update(course => course ? { ...course, teacher: teacherId } : course);
-        this.assignmentRequestMode.set(false);
+        this.courseService.getWithTeacher(courseId).subscribe({
+          next: data => this.withTeacher.set(data),
+          error: () => this.withTeacher.set(null)
+        });
+        this.pending.set(false);
+        this.actionMessage.set('Преподаватель назначен на курс.');
       },
       error: err => {
         this.pending.set(false);
-        this.actionError.set(err?.error?.message ?? 'Не удалось подтвердить запрос.');
+        this.actionError.set(err?.error?.message ?? 'Не удалось назначить преподавателя.');
       }
     });
   }

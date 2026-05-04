@@ -25,7 +25,6 @@ import com.teachsync.repositories.TopicRepository;
 import com.teachsync.teachsyncevents.courses.CourseCreatedEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupEnrolledEvent;
 import com.teachsync.teachsyncevents.courses.CourseGroupRelationRemovedEvent;
-import com.teachsync.teachsyncevents.courses.CourseTeacherAssignmentRequestedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherAssignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTeacherUnassignedEvent;
 import com.teachsync.teachsyncevents.courses.CourseTopicRemovedEvent;
@@ -237,40 +236,6 @@ public class CourseService {
         courseEventProducer.publishCourseTeacherAssigned(
                 new CourseTeacherAssignedEvent(
                       course.getId(), course.getName(), userId
-                )
-        );
-    }
-
-    @Transactional
-    public void requestTeacherForCourse(Long courseId, Long teacherId) {
-        Course course = getCourse(courseId);
-        if (course.getTeacherId() != null) {
-            throw new IllegalArgumentException("course already has a teacher");
-        }
-        validateTeacherCanLeadCourse(course, teacherId);
-        Category category = course.getCategory();
-        courseEventProducer.publishCourseTeacherAssignmentRequested(
-                new CourseTeacherAssignmentRequestedEvent(
-                        course.getId(),
-                        course.getName(),
-                        teacherId,
-                        category == null ? null : category.getId(),
-                        category == null ? null : category.getName()
-                )
-        );
-    }
-
-    @Transactional
-    public void approveTeacherAssignment(Long courseId, Long teacherId) {
-        Course course = getCourse(courseId);
-        if (course.getTeacherId() != null) {
-            throw new IllegalArgumentException("course already has a teacher");
-        }
-        validateTeacherCanLeadCourse(course, teacherId);
-        course.setTeacherId(teacherId);
-        courseEventProducer.publishCourseTeacherAssigned(
-                new CourseTeacherAssignedEvent(
-                        course.getId(), course.getName(), teacherId
                 )
         );
     }
