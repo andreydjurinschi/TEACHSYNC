@@ -8,6 +8,7 @@ import com.teachsync.services.domain.TopicService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -49,7 +50,7 @@ public class TopicController {
     @PostMapping("/create")
     public ResponseEntity<TopicBaseDto> createTopic(@Valid @RequestBody TopicCreateDto dto,
                                                     @RequestHeader("Authorization") String authHeader) {
-        assertAdmin(authHeader);
+        assertManagerOrAdmin(authHeader);
         return ResponseEntity.status(HttpStatus.CREATED).body(topicService.create(dto));
     }
 
@@ -57,15 +58,23 @@ public class TopicController {
     public ResponseEntity<Void> setTag(@PathVariable Long id,
                                        @PathVariable TopicTag tag,
                                        @RequestHeader("Authorization") String authHeader) {
-        assertAdmin(authHeader);
+        assertManagerOrAdmin(authHeader);
         topicService.setTagToTopic(tag, id);
         return ResponseEntity.ok().build();
     }
 
-    private void assertAdmin(String authHeader) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteTopic(@PathVariable Long id,
+                                            @RequestHeader("Authorization") String authHeader) {
+        assertManagerOrAdmin(authHeader);
+        topicService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private void assertManagerOrAdmin(String authHeader) {
         String role = jwtService.extractRole(authHeader.replace("Bearer ", ""));
-        if (!"ADMIN".equals(role)) {
-            throw new org.springframework.security.access.AccessDeniedException("only admins can manage topic categories");
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role)) {
+            throw new org.springframework.security.access.AccessDeniedException("only admins and managers can manage topics");
         }
     }
 }

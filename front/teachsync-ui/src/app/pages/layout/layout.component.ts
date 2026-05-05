@@ -122,11 +122,6 @@ export class LayoutComponent implements OnInit {
   }
 
   logout() {
-    const theme = localStorage.getItem('theme');
-    localStorage.clear();
-    if (theme) {
-      localStorage.setItem('theme', theme);
-    }
     this.auth.logout();
     this.unreadCount.set(0);
     this.notificationService.disconnectRealtime();

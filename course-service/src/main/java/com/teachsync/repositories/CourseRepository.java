@@ -66,6 +66,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     void deleteAllTopicRelations(@Param("courseId") Long courseId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(nativeQuery = true, value = "delete from course_topics where topic_id = :topicId")
+    void deleteAllTopicRelationsForTopic(@Param("topicId") Long topicId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(nativeQuery = true, value = "update courses set category_id = null where category_id = :categoryId")
+    void clearCategoryRelations(@Param("categoryId") Long categoryId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query(nativeQuery = true, value = "delete from group_courses where course_id = :courseId")
     void deleteAllGroupRelationsForCourse(@Param("courseId") Long courseId);
 

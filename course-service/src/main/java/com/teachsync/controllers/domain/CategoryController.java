@@ -5,6 +5,7 @@ import com.teachsync.dto_s.categories.CategoryCreateDto;
 import com.teachsync.services.domain.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,8 +38,14 @@ public class CategoryController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Void> create(@PathVariable Long id, @Valid CategoryCreateDto createDto){
+    public ResponseEntity<Void> create(@PathVariable Long id, @RequestBody @Valid CategoryCreateDto createDto){
         categoryService.update(id, createDto);
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

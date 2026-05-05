@@ -7,6 +7,8 @@ import { Topic } from '../../../core/models/topics/topic.model';
 import { CourseBase } from '../../../core/models/courses/course.model';
 import { TopicTag } from '../../../core/models/topics/topic.model';
 import { RuleService } from '../../../core/services/role.rule.service';
+import { CategoryService } from '../../../core/services/category.service';
+import { CategoryBase } from '../../../core/models/category/category.model';
 import { PaginationControlsComponent } from '../../../shared/pagination/pagination-controls.component';
 import { getTotalPages, paginateItems } from '../../../shared/pagination/pagination.utils';
 
@@ -28,6 +30,10 @@ export class CourseTopics implements OnInit {
   newTopicTag = signal<TopicTag>('IT');
   topicCreateError = signal<string | null>(null);
   topicCreatePending = signal(false);
+  categories = signal<CategoryBase[]>([]);
+  newCategoryName = signal('');
+  categoryCreateError = signal<string | null>(null);
+  categoryCreatePending = signal(false);
   assignedPage = signal(1);
   availablePage = signal(1);
   private readonly pageSize = 8;
@@ -41,7 +47,10 @@ export class CourseTopics implements OnInit {
   private route = inject(ActivatedRoute);
   private courseService = inject(CourseService);
   private topicService = inject(TopicService);
+  private categoryService = inject(CategoryService);
   readonly ruleService = inject(RuleService);
+
+  canManageTaxonomy = computed(() => this.ruleService.isAdmin() || this.ruleService.isManager());
 
   constructor() {
     effect(() => {
@@ -72,6 +81,9 @@ export class CourseTopics implements OnInit {
   }
 
   loadData(): void {
+    this.categoryService.getAll().subscribe({
+      next: data => this.categories.set(data),
+    });
     this.topicService.getAll().subscribe({
       next: allTopics => {
         this.allTopics.set(allTopics);
@@ -156,6 +168,56 @@ export class CourseTopics implements OnInit {
       error: err => {
         this.topicCreateError.set(err?.error?.message ?? 'Не удалось создать тему.');
         this.topicCreatePending.set(false);
+      }
+    });
+  }
+
+  createCategory(): void {
+    const name = this.newCategoryName().trim();
+    if (!name) {
+      this.categoryCreateError.set('Введите название категории.');
+      return;
+    }
+    this.categoryCreatePending.set(true);
+    this.categoryCreateError.set(null);
+    this.categoryService.create({ name }).subscribe({
+      next: () => {
+        this.newCategoryName.set('');
+        this.categoryCreatePending.set(false);
+        this.loadData();
+      },
+      error: err => {
+        this.categoryCreateError.set(err?.error?.message ?? 'Не удалось создать категорию.');
+        this.categoryCreatePending.set(false);
+      }
+    });
+  }
+
+  deleteTopic(topic: Topic): void {
+    if (!confirm(`Удалить тему "${topic.name}"? Она будет снята со всех курсов.`)) {
+      return;
+    }
+    this.loading.set(true);
+    this.topicService.delete(topic.id).subscribe({
+      next: () => {
+        this.loadData();
+        this.loading.set(false);
+      },
+      error: err => {
+        this.topicCreateError.set(err?.error?.message ?? 'Не удалось удалить тему.');
+        this.loading.set(false);
+      }
+    });
+  }
+
+  deleteCategory(category: CategoryBase): void {
+    if (!confirm(`Удалить категорию "${category.name}"? У связанных курсов категория будет снята.`)) {
+      return;
+    }
+    this.categoryService.delete(category.id).subscribe({
+      next: () => this.loadData(),
+      error: err => {
+        this.categoryCreateError.set(err?.error?.message ?? 'Не удалось удалить категорию.');
       }
     });
   }

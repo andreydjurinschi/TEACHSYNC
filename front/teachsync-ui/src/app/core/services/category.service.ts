@@ -25,4 +25,8 @@ export class CategoryService {
   update(id: number, dto: { name: string }): Observable<void> {
     return this.http.put<void>(`${this.base}/update/${id}`, dto, { headers: this.getHeaders() });
   }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/delete/${id}`, { headers: this.getHeaders() });
+  }
 }

@@ -30,6 +30,10 @@ export class TopicService {
     return this.http.post<Topic>(`${this.apiUrl}/create`, dto, { headers: this.getHeaders() });
   }
 
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/delete/${id}`, { headers: this.getHeaders() });
+  }
+
   setTag(topicId: number, tag: TopicTag): Observable<void> {
     return this.http.patch<void>(`${this.apiUrl}/${topicId}/tag/${tag}`, {}, { headers: this.getHeaders() });
   }

@@ -5,6 +5,7 @@ import com.teachsync.domain.TopicTag;
 import com.teachsync.dto_s.topics.TopicCreateDto;
 import com.teachsync.dto_s.topics.TopicBaseDto;
 import com.teachsync.mappers.TopicMapper;
+import com.teachsync.repositories.CourseRepository;
 import com.teachsync.repositories.TopicRepository;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +15,11 @@ import java.util.NoSuchElementException;
 @Service
 public class TopicService {
     private final TopicRepository topicRepository;
+    private final CourseRepository courseRepository;
 
-    public TopicService(TopicRepository topicRepository) {
+    public TopicService(TopicRepository topicRepository, CourseRepository courseRepository) {
         this.topicRepository = topicRepository;
+        this.courseRepository = courseRepository;
     }
 
     public List<TopicBaseDto> getAll(){
@@ -42,6 +45,13 @@ public class TopicService {
             topic.setTag(tag);
         }
         topicRepository.save(topic);
+    }
+
+    public void delete(Long topicId) {
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new NoSuchElementException("this topic does not exist"));
+        courseRepository.deleteAllTopicRelationsForTopic(topicId);
+        topicRepository.delete(topic);
     }
 
     public List<TopicBaseDto> getTopicsByTags(TopicTag topicTag){
