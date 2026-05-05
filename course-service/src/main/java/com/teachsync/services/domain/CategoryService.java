@@ -5,6 +5,7 @@ import com.teachsync.dto_s.categories.CategoryBaseDto;
 import com.teachsync.dto_s.categories.CategoryCreateDto;
 import com.teachsync.mappers.categories.CategoryMapper;
 import com.teachsync.repositories.CategoryRepository;
+import com.teachsync.repositories.CourseRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -17,9 +18,11 @@ import java.util.stream.Collectors;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CourseRepository courseRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, CourseRepository courseRepository) {
         this.categoryRepository = categoryRepository;
+        this.courseRepository = courseRepository;
     }
 
     public List<CategoryBaseDto> getAll(){
@@ -39,5 +42,13 @@ public class CategoryService {
         if(StringUtils.hasText(categoryCreateDto.getName())){
             category.setName(categoryCreateDto.getName());
         }
+    }
+
+    @Transactional
+    public void delete(Long catId){
+        Category category = categoryRepository.findById(catId)
+                .orElseThrow(() -> new NoSuchElementException("category not found"));
+        courseRepository.clearCategoryRelations(catId);
+        categoryRepository.delete(category);
     }
 }

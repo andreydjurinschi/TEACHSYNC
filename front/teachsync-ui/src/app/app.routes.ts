@@ -51,7 +51,7 @@ export const routes: Routes = [
       { path: 'courses/edit/:id', component: CourseEdit },
       { path: 'courses/:id/groups', component: CourseGroups, canActivate: [RoleGuard], data: { roles: ['ADMIN', 'MANAGER'] } },
       { path: 'courses/:id', component: CourseDetailed },
-      { path: 'courses/:id/topics', component: CourseTopics, canActivate: [RoleGuard], data: { roles: ['ADMIN'] } },
+      { path: 'courses/:id/topics', component: CourseTopics, canActivate: [RoleGuard], data: { roles: ['ADMIN', 'MANAGER'] } },
 
       { path: 'groups', component: GroupList, canActivate: [RoleGuard], data: { roles: ['ADMIN', 'MANAGER'] } },
       { path: 'groups/create', component: GroupCreate, canActivate: [RoleGuard], data: { roles: ['ADMIN', 'MANAGER'] } },
